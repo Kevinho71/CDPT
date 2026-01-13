@@ -65,6 +65,9 @@ cadet-sistema-*.json
 **/qrcodes/**
 **/socioslogos/**
 
+# Docker volumes
+postgres_data/
+
 # Uploaded files
 src/main/resources/static/logos/*.png
 src/main/resources/static/logos/*.jpg
