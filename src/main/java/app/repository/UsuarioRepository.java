@@ -1,4 +1,4 @@
-package BOOT-INF.classes.app.repository;
+package app.repository;
 
 import app.entity.UsuarioEntity;
 import app.repository.GenericRepositoryNormal;

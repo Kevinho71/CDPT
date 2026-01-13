@@ -1,4 +1,4 @@
-package BOOT-INF.classes.app.service;
+package app.service;
 
 import app.entity.SocioEntity;
 import app.service.GenericServiceNormal;

@@ -1,30 +1,30 @@
-/*    */ package BOOT-INF.classes.app.restcontroller;
-/*    */ 
-/*    */ import app.service.GoogleDriveService;
-/*    */ import org.springframework.web.bind.annotation.GetMapping;
-/*    */ import org.springframework.web.bind.annotation.RequestParam;
-/*    */ import org.springframework.web.bind.annotation.RestController;
-/*    */ 
-/*    */ 
-/*    */ @RestController
-/*    */ public class RestGoogleDriveController
-/*    */ {
-/*    */   private final GoogleDriveService googleDriveService;
-/*    */   
-/*    */   public RestGoogleDriveController(GoogleDriveService googleDriveService) {
-/* 15 */     this.googleDriveService = googleDriveService;
-/*    */   }
-/*    */   
-/*    */   @GetMapping({"/createFolder"})
-/*    */   public String createFolder(@RequestParam String folderName) {
-/*    */     try {
-/* 21 */       return this.googleDriveService.createFolder(folderName);
-/* 22 */     } catch (Exception e) {
-/* 23 */       e.printStackTrace();
-/* 24 */       return "Error creating folder: " + e.getMessage();
-/*    */     } 
-/*    */   }
-/*    */ }
+ package app.restcontroller;
+ 
+ import app.service.GoogleDriveService;
+ import org.springframework.web.bind.annotation.GetMapping;
+ import org.springframework.web.bind.annotation.RequestParam;
+ import org.springframework.web.bind.annotation.RestController;
+
+
+ @RestController
+ public class RestGoogleDriveController
+ {
+   private final GoogleDriveService googleDriveService;
+   
+   public RestGoogleDriveController(GoogleDriveService googleDriveService) {
+     this.googleDriveService = googleDriveService;
+   }
+   
+   @GetMapping({"/createFolder"})
+   public String createFolder(@RequestParam String folderName) {
+     try {
+       return this.googleDriveService.createFolder(folderName);
+     } catch (Exception e) {
+       e.printStackTrace();
+       return "Error creating folder: " + e.getMessage();
+     } 
+   }
+ }
 
 
 /* Location:              C:\Users\Usuario\Desktop\CADET.jar!\BOOT-INF\classes\app\restcontroller\RestGoogleDriveController.class

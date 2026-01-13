@@ -3,6 +3,7 @@
 
 # Log files
 *.log
+logs/
 
 # Package Files
 *.jar
@@ -29,12 +30,14 @@ buildNumber.properties
 .classpath
 .project
 .settings/
+bin/
 
 # IntelliJ IDEA
 .idea/
 *.iml
 *.iws
 *.ipr
+out/
 
 # NetBeans
 nbproject/private/
@@ -46,11 +49,23 @@ nbdist/
 
 # VS Code
 .vscode/
+.factorypath
 
 # OS
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
+*~
 
 # Application specific
+.env
 application-local.properties
 cadet-sistema-*.json
+**/qrcodes/**
+**/socioslogos/**
+
+# Uploaded files
+src/main/resources/static/logos/*.png
+src/main/resources/static/logos/*.jpg
+src/main/resources/static/catalogosimg/**

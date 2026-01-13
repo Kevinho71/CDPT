@@ -1,4 +1,4 @@
-package BOOT-INF.classes.app.service;
+package app.service;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,83 +1,130 @@
-# CADET - Sistema de Gesti�n
+# CADET - Sistema de Gestión
 
-Este es el c�digo fuente del proyecto CADET convertido desde un JAR descompilado a un proyecto Maven est�ndar.
+Sistema de gestión para el Colegio de Administradores de Empresas de Tarija (CADET).
+
+## Tecnologías
+
+- **Java 21**
+- **Spring Boot 3.4.1**
+- **PostgreSQL**
+- **Thymeleaf**
+- **Spring Security 6**
+- **Maven**
 
 ## Estructura del Proyecto
 
 ```
 CADET-SOURCE/
- src/
-    main/
-       java/
-          app/
-              config/
-              controller/
-              dto/
-              entity/
-              repository/
-              restcontroller/
-              service/
-              util/
-       resources/
-           static/
-           templates/
-           application.properties
-           cadet-sistema-97e2062b979e.json
-    test/
-        java/
- pom.xml
- README.md
+├── src/
+│   ├── main/
+│   │   ├── java/app/
+│   │   │   ├── config/          # Configuración de seguridad y servicios
+│   │   │   ├── controller/      # Controladores MVC
+│   │   │   ├── restcontroller/  # API REST
+│   │   │   ├── service/         # Lógica de negocio
+│   │   │   ├── repository/      # Acceso a datos
+│   │   │   ├── entity/          # Entidades JPA
+│   │   │   ├── dto/             # Objetos de transferencia
+│   │   │   └── util/            # Utilidades
+│   │   └── resources/
+│   │       ├── static/          # Recursos estáticos (CSS, JS, imágenes)
+│   │       ├── templates/       # Plantillas Thymeleaf
+│   │       └── application.properties
+│   └── test/java/
+├── pom.xml
+├── docker-compose.yml
+└── README.md
 ```
 
 ## Requisitos Previos
 
-- Java 11 o superior
-- Maven 3.6 o superior
-- PostgreSQL
-- Cuenta de Google Drive API (para funcionalidad de almacenamiento)
+- **Java 21 JDK** o superior
+- **Maven 3.8+**
+- **PostgreSQL 12+**
+- Docker (opcional, para base de datos)
 
-## Configuraci�n
+## Configuración
 
-1. Configurar base de datos PostgreSQL
-2. Configurar variables de entorno:
-   - `DATABASE_URL`: URL de conexi�n a PostgreSQL
-   - `DATABASE_USERNAME`: Usuario de la base de datos
-   - `DATABASE_PASSWORD`: Contrase�a de la base de datos
+### 1. Base de Datos
 
-3. Configurar Google Drive API:
-   - Colocar el archivo de credenciales JSON en `src/main/resources/`
+Crear un archivo `.env` en la raíz del proyecto basado en `.env.template`:
 
-## Compilaci�n y Ejecuci�n
+```bash
+cp .env.template .env
+```
+
+Editar `.env` con tus credenciales de base de datos:
+
+```properties
+DB_DEV_USER=tu_usuario
+DB_DEV_PASSWORD=tu_password
+DB_DEV_NAME=cadet_bd
+DB_DEV_URL=jdbc:postgresql://localhost:5432/cadet_bd
+```
+
+### 2. Google Drive API (Opcional)
+
+Si vas a usar la integración con Google Drive, coloca el archivo de credenciales JSON en:
+```
+src/main/resources/cadet-sistema-XXXXXXXX.json
+```
+
+## Compilación y Ejecución
 
 ### Compilar el proyecto:
 ```bash
 mvn clean install
 ```
 
-### Ejecutar la aplicaci�n:
+### Ejecutar en Desarrollo:
 ```bash
 mvn spring-boot:run
 ```
 
+La aplicación estará disponible en: `http://localhost:8080`
+
 ### Generar JAR ejecutable:
 ```bash
 mvn clean package
+```
+
+### Ejecutar en Producción:
+```bash
 java -jar target/cadetapp-0.0.1-SNAPSHOT.jar
 ```
 
-## Tecnolog�as Utilizadas
+## Credenciales por Defecto
 
-- Spring Boot 2.7.10
-- Spring Data JPA
-- Spring Security
-- Thymeleaf
-- PostgreSQL
-- Google Drive API
-- ZXing (QR Code generation)
+Al iniciar por primera vez, se crean las siguientes credenciales:
 
-## Notas Importantes
+- **Usuario:** cadet
+- **Contraseña:** cadet.2024
+- **Rol:** ROLE_ADMIN
 
-- Este proyecto fue reconstruido desde un JAR descompilado
-- Algunos comentarios del c�digo original pueden haberse perdido
-- Revisar la declaraci�n del package en los archivos .java (puede necesitar correcci�n)
-- Configurar correctamente las credenciales de Google Drive antes de ejecutar
+**⚠️ IMPORTANTE:** Cambiar estas credenciales en producción.
+
+## Docker
+
+Para ejecutar con Docker Compose (PostgreSQL):
+
+```bash
+docker-compose up -d
+```
+
+## Notas de Migración
+
+Este proyecto ha sido migrado y modernizado:
+- **Spring Boot:** 2.7.10 → 3.4.1
+- **Java:** 11 → 21
+- **Spring Security:** 5 → 6
+
+### Cambios Importantes
+
+1. **Jakarta EE:** Migración automática de `javax.*` a `jakarta.*`
+2. **Thymeleaf Security:** Actualizado a `thymeleaf-extras-springsecurity6`
+3. **Configuración de Seguridad:** Adaptada para Spring Security 6
+4. **Código limpio:** Eliminados artefactos de decompilación
+
+## Licencia
+
+Propietario - CADET Tarija

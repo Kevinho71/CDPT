@@ -1,4 +1,4 @@
-package BOOT-INF.classes.app.service;
+package app.service;
 
 import java.util.List;
 import org.springframework.data.domain.Page;

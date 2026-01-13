@@ -1,4 +1,4 @@
-package BOOT-INF.classes.app.restcontroller;
+package app.restcontroller;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
