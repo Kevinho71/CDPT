@@ -48,15 +48,11 @@
        processQRCode(finalMessage, outputPath, "UTF-8", 600, 600);
 
 
-       File qrFile = new File(outputPath);
-       this.archivoService.guargarArchivoDriveFile(Constantes.nameFolderQrSocio, qrFile, nombre + ".png");
+       System.out.println("QR Code generado localmente en: " + outputPath);
      }
      catch (WriterException|IOException e) {
        e.printStackTrace();
-     } catch (GeneralSecurityException e) {
-       
-       e.printStackTrace();
-     } 
+     }
    }
 
 

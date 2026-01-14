@@ -13,7 +13,7 @@
  import app.service.PersonaService;
  import app.service.SocioService;
  import app.util.Constantes;
- import app.util.QRCodeGeneratorServiceDrive;
+ import app.util.QRCodeGeneratorService;
  import java.io.Serializable;
  import java.util.List;
  import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@
    @Autowired
    private ArchivoService archivoService;
    @Autowired
-   private QRCodeGeneratorServiceDrive qrCodeGeneratorService;
+   private QRCodeGeneratorService qrCodeGeneratorService;
    @Value("${server.port}")
    private static String puertoservidor;
    private String IPPUBLICA = "";
@@ -167,8 +167,7 @@
            entity.setImagen(nombre);
 
 
-           String idArchivoLogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderLogoSocio, entity.getLogo(), nombre);
-           entity.setImagenDriveId(idArchivoLogoDrive);
+           this.archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, entity.getLogo(), nombre);
          } 
          
          System.out.println("EntityPost:" + entity.toString());
@@ -240,7 +239,7 @@
        if (!entidad.getLogo().isEmpty()) {
 
 
-         this.archivoService.eliminarArchivoDrive(Constantes.nameFolderLogoSocio, entitymod.getImagen());
+         this.archivoService.eliminarArchivo(Constantes.nameFolderLogoSocio, entitymod.getImagen());
 
 
          String nombre = "SOCIO - " + entitymod.getPersona().getCi() + entidad.getLogo().getOriginalFilename().substring(entidad.getLogo().getOriginalFilename().lastIndexOf('.'));
@@ -249,8 +248,7 @@
          entitymod.setImagen(nombre);
 
 
-         String idArchivoLogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderLogoSocio, entidad.getLogo(), nombre);
-         entitymod.setImagenDriveId(idArchivoLogoDrive);
+         this.archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, entidad.getLogo(), nombre);
        } 
 
 
@@ -289,10 +287,10 @@
 
 
        try {
-         System.out.println("************* ELIMINANDO QR EN GOOGLE DRIVE: " + entitymod.getLinkqr());
-         this.archivoService.eliminarArchivoDrive(Constantes.nameFolderQrSocio, entitymod.getLinkqr());
+         System.out.println("************* ELIMINANDO QR: " + entitymod.getLinkqr());
+         this.archivoService.eliminarArchivo(Constantes.nameFolderQrSocio, entitymod.getLinkqr());
        } catch (Exception e) {
-         System.out.println("No se pudo eliminar el QR anterior en Google Drive: " + e.getMessage());
+         System.out.println("No se pudo eliminar el QR anterior: " + e.getMessage());
        } 
 
 

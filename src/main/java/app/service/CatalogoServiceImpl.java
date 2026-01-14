@@ -127,8 +127,7 @@
            imagenesCatalogoEntity.setImagen(nombreLocal);
 
 
-           String idArchivoCatalogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderImgCatalogo, catalogoitem, nombreLocal);
-           imagenesCatalogoEntity.setImagenDriveId(idArchivoCatalogoDrive);
+           this.archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, catalogoitem, nombreLocal);
            
            imagenesCatalogoEntity.setEstado(Integer.valueOf(1));
            
@@ -152,8 +151,7 @@
          entity.setNombrelogo(nombreLocal);
 
 
-         String idArchivoLogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombreLocal);
-         entity.setNombrelogoDriveId(idArchivoLogoDrive);
+         this.archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombreLocal);
        } 
        
        System.out.println("EntityPost:" + entity.toString());
@@ -185,7 +183,7 @@
            String nombreImagen = imgEntity.getImagen();
 
 
-           this.archivoService.eliminarArchivoDrive(Constantes.nameFolderImgCatalogo, nombreImagen);
+           this.archivoService.eliminarArchivo(Constantes.nameFolderImgCatalogo, nombreImagen);
            this.ImagenCatalogoRepository.delete(imgEntity);
          } 
          
@@ -202,8 +200,7 @@
 
            imagenesCatalogoEntity.setImagen(nombre);
            
-           String idArchivoCatalogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderImgCatalogo, catalogoitem, nombre);
-           imagenesCatalogoEntity.setImagenDriveId(idArchivoCatalogoDrive);
+           this.archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, catalogoitem, nombre);
 
 
            imagenesCatalogoEntity.setEstado(Integer.valueOf(1));
@@ -221,15 +218,12 @@
          
          this.archivoService.eliminarArchivo(Constantes.nameFolderLogoCatalogo, catalogoEntity2.getNombrelogo());
          
-         this.archivoService.eliminarArchivoDrive(Constantes.nameFolderLogoCatalogo, catalogoEntity2.getNombrelogo());
-         
          String nombre = catalogoEntity2.getNit() + catalogoEntity2.getNit();
 
 
          entity.setNombrelogo(nombre);
          
-         String idArchivoLogoDrive = this.archivoService.guargarArchivoDrive(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombre);
-         entity.setNombrelogoDriveId(idArchivoLogoDrive);
+         this.archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombre);
        } 
 
 

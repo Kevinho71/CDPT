@@ -1,129 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
-    
+
     <groupId>app</groupId>
     <artifactId>cadetapp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    
+
     <name>cadetapp</name>
     <description>CADET Sistema de Gestion</description>
-    
+
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>nz.net.ultraq.thymeleaf</groupId>
             <artifactId>thymeleaf-layout-dialect</artifactId>
         </dependency>
-        
+
         <!-- PostgreSQL Driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        
-        <!-- Google Drive API -->
-        <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>2.7.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client-jetty</artifactId>
-            <version>1.36.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-drive</artifactId>
-            <version>v3-rev20240914-2.0.0</version>
-        </dependency>
-        
+
         <!-- QR Code Generator -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
             <version>3.5.3</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>javase</artifactId>
             <version>3.5.3</version>
         </dependency>
-        
+
         <!-- Image Processing -->
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
             <version>1.4.0</version>
         </dependency>
-        
+
         <!-- DotEnv - Load .env file -->
         <dependency>
             <groupId>me.paulschwarz</groupId>
             <artifactId>spring-dotenv</artifactId>
             <version>4.0.0</version>
         </dependency>
-        
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
     </dependencies>
-    
+
+
     <build>
         <plugins>
             <plugin>

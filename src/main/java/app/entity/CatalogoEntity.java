@@ -39,8 +39,6 @@
    private String tipo;
    @Column(name = "nombrelogo")
    private String nombrelogo;
-   @Column(name = "nombrelogoDriveId")
-   private String nombrelogoDriveId;
    @Column(name = "longitud")
    private String longitud;
    @Column(name = "latitud")
@@ -63,7 +61,7 @@
    public CatalogoEntity() {}
 
 
-   public CatalogoEntity(Integer id, Integer codigo, String nit, String nombre, String descripcion, String direccion, String descuento, String tipo, String nombrelogo, String nombrelogoDriveId, String longitud, String latitud, Integer estado, List<ImagenesCatalogoEntity> imagenesCatalogos, MultipartFile logo, List<MultipartFile> catalogo) {
+   public CatalogoEntity(Integer id, Integer codigo, String nit, String nombre, String descripcion, String direccion, String descuento, String tipo, String nombrelogo, String longitud, String latitud, Integer estado, List<ImagenesCatalogoEntity> imagenesCatalogos, MultipartFile logo, List<MultipartFile> catalogo) {
      this.id = id;
      this.codigo = codigo;
      this.nit = nit;
@@ -73,7 +71,6 @@
      this.descuento = descuento;
      this.tipo = tipo;
      this.nombrelogo = nombrelogo;
-     this.nombrelogoDriveId = nombrelogoDriveId;
      this.longitud = longitud;
      this.latitud = latitud;
      this.estado = estado;
@@ -152,14 +149,6 @@
    
    public void setNombrelogo(String nombrelogo) {
      this.nombrelogo = nombrelogo;
-   }
-   
-   public String getNombrelogoDriveId() {
-     return this.nombrelogoDriveId;
-   }
-   
-   public void setNombrelogoDriveId(String nombrelogoDriveId) {
-     this.nombrelogoDriveId = nombrelogoDriveId;
    }
    
    public String getLongitud() {

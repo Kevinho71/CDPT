@@ -2,7 +2,6 @@ package app;
 
 import app.entity.*;
 import app.repository.*;
-import app.service.GoogleDriveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -34,8 +33,7 @@ public class CadetappApplication extends SpringBootServletInitializer {
     private PersonaRepository personaRepository;
     @Autowired
     private UsuarioRepository usuarioRepository;
-    @Autowired
-    private GoogleDriveService googleDriveService;
+
     
     public static void main(String[] args) {
         SpringApplication.run(CadetappApplication.class, args);

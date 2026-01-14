@@ -1,6 +1,5 @@
  package app.restcontroller;
  
- import app.config.GoogleDriveConfig;
  import app.dto.SocioDTO;
  import app.entity.PersonaEntity;
  import app.entity.SocioEntity;
@@ -8,7 +7,6 @@
  import app.service.ArchivoService;
  import app.service.SocioServiceImpl;
  import app.util.Constantes;
- import com.google.api.services.drive.Drive;
  import java.io.IOException;
  import java.io.InputStream;
  import java.io.Serializable;
@@ -44,12 +42,6 @@
  {
    @Autowired
    private ArchivoService archivoService;
-   @Autowired
-   private GoogleDriveConfig googleDriveConfig;
-   
-   private Drive getDriveService() throws IOException, GeneralSecurityException {
-     return this.googleDriveConfig.getDriveService();
-   }
 
 
    @GetMapping({"/listar"})
@@ -214,23 +206,17 @@
    @GetMapping({"/logo_socio/{filename}"})
    public ResponseEntity<Resource> getFile_logo_socio_drive(@PathVariable String filename) {
      try {
-       String folderId = this.archivoService.getOrCreateFolder(Constantes.nameFolderLogoSocio);
-
-
-       String fileId = this.archivoService.obtenerIdArchivoDrivePorNombre(filename, folderId);
+       java.nio.file.Path filePath = this.archivoService.linkArchivo(Constantes.nameFolderLogoSocio, filename);
        
-       if (fileId != null) {
+       if (filePath != null && Files.exists(filePath)) {
          
-         Drive driveService = getDriveService();
-
-
-         InputStream inputStream = driveService.files().get(fileId).executeMediaAsInputStream();
+         InputStream inputStream = Files.newInputStream(filePath);
          InputStreamResource resource = new InputStreamResource(inputStream);
 
 
          String contentType = "application/octet-stream";
          try {
-           contentType = Files.probeContentType(Paths.get(filename, new String[0]));
+           contentType = Files.probeContentType(filePath);
          } catch (IOException e) {
            System.out.println("No se pudo determinar el tipo de archivo.");
          } 
@@ -255,23 +241,17 @@
      try {
        System.out.println("filenameQR:" + filename);
        
-       String folderId = this.archivoService.getOrCreateFolder(Constantes.nameFolderQrSocio);
-
-
-       String fileId = this.archivoService.obtenerIdArchivoDrivePorNombre(filename, folderId);
+       java.nio.file.Path filePath = this.archivoService.linkArchivo(Constantes.nameFolderQrSocio, filename);
        
-       if (fileId != null) {
+       if (filePath != null && Files.exists(filePath)) {
          
-         Drive driveService = getDriveService();
-
-
-         InputStream inputStream = driveService.files().get(fileId).executeMediaAsInputStream();
+         InputStream inputStream = Files.newInputStream(filePath);
          InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
 
 
          String contentType = "application/octet-stream";
          try {
-           contentType = Files.probeContentType(Paths.get(filename, new String[0]));
+           contentType = Files.probeContentType(filePath);
          } catch (IOException e) {
            System.out.println("No se pudo determinar el tipo de archivo.");
          } 

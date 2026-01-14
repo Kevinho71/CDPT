@@ -38,8 +38,6 @@
    private String nrodocumento;
    @Column(name = "imagen")
    private String imagen;
-   @Column(name = "imagenDriveId")
-   private String imagenDriveId;
    @Column(name = "qr")
    private String qr;
    @Column(name = "linkqr")
@@ -77,12 +75,11 @@
    
    public SocioEntity() {}
    
-   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String imagen, String imagenDriveId, String qr, String linkqr, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer lejendario, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
+   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String imagen, String qr, String linkqr, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer lejendario, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
      this.id = id;
      this.codigo = codigo;
      this.nrodocumento = nrodocumento;
      this.imagen = imagen;
-     this.imagenDriveId = imagenDriveId;
      this.qr = qr;
      this.linkqr = linkqr;
      this.matricula = matricula;
@@ -128,14 +125,6 @@
    
    public void setImagen(String imagen) {
      this.imagen = imagen;
-   }
-   
-   public String getImagenDriveId() {
-     return this.imagenDriveId;
-   }
-   
-   public void setImagenDriveId(String imagenDriveId) {
-     this.imagenDriveId = imagenDriveId;
    }
    
    public String getQr() {
@@ -244,7 +233,7 @@
 
 
    public String toString() {
-     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", imagenDriveId=" + this.imagenDriveId + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
+     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
    }
  }
 
