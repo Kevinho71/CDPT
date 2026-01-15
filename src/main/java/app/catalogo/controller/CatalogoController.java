@@ -1,209 +1,168 @@
  package app.catalogo.controller;
  
- import app.catalogo.entity.CatalogoEntity;
- import app.common.util.RestControllerGenericNormalImpl;
+ import app.catalogo.dto.CatalogoDTO;
+ import app.catalogo.dto.CatalogoResponseDTO;
  import app.common.util.ArchivoService;
  import app.catalogo.service.CatalogoServiceImpl;
  import app.common.util.Constantes;
- import java.io.ByteArrayInputStream;
- import java.io.ByteArrayOutputStream;
- import java.io.IOException;
+ import jakarta.validation.Valid;
  import java.io.InputStream;
- import java.io.OutputStream;
  import java.nio.file.Files;
- import java.nio.file.Paths;
- import java.security.GeneralSecurityException;
- import java.util.HashMap;
  import java.util.List;
- import java.util.Map;
- import jakarta.servlet.http.HttpServletRequest;
  import org.springframework.beans.factory.annotation.Autowired;
  import org.springframework.core.io.InputStreamResource;
  import org.springframework.core.io.Resource;
- import org.springframework.data.repository.query.Param;
  import org.springframework.http.HttpStatus;
  import org.springframework.http.MediaType;
  import org.springframework.http.ResponseEntity;
- import org.springframework.web.bind.annotation.GetMapping;
- import org.springframework.web.bind.annotation.PathVariable;
- import org.springframework.web.bind.annotation.PostMapping;
- import org.springframework.web.bind.annotation.RequestBody;
- import org.springframework.web.bind.annotation.RequestMapping;
- import org.springframework.web.bind.annotation.RequestParam;
- import org.springframework.web.bind.annotation.RestController;
+ import org.springframework.web.bind.annotation.*;
  import org.springframework.web.multipart.MultipartFile;
 
-
- @RestController
-@RequestMapping({"/RestCatalogos"})
-public class CatalogoController
-   extends RestControllerGenericNormalImpl<CatalogoEntity, CatalogoServiceImpl>
- {
+/**
+ * REST Controller para gestión de catálogos (empresas)
+ * Base path: /api/catalogos
+ */
+@RestController
+@RequestMapping("/api/catalogos")
+public class CatalogoController {
+   
+   @Autowired
+   private CatalogoServiceImpl catalogoService;
+   
    @Autowired
    private ArchivoService archivoService;
    
-   @GetMapping({"/listar"})
-   public ResponseEntity<?> getAll(HttpServletRequest request, @Param("draw") int draw, @Param("length") int length, @Param("start") int start, @Param("estado") int estado) throws IOException {
-     String total = "";
-     Map<String, Object> Data = new HashMap<>();
-     
-     try {
-       String search = request.getParameter("search[value]");
-       int tot = Constantes.NUM_MAX_DATATABLE.intValue();
-       System.out.println("tot:" + tot + "estado:" + estado + "search:" + search + "length:" + length + "start:" + start);
-       List<?> lista = ((CatalogoServiceImpl)this.servicio).findAll(estado, search, length, start);
-       System.out.println("listar:" + lista.toString());
-       
-       try {
-         total = String.valueOf(((CatalogoServiceImpl)this.servicio).getTotAll(search, estado));
-       }
-       catch (Exception e) {
-         total = "0";
-       } 
-       Data.put("draw", Integer.valueOf(draw));
-       Data.put("recordsTotal", total);
-       Data.put("data", lista);
-       if (!search.equals("")) {
-         Data.put("recordsFiltered", Integer.valueOf(lista.size()));
-       } else {
-         Data.put("recordsFiltered", total);
-       } 
-       return ResponseEntity.status(HttpStatus.OK).body(Data);
-     } catch (Exception e) {
-       e.printStackTrace();
-       System.out.println(e.getMessage());
-       
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Data);
-     } 
+   /**
+    * Lista todos los catálogos
+    * GET /api/catalogos
+    */
+   @GetMapping
+   public ResponseEntity<List<CatalogoResponseDTO>> getAll() {
+       return ResponseEntity.ok(catalogoService.findAllDTO());
    }
    
-   @PostMapping({"/updateStatus"})
-   public ResponseEntity<?> updateStatus(@RequestBody CatalogoEntity entity) {
-     try {
-       System.out.println("Entidad:" + entity.toString());
-       ((CatalogoServiceImpl)this.servicio).updateStatus(entity.getEstado().intValue(), entity.getId().intValue());
-       CatalogoEntity entity2 = (CatalogoEntity)((CatalogoServiceImpl)this.servicio).findById(entity.getId());
-       return ResponseEntity.status(HttpStatus.OK).body(entity2);
-     } catch (Exception e) {
-       System.out.println(e.getMessage());
-       e.printStackTrace();
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. Por favor intente más tarde.\"}");
-     } 
+   /**
+    * Lista catálogos por estado
+    * GET /api/catalogos?estado=1
+    */
+   @GetMapping(params = "estado")
+   public ResponseEntity<List<CatalogoResponseDTO>> getAllByEstado(@RequestParam int estado) {
+       return ResponseEntity.ok(catalogoService.findAllDTO(estado));
    }
-
-
-   @PostMapping({"/guardar"})
-   public ResponseEntity<?> save(CatalogoEntity entidad, @RequestParam("logo") MultipartFile file, @RequestParam("catalogo") MultipartFile catalogo) {
-     System.out.println("EntidadSave LLEGO:" + entidad.toString());
-
-
-     try {
-       return ResponseEntity.status(HttpStatus.OK).body(((CatalogoServiceImpl)this.servicio).save(entidad));
-     } catch (Exception e) {
-       e.printStackTrace();
-       System.out.println(e.getMessage());
+   
+   /**
+    * Obtiene un catálogo por ID
+    * GET /api/catalogos/{id}
+    */
+   @GetMapping("/{id}")
+   public ResponseEntity<CatalogoResponseDTO> getOne(@PathVariable Integer id) {
+       return ResponseEntity.ok(catalogoService.findByIdDTO(id));
+   }
+   
+   /**
+    * Crea un nuevo catálogo con logo e imágenes
+    * POST /api/catalogos (multipart/form-data)
+    */
+   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+   public ResponseEntity<CatalogoResponseDTO> create(
+           @Valid @ModelAttribute CatalogoDTO catalogoDTO,
+           @RequestParam(value = "logo", required = false) MultipartFile logo,
+           @RequestParam(value = "imagenes", required = false) List<MultipartFile> imagenes) {
        
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error, Por favor intente mas tarde. \"}");
-     } 
+       CatalogoResponseDTO result = catalogoService.create(catalogoDTO, logo, imagenes);
+       return ResponseEntity.status(HttpStatus.CREATED).body(result);
    }
-   @PostMapping({"/modificar/{id}"})
-   public ResponseEntity<?> update(@PathVariable Integer id, CatalogoEntity entidad, @RequestParam("logo") MultipartFile file, @RequestParam("catalogo") MultipartFile catalogo) {
-     try {
-       System.out.println("EntidadModificar LLEGO:" + entidad.toString());
-       return ResponseEntity.status(HttpStatus.OK).body(((CatalogoServiceImpl)this.servicio).update(id, entidad));
-     } catch (Exception e) {
-       e.printStackTrace();
-       System.out.println(e.getMessage());
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error, Por favor intente mas tarde. \"}");
-     } 
+   
+   /**
+    * Actualiza un catálogo existente con logo e imágenes
+    * PUT /api/catalogos/{id} (multipart/form-data)
+    */
+   @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+   public ResponseEntity<CatalogoResponseDTO> update(
+           @PathVariable Integer id,
+           @Valid @ModelAttribute CatalogoDTO catalogoDTO,
+           @RequestParam(value = "logo", required = false) MultipartFile logo,
+           @RequestParam(value = "imagenes", required = false) List<MultipartFile> imagenes) {
+       
+       CatalogoResponseDTO result = catalogoService.updateCatalogo(id, catalogoDTO, logo, imagenes);
+       return ResponseEntity.ok(result);
    }
-   @GetMapping({"/buscar/{id}"})
-   public ResponseEntity<?> buscar(@PathVariable String id) {
-     try {
-       System.out.println("ID A BUSCAR");
-       CatalogoEntity entity = new CatalogoEntity();
-       entity = (CatalogoEntity)((CatalogoServiceImpl)this.servicio).findById(Integer.valueOf(Integer.parseInt(id)));
-       if (entity != null) {
-         System.out.println("Socio encontrado:" + entity.toString());
+   
+   /**
+    * Cambia el estado de un catálogo (activo/inactivo)
+    * PATCH /api/catalogos/{id}/status
+    */
+   @PatchMapping("/{id}/status")
+   public ResponseEntity<CatalogoResponseDTO> changeStatus(@PathVariable Integer id) {
+       CatalogoResponseDTO result = catalogoService.changeStatusCatalogo(id);
+       return ResponseEntity.ok(result);
+   }
+   
+   /**
+    * Obtiene el logo de un catálogo
+    * GET /api/catalogos/logo/{filename}
+    */
+   @GetMapping("/logo/{filename}")
+   public ResponseEntity<Resource> getLogo(@PathVariable String filename) {
+       return serveFile(filename, Constantes.nameFolderLogoCatalogo, "Logo");
+   }
+   
+   /**
+    * Obtiene una imagen del catálogo
+    * GET /api/catalogos/imagenes/{filename}
+    */
+   @GetMapping("/imagenes/{filename}")
+   public ResponseEntity<Resource> getImagen(@PathVariable String filename) {
+       return serveFile(filename, Constantes.nameFolderImgCatalogo, "Imagen");
+   }
+   
+   /**
+    * Método privado para servir archivos (logos, imágenes) con validación y cache
+    */
+   private ResponseEntity<Resource> serveFile(String filename, String folder, String fileType) {
+       // Validar filename (seguridad: prevenir path traversal)
+       if (filename == null || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+           throw new app.common.exception.InvalidDataException("Nombre de archivo inválido");
        }
-       
-       return ResponseEntity.status(HttpStatus.OK).body(entity);
-     } catch (Exception e) {
-       System.out.println(e.getMessage());
-       e.printStackTrace();
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. Por favor intente más tarde.\"}");
-     } 
+
+       try {
+           java.nio.file.Path filePath = archivoService.linkArchivo(folder, filename);
+
+           if (filePath == null || !Files.exists(filePath)) {
+               throw new app.common.exception.ResourceNotFoundException(fileType, "filename", filename);
+           }
+
+           // Usar PathResource en lugar de InputStreamResource (más eficiente)
+           org.springframework.core.io.PathResource resource = 
+               new org.springframework.core.io.PathResource(filePath);
+
+           // Determinar Content-Type
+           String contentType;
+           try {
+               contentType = Files.probeContentType(filePath);
+           } catch (java.io.IOException e) {
+               contentType = null;
+           }
+           
+           if (contentType == null) {
+               // Default para imágenes comunes
+               if (filename.toLowerCase().endsWith(".png")) {
+                   contentType = "image/png";
+               } else if (filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".jpeg")) {
+                   contentType = "image/jpeg";
+               } else {
+                   contentType = "application/octet-stream";
+               }
+           }
+
+           return ResponseEntity.ok()
+                   .contentType(MediaType.parseMediaType(contentType))
+                   .header("Content-Disposition", "inline; filename=\"" + filename + "\"")
+                   .cacheControl(org.springframework.http.CacheControl.maxAge(7, java.util.concurrent.TimeUnit.DAYS))
+                   .body(resource);
+
+       } catch (Exception e) {
+           throw new app.common.exception.FileStorageException("Error al leer el archivo de " + fileType, e);
+       }
    }
-
-
-   @GetMapping({"/logo_empresa/{filename}"})
-   public ResponseEntity<Resource> getFile_logo_empresa(@PathVariable String filename) {
-     try {
-       java.nio.file.Path filePath = this.archivoService.linkArchivo(Constantes.nameFolderLogoCatalogo, filename);
-       
-       if (filePath != null && Files.exists(filePath)) {
-         
-         InputStream inputStream = Files.newInputStream(filePath);
-         InputStreamResource resource = new InputStreamResource(inputStream);
-
-
-         String contentType = "application/octet-stream";
-         try {
-           contentType = Files.probeContentType(filePath);
-         } catch (IOException e) {
-           System.out.println("No se pudo determinar el tipo de archivo.");
-         } 
-
-
-         return ((ResponseEntity.BodyBuilder)ResponseEntity.ok()
-           .contentType(MediaType.parseMediaType(contentType))
-           .header("Content-Disposition", new String[] { "inline; filename=\"" + filename + "\""
-             })).body(resource);
-       } 
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-     }
-     catch (Exception e) {
-       e.printStackTrace();
-       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-     } 
-   }
-
-
-   @GetMapping({"/img_catalogos_empresa/{filename}"})
-   public ResponseEntity<Resource> getFileImgCatalogosEmpresa(@PathVariable String filename) {
-     try {
-       java.nio.file.Path filePath = this.archivoService.linkArchivo(Constantes.nameFolderImgCatalogo, filename);
-       
-       if (filePath != null && Files.exists(filePath)) {
-         
-         InputStream inputStream = Files.newInputStream(filePath);
-         InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
-
-
-         String contentType = "application/octet-stream";
-         try {
-           contentType = Files.probeContentType(filePath);
-         } catch (IOException e) {
-           System.out.println("No se pudo determinar el tipo de archivo.");
-         } 
-
-
-         return ((ResponseEntity.BodyBuilder)ResponseEntity.ok()
-           .contentType(MediaType.parseMediaType(contentType))
-           .header("Content-Disposition", new String[] { "inline; filename=\"" + filename + "\""
-             })).body(inputStreamResource);
-       } 
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-     }
-     catch (Exception e) {
-       e.printStackTrace();
-       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-     } 
-   }
- }
-
-
-/* Location:              C:\Users\Usuario\Desktop\CADET.jar!\BOOT-INF\classes\app\restcontroller\RestCatalogo.class
- * Java compiler version: 11 (55.0)
- * JD-Core Version:       1.1.3
- */
+}

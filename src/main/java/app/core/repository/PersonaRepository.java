@@ -3,6 +3,7 @@ package app.core.repository;
 import app.core.entity.PersonaEntity;
 import app.common.util.GenericRepositoryNormal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +23,16 @@ public interface PersonaRepository extends GenericRepositoryNormal<PersonaEntity
   
   @Query(value = "select count(t.*) from persona t where (upper(concat(t.id,t.nombrecompleto,'')) like concat('%',upper(:search),'%')) and (t.estado=:estado or :estado=-1) ", nativeQuery = true)
   Integer getTotAll(@Param("search") String paramString, @Param("estado") int paramInt);
+  
+  /**
+   * Busca persona por email (correo) - necesario para OAuth2
+   */
+  Optional<PersonaEntity> findByEmail(String email);
+  
+  /**
+   * Verifica si existe una persona con el CI dado
+   */
+  boolean existsByCi(String ci);
 }
 
 

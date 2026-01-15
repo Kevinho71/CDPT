@@ -12,6 +12,8 @@
  import jakarta.persistence.OneToMany;
  import jakarta.persistence.Table;
  import jakarta.persistence.Transient;
+ import org.hibernate.annotations.JdbcTypeCode;
+ import org.hibernate.type.SqlTypes;
  import org.springframework.web.multipart.MultipartFile;
 
 
@@ -33,8 +35,11 @@
    private String descripcion;
    @Column(name = "direccion")
    private String direccion;
-   @Column(name = "descuento")
+   
+   @Column(name = "descuento", columnDefinition = "jsonb")
+   @JdbcTypeCode(SqlTypes.JSON)
    private String descuento;
+   
    @Column(name = "tipo")
    private String tipo;
    @Column(name = "nombrelogo")

@@ -28,6 +28,13 @@ public interface UsuarioRepository extends GenericRepositoryNormal<UsuarioEntity
   
   @Query(value = "SELECT * FROM usuario WHERE username=?1 AND estado=1", nativeQuery = true)
   UsuarioEntity findByUsername(String paramString);
+  
+  // Métodos adicionales
+  @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM usuario WHERE username = ?1", nativeQuery = true)
+  boolean existsByUsername(String username);
+  
+  @Query(value = "SELECT * FROM usuario WHERE estado = ?1", nativeQuery = true)
+  List<UsuarioEntity> findByEstado(int estado);
 }
 
 

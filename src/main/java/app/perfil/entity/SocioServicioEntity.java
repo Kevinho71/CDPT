@@ -1,6 +1,5 @@
 package app.perfil.entity;
 
-import app.socio.entity.SocioEntity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,15 +15,18 @@ public class SocioServicioEntity implements Serializable {
     private Integer id;
     
     @ManyToOne
-    @JoinColumn(name = "fk_socio", nullable = false)
-    private SocioEntity socio;
+    @JoinColumn(name = "fk_perfil_socio", nullable = false)
+    private PerfilSocioEntity perfilSocio;
     
     @ManyToOne
     @JoinColumn(name = "fk_servicio", nullable = false)
     private ServicioEntity servicio;
     
-    @Column(name = "fecha_asignacion")
-    private LocalDateTime fechaAsignacion = LocalDateTime.now();
+    @Column(name = "destacado")
+    private Boolean destacado = false;
+    
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
     
     // Constructores
     public SocioServicioEntity() {}
@@ -38,12 +40,12 @@ public class SocioServicioEntity implements Serializable {
         this.id = id;
     }
     
-    public SocioEntity getSocio() {
-        return socio;
+    public PerfilSocioEntity getPerfilSocio() {
+        return perfilSocio;
     }
     
-    public void setSocio(SocioEntity socio) {
-        this.socio = socio;
+    public void setPerfilSocio(PerfilSocioEntity perfilSocio) {
+        this.perfilSocio = perfilSocio;
     }
     
     public ServicioEntity getServicio() {
@@ -54,11 +56,19 @@ public class SocioServicioEntity implements Serializable {
         this.servicio = servicio;
     }
     
-    public LocalDateTime getFechaAsignacion() {
-        return fechaAsignacion;
+    public Boolean getDestacado() {
+        return destacado;
     }
     
-    public void setFechaAsignacion(LocalDateTime fechaAsignacion) {
-        this.fechaAsignacion = fechaAsignacion;
+    public void setDestacado(Boolean destacado) {
+        this.destacado = destacado;
+    }
+    
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+    
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

@@ -1,6 +1,5 @@
 package app.perfil.entity;
 
-import app.socio.entity.SocioEntity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,15 +15,15 @@ public class SocioEspecialidadEntity implements Serializable {
     private Integer id;
     
     @ManyToOne
-    @JoinColumn(name = "fk_socio", nullable = false)
-    private SocioEntity socio;
+    @JoinColumn(name = "fk_perfil_socio", nullable = false)
+    private PerfilSocioEntity perfilSocio;
     
     @ManyToOne
     @JoinColumn(name = "fk_especialidad", nullable = false)
     private EspecialidadEntity especialidad;
     
-    @Column(name = "fecha_asignacion")
-    private LocalDateTime fechaAsignacion = LocalDateTime.now();
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
     
     // Constructores
     public SocioEspecialidadEntity() {}
@@ -38,12 +37,12 @@ public class SocioEspecialidadEntity implements Serializable {
         this.id = id;
     }
     
-    public SocioEntity getSocio() {
-        return socio;
+    public PerfilSocioEntity getPerfilSocio() {
+        return perfilSocio;
     }
     
-    public void setSocio(SocioEntity socio) {
-        this.socio = socio;
+    public void setPerfilSocio(PerfilSocioEntity perfilSocio) {
+        this.perfilSocio = perfilSocio;
     }
     
     public EspecialidadEntity getEspecialidad() {
@@ -54,11 +53,11 @@ public class SocioEspecialidadEntity implements Serializable {
         this.especialidad = especialidad;
     }
     
-    public LocalDateTime getFechaAsignacion() {
-        return fechaAsignacion;
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
     }
     
-    public void setFechaAsignacion(LocalDateTime fechaAsignacion) {
-        this.fechaAsignacion = fechaAsignacion;
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
     }
 }

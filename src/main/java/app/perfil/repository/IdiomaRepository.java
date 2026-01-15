@@ -1,0 +1,25 @@
+package app.perfil.repository;
+
+import app.perfil.entity.IdiomaEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface IdiomaRepository extends JpaRepository<IdiomaEntity, Integer> {
+    
+    @Query(value = "SELECT i.* FROM idiomas i WHERE (i.estado = :estado OR :estado = -1) " +
+                   "AND UPPER(i.nombre) LIKE CONCAT('%', UPPER(:search), '%') " +
+                   "ORDER BY i.nombre ASC", nativeQuery = true)
+    List<IdiomaEntity> findAll(@Param("estado") int estado, @Param("search") String search);
+    
+    @Modifying
+    @Query(value = "UPDATE idiomas SET estado = CASE WHEN estado = 1 THEN 0 ELSE 1 END WHERE id = :id", nativeQuery = true)
+    void updateStatus(@Param("id") Integer id);
+    
+    boolean existsByNombreIgnoreCase(String nombre);
+}

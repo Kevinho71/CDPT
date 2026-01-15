@@ -25,9 +25,6 @@ public class SocioIdiomaEntity implements Serializable {
     @Column(name = "nivel", nullable = false, length = 50)
     private String nivel; // basico, intermedio, avanzado, nativo
     
-    @Column(name = "orden")
-    private Integer orden = 0;
-    
     @Column(name = "estado")
     private Integer estado = 1;
     
@@ -68,14 +65,6 @@ public class SocioIdiomaEntity implements Serializable {
     
     public void setNivel(String nivel) {
         this.nivel = nivel;
-    }
-    
-    public Integer getOrden() {
-        return orden;
-    }
-    
-    public void setOrden(Integer orden) {
-        this.orden = orden;
     }
     
     public Integer getEstado() {

@@ -25,6 +25,8 @@
    private String nombrecompleto;
    private String email;
    private Integer celular;
+   private Integer profesionId;  // Nuevo campo
+   private Integer institucionId; // Nuevo campo
    @Transient
    private MultipartFile logo;
    
@@ -145,8 +147,22 @@
      this.logo = logo;
    }
    
+   public Integer getProfesionId() {
+     return this.profesionId;
+   }
+   public void setProfesionId(Integer profesionId) {
+     this.profesionId = profesionId;
+   }
+   
+   public Integer getInstitucionId() {
+     return this.institucionId;
+   }
+   public void setInstitucionId(Integer institucionId) {
+     this.institucionId = institucionId;
+   }
+   
    public String toString() {
-     return "SocioDTO [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", ci=" + this.ci + ", nombrecompleto=" + this.nombrecompleto + ", email=" + this.email + ", celular=" + this.celular + ", logo=" + this.logo + "]";
+     return "SocioDTO [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", ci=" + this.ci + ", nombrecompleto=" + this.nombrecompleto + ", email=" + this.email + ", celular=" + this.celular + ", profesionId=" + this.profesionId + ", institucionId=" + this.institucionId + ", logo=" + this.logo + "]";
    }
  }
 

@@ -73,7 +73,7 @@ CREATE TABLE anio (
 CREATE TABLE persona (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
-    celular VARCHAR(50),
+    celular INTEGER,
     ci VARCHAR(50),
     email VARCHAR(255),
     nombrecompleto VARCHAR(255),
@@ -107,7 +107,7 @@ CREATE TABLE usuarios_roles (
 CREATE TABLE socio (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
-    codigo VARCHAR(100),
+    codigo INTEGER,
     fechaemision DATE,
     fechaexpiracion DATE,
     imagen VARCHAR(500), -- Foto carnet para credencial
@@ -153,7 +153,7 @@ CREATE TABLE catalogo (
 CREATE TABLE imagencatalogo (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
-    codigo VARCHAR(100),
+    codigo INTEGER,
     imagen VARCHAR(500),
     fk_catalogo INTEGER,
     CONSTRAINT fk_imagencatalogo_catalogo FOREIGN KEY (fk_catalogo) REFERENCES catalogo(id) ON DELETE CASCADE
@@ -207,7 +207,6 @@ CREATE TABLE especialidades (
     nombre VARCHAR(200) NOT NULL UNIQUE,
     descripcion TEXT,
     origen VARCHAR(20) DEFAULT 'SISTEMA',
-    orden INTEGER DEFAULT 0,
     estado INTEGER DEFAULT 1,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -237,7 +236,6 @@ CREATE TABLE socio_servicios (
     fk_perfil_socio INTEGER NOT NULL,
     fk_servicio INTEGER NOT NULL,
     destacado BOOLEAN DEFAULT false,
-    orden INTEGER DEFAULT 0,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_socio_serv_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE,
     CONSTRAINT fk_socio_serv_servicio FOREIGN KEY (fk_servicio) REFERENCES servicios(id) ON DELETE CASCADE,
@@ -309,7 +307,6 @@ CREATE TABLE socio_idiomas (
     fk_perfil_socio INTEGER NOT NULL,
     fk_idioma INTEGER NOT NULL,
     nivel VARCHAR(20) NOT NULL,
-    orden INTEGER DEFAULT 0,
     CONSTRAINT fk_socio_idioma_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE,
     CONSTRAINT fk_socio_idioma_idioma FOREIGN KEY (fk_idioma) REFERENCES idiomas(id) ON DELETE CASCADE,
     CONSTRAINT uk_socio_idioma UNIQUE (fk_perfil_socio, fk_idioma)

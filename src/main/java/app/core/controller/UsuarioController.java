@@ -1,11 +1,9 @@
  package app.core.controller;
  
- import app.core.entity.UsuarioEntity;
- import app.common.util.RestControllerGenericNormalImpl;
+ import app.core.dto.UsuarioDTO;
+ import app.core.dto.UsuarioResponseDTO;
  import app.core.service.UsuarioServiceImpl;
- import app.common.util.Constantes;
- import java.io.IOException;
- import java.util.HashMap;
+ import jakarta.validation.Valid;
  import java.util.List;
  import java.util.Map;
  import jakarta.servlet.http.HttpServletRequest;
@@ -13,71 +11,94 @@
  import org.springframework.data.repository.query.Param;
  import org.springframework.http.HttpStatus;
  import org.springframework.http.ResponseEntity;
- import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
- import org.springframework.web.bind.annotation.GetMapping;
- import org.springframework.web.bind.annotation.PostMapping;
- import org.springframework.web.bind.annotation.RequestBody;
- import org.springframework.web.bind.annotation.RequestMapping;
- import org.springframework.web.bind.annotation.RestController;
+ import org.springframework.web.bind.annotation.*;
 
-
- @RestController
-@RequestMapping({"/RestUsuarios"})
-public class UsuarioController
-   extends RestControllerGenericNormalImpl<UsuarioEntity, UsuarioServiceImpl>
- {
-   @Autowired
-   private BCryptPasswordEncoder passwordEncoder;
+/**
+ * REST Controller para gestión de usuarios
+ * Base path: /api/usuarios
+ */
+@RestController
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
    
-   @GetMapping({"/listar"})
-   public ResponseEntity<?> getAll(HttpServletRequest request, @Param("draw") int draw, @Param("length") int length, @Param("start") int start, @Param("estado") int estado) throws IOException {
-     String total = "";
-     Map<String, Object> Data = new HashMap<>();
-
-
-     try {
-       String search = request.getParameter("search[value]");
-       int tot = Constantes.NUM_MAX_DATATABLE.intValue();
-       System.out.println("tot:" + tot + "estado:" + estado + "search:" + search + "length:" + length + "start:" + start);
-       List<?> lista = ((UsuarioServiceImpl)this.servicio).findAll(estado, search, length, start);
-       System.out.println("listar_usuarios:" + lista.toString());
-       
-       try {
-         total = String.valueOf(((UsuarioServiceImpl)this.servicio).getTotAll(search, estado));
-       }
-       catch (Exception e) {
-         total = "0";
-       } 
-       Data.put("draw", Integer.valueOf(draw));
-       Data.put("recordsTotal", total);
-       Data.put("data", lista);
-       if (!search.equals("")) {
-         Data.put("recordsFiltered", Integer.valueOf(lista.size()));
-       } else {
-         Data.put("recordsFiltered", total);
-       } 
-       return ResponseEntity.status(HttpStatus.OK).body(Data);
-     } catch (Exception e) {
-       e.printStackTrace();
-       System.out.println(e.getMessage());
-       
-       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Data);
-     } 
+   @Autowired
+   private UsuarioServiceImpl usuarioService;
+   
+   /**
+    * Lista todos los usuarios
+    * GET /api/usuarios
+    */
+   @GetMapping
+   public ResponseEntity<List<UsuarioResponseDTO>> getAll() {
+       return ResponseEntity.ok(usuarioService.findAllDTO());
    }
-
-
-   @PostMapping({"updateStatus"})
-   public ResponseEntity<?> updateStatus(@RequestBody UsuarioEntity entity) {
-     try {
-       System.out.println("Entidad:" + entity.toString());
-       ((UsuarioServiceImpl)this.servicio).updateStatus(entity.getEstado().intValue(), entity.getId().intValue());
-       UsuarioEntity entity2 = (UsuarioEntity)((UsuarioServiceImpl)this.servicio).findById(entity.getId());
-       return ResponseEntity.status(HttpStatus.OK).body(entity2);
-     } catch (Exception e) {
-       System.out.println(e.getMessage());
-       e.printStackTrace();
-       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. Por favor intente más tarde.\"}");
-     } 
+   
+   /**
+    * Lista usuarios por estado
+    * GET /api/usuarios?estado=1
+    */
+   @GetMapping(params = "estado")
+   public ResponseEntity<List<UsuarioResponseDTO>> getAllByEstado(@RequestParam int estado) {
+       return ResponseEntity.ok(usuarioService.findAllDTO(estado));
+   }
+   
+   /**
+    * Lista usuarios con paginación y filtros (DataTables)
+    * GET /api/usuarios/datatable
+    */
+   @GetMapping("/datatable")
+   public ResponseEntity<Map<String, Object>> getDataTable(
+           HttpServletRequest request,
+           @Param("draw") int draw,
+           @Param("length") int length,
+           @Param("start") int start,
+           @Param("estado") int estado) {
+       
+       String search = request.getParameter("search[value]");
+       Map<String, Object> data = usuarioService.getDataTableData(draw, length, start, estado, search);
+       return ResponseEntity.ok(data);
+   }
+   
+   /**
+    * Obtiene un usuario por ID
+    * GET /api/usuarios/{id}
+    */
+   @GetMapping("/{id}")
+   public ResponseEntity<UsuarioResponseDTO> getOne(@PathVariable Integer id) {
+       return ResponseEntity.ok(usuarioService.findByIdDTO(id));
+   }
+   
+   /**
+    * Crea un nuevo usuario
+    * POST /api/usuarios
+    */
+   @PostMapping
+   public ResponseEntity<UsuarioResponseDTO> create(@Valid @RequestBody UsuarioDTO dto) {
+       UsuarioResponseDTO result = usuarioService.create(dto);
+       return ResponseEntity.status(HttpStatus.CREATED).body(result);
+   }
+   
+   /**
+    * Actualiza un usuario existente
+    * PUT /api/usuarios/{id}
+    */
+   @PutMapping("/{id}")
+   public ResponseEntity<UsuarioResponseDTO> update(
+           @PathVariable Integer id,
+           @Valid @RequestBody UsuarioDTO dto) {
+       
+       UsuarioResponseDTO result = usuarioService.updateUsuario(id, dto);
+       return ResponseEntity.ok(result);
+   }
+   
+   /**
+    * Cambia el estado de un usuario (activo/inactivo)
+    * PATCH /api/usuarios/{id}/status
+    */
+   @PatchMapping("/{id}/status")
+   public ResponseEntity<UsuarioResponseDTO> changeStatus(@PathVariable Integer id) {
+       UsuarioResponseDTO result = usuarioService.changeStatusUsuario(id);
+       return ResponseEntity.ok(result);
    }
  }
 

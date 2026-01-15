@@ -8,6 +8,8 @@
    public static String nameFolderQrSocio = "SIST_SOCIOS_QRS";
    public static String nameFolderLogoCatalogo = "SIST_EMPRESAS_LOGOS";
    public static String nameFolderImgCatalogo = "SIST_EMPRESAS_CATALOGOS";
+   public static String nameFolderFotoPerfil = "SIST_PERFILES_FOTOS";
+   public static String nameFolderFotoBanner = "SIST_PERFILES_BANNERS";
  }
 
 

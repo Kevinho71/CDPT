@@ -73,6 +73,98 @@
        throw new Exception(e.getMessage());
      } 
    }
+   
+   // ==================== NUEVOS MÉTODOS CRUD REFACTORIZADOS ====================
+   
+   @Transactional
+   public app.core.dto.RolResponseDTO create(app.core.dto.RolDTO dto) {
+     validateData(dto);
+     
+     List<RolEntity> existing = rolRepository.findAll(dto.getNombre(), -1);
+     if (!existing.isEmpty()) {
+       throw new app.common.exception.DuplicateResourceException("Rol", "nombre", dto.getNombre());
+     }
+     
+     RolEntity rol = new RolEntity();
+     rol.setNombre("ROLE_" + dto.getNombre());
+     rol.setEstado(dto.getEstado());
+     
+     rol = (RolEntity) genericRepository.save(rol);
+     return toResponseDTO(rol);
+   }
+   
+   @Transactional
+   public app.core.dto.RolResponseDTO updateRol(Long id, app.core.dto.RolDTO dto) {
+     RolEntity rol = (RolEntity) genericRepository.findById(id)
+         .orElseThrow(() -> new app.common.exception.ResourceNotFoundException("Rol", "id", id));
+     
+     validateData(dto);
+     
+     String newName = "ROLE_" + dto.getNombre();
+     if (!rol.getNombre().equalsIgnoreCase(newName)) {
+       List<RolEntity> existing = rolRepository.findAll(dto.getNombre(), -1);
+       if (!existing.isEmpty()) {
+         throw new app.common.exception.DuplicateResourceException("Rol", "nombre", dto.getNombre());
+       }
+     }
+     
+     rol.setNombre(newName);
+     rol.setEstado(dto.getEstado());
+     
+     rol = (RolEntity) genericRepository.save(rol);
+     return toResponseDTO(rol);
+   }
+   
+   @Transactional(readOnly = true)
+   public app.core.dto.RolResponseDTO findByIdDTO(Long id) {
+     RolEntity rol = (RolEntity) genericRepository.findById(id)
+         .orElseThrow(() -> new app.common.exception.ResourceNotFoundException("Rol", "id", id));
+     return toResponseDTO(rol);
+   }
+   
+   @Transactional(readOnly = true)
+   public List<app.core.dto.RolResponseDTO> findAllDTO() {
+     return rolRepository.findAll("", -1).stream()
+         .map(this::toResponseDTO)
+         .collect(java.util.stream.Collectors.toList());
+   }
+   
+   @Transactional(readOnly = true)
+   public List<app.core.dto.RolResponseDTO> findAllDTO(int estado) {
+     return rolRepository.findAll("", estado).stream()
+         .map(this::toResponseDTO)
+         .collect(java.util.stream.Collectors.toList());
+   }
+   
+   @Transactional
+   public app.core.dto.RolResponseDTO changeStatusRol(Long id) {
+     RolEntity rol = (RolEntity) genericRepository.findById(id)
+         .orElseThrow(() -> new app.common.exception.ResourceNotFoundException("Rol", "id", id));
+     
+     rolRepository.updateStatus(rol.getEstado(), id);
+     
+     rol = (RolEntity) genericRepository.findById(id)
+         .orElseThrow(() -> new app.common.exception.ResourceNotFoundException("Rol", "id", id));
+     
+     return toResponseDTO(rol);
+   }
+   
+   private void validateData(app.core.dto.RolDTO dto) {
+     if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
+       throw new app.common.exception.InvalidDataException("El nombre del rol es requerido");
+     }
+     if (dto.getEstado() == null || (dto.getEstado() != 0 && dto.getEstado() != 1)) {
+       throw new app.common.exception.InvalidDataException("El estado debe ser 0 o 1");
+     }
+   }
+   
+   private app.core.dto.RolResponseDTO toResponseDTO(RolEntity entity) {
+     return new app.core.dto.RolResponseDTO(
+         entity.getId(),
+         entity.getNombre(),
+         entity.getEstado()
+     );
+   }
  }
 
 

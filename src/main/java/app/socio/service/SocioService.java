@@ -1,5 +1,6 @@
 package app.socio.service;
 
+import app.socio.dto.SocioResponseDTO;
 import app.socio.entity.SocioEntity;
 import app.common.util.GenericServiceNormal;
 import java.util.List;
@@ -20,6 +21,17 @@ public interface SocioService extends GenericServiceNormal<SocioEntity, Integer>
   SocioEntity renovarQR(Integer paramInteger, SocioEntity paramSocioEntity) throws Exception;
   
   SocioEntity updatecatalogos(Integer paramInteger, SocioEntity paramSocioEntity) throws Exception;
+  
+  // Nuevos métodos con DTOs
+  List<SocioResponseDTO> findAllDTO();
+  
+  SocioResponseDTO findByIdDTO(Integer id);
+  
+  SocioResponseDTO findByNrodocumentoDTO(String nrodocumento);
+  
+  SocioResponseDTO renovarQRDTO(Integer id);
+  
+  SocioResponseDTO updateCatalogosDTO(Integer id, List<Integer> catalogIds);
 }
 
 

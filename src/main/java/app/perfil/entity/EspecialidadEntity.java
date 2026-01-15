@@ -23,9 +23,6 @@ public class EspecialidadEntity implements Serializable {
     @Column(name = "origen", length = 20)
     private String origen = "SISTEMA"; // SISTEMA o USUARIO
     
-    @Column(name = "orden")
-    private Integer orden = 0;
-    
     @Column(name = "estado")
     private Integer estado = 1;
     
@@ -66,14 +63,6 @@ public class EspecialidadEntity implements Serializable {
     
     public void setOrigen(String origen) {
         this.origen = origen;
-    }
-    
-    public Integer getOrden() {
-        return orden;
-    }
-    
-    public void setOrden(Integer orden) {
-        this.orden = orden;
     }
     
     public Integer getEstado() {

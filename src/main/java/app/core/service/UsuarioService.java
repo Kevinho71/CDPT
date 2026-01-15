@@ -1,5 +1,7 @@
 package app.core.service;
 
+import app.core.dto.UsuarioDTO;
+import app.core.dto.UsuarioResponseDTO;
 import app.core.entity.UsuarioEntity;
 import app.common.util.GenericServiceNormal;
 import java.util.List;
@@ -16,6 +18,19 @@ public interface UsuarioService extends GenericServiceNormal<UsuarioEntity, Inte
   UsuarioEntity getUserByLogin(String paramString) throws Exception;
   
   Integer getTotAll(String paramString, int paramInt) throws Exception;
+  
+  // Nuevos métodos con DTOs
+  UsuarioResponseDTO create(UsuarioDTO dto);
+  
+  UsuarioResponseDTO updateUsuario(Integer id, UsuarioDTO dto);
+  
+  UsuarioResponseDTO findByIdDTO(Integer id);
+  
+  List<UsuarioResponseDTO> findAllDTO();
+  
+  List<UsuarioResponseDTO> findAllDTO(int estado);
+  
+  UsuarioResponseDTO changeStatusUsuario(Integer id);
 }
 
 

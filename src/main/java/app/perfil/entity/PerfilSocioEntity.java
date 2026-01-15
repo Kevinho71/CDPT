@@ -4,6 +4,8 @@ import app.socio.entity.SocioEntity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "perfil_socio")
@@ -19,11 +21,17 @@ public class PerfilSocioEntity implements Serializable {
     @JoinColumn(name = "fk_socio", nullable = false, unique = true)
     private SocioEntity socio;
     
+    @Column(name = "nombre_completo", length = 200)
+    private String nombreCompleto;
+    
+    @Column(name = "email", length = 150)
+    private String email;
+    
+    @Column(name = "telefono", length = 20)
+    private String telefono;
+    
     @Column(name = "titulo_profesional", length = 100)
     private String tituloProfesional;
-    
-    @Column(name = "especialidad", length = 200)
-    private String especialidad;
     
     @Column(name = "anos_experiencia")
     private Integer anosExperiencia;
@@ -82,6 +90,19 @@ public class PerfilSocioEntity implements Serializable {
     @Column(name = "estado")
     private Integer estado = 1;
     
+    // Relaciones One-to-Many con tablas intermedias
+    @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SocioIdiomaEntity> socioIdiomas = new ArrayList<>();
+
+    @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SocioSectorEntity> socioSectores = new ArrayList<>();
+
+    @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SocioServicioEntity> socioServicios = new ArrayList<>();
+
+    @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SocioEspecialidadEntity> socioEspecialidades = new ArrayList<>();
+    
     // Constructores
     public PerfilSocioEntity() {}
     
@@ -102,20 +123,36 @@ public class PerfilSocioEntity implements Serializable {
         this.socio = socio;
     }
     
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+    
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    public String getTelefono() {
+        return telefono;
+    }
+    
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+    
     public String getTituloProfesional() {
         return tituloProfesional;
     }
     
     public void setTituloProfesional(String tituloProfesional) {
         this.tituloProfesional = tituloProfesional;
-    }
-    
-    public String getEspecialidad() {
-        return especialidad;
-    }
-    
-    public void setEspecialidad(String especialidad) {
-        this.especialidad = especialidad;
     }
     
     public Integer getAnosExperiencia() {
@@ -268,5 +305,37 @@ public class PerfilSocioEntity implements Serializable {
     
     public void setEstado(Integer estado) {
         this.estado = estado;
+    }
+    
+    public List<SocioIdiomaEntity> getSocioIdiomas() {
+        return socioIdiomas;
+    }
+    
+    public void setSocioIdiomas(List<SocioIdiomaEntity> socioIdiomas) {
+        this.socioIdiomas = socioIdiomas;
+    }
+    
+    public List<SocioSectorEntity> getSocioSectores() {
+        return socioSectores;
+    }
+    
+    public void setSocioSectores(List<SocioSectorEntity> socioSectores) {
+        this.socioSectores = socioSectores;
+    }
+    
+    public List<SocioServicioEntity> getSocioServicios() {
+        return socioServicios;
+    }
+    
+    public void setSocioServicios(List<SocioServicioEntity> socioServicios) {
+        this.socioServicios = socioServicios;
+    }
+    
+    public List<SocioEspecialidadEntity> getSocioEspecialidades() {
+        return socioEspecialidades;
+    }
+    
+    public void setSocioEspecialidades(List<SocioEspecialidadEntity> socioEspecialidades) {
+        this.socioEspecialidades = socioEspecialidades;
     }
 }
