@@ -132,7 +132,7 @@ CREATE TABLE socio (
 CREATE TABLE catalogo (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
-    codigo VARCHAR(100),
+    codigo INTEGER,
     descripcion TEXT,
     direccion VARCHAR(500),
     dominio VARCHAR(255),

@@ -2,7 +2,7 @@
  
  import app.catalogo.entity.ImagenesCatalogoEntity;
  import app.common.util.RestControllerGenericNormalImpl;
- import app.catalogo.service.ImagenCatalogoServiceImpl;
+ import app.catalogo.service.ImagenCatalogoServiceImpl; 
  import app.common.util.Constantes;
  import java.io.IOException;
  import java.util.HashMap;

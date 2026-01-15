@@ -52,7 +52,12 @@ public class SecurityConfig {
                     "/RestSocios/logo_socio/**",
                     "/RestCatalogos/buscar/**",
                     "/RestCatalogos/logo_empresa/**",
-                    "/RestCatalogos/img_catalogos_empresa/**"
+                    "/RestCatalogos/img_catalogos_empresa/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
