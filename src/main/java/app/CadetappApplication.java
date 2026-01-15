@@ -1,7 +1,23 @@
 package app;
 
-import app.entity.*;
-import app.repository.*;
+import app.core.entity.AnioEntity;
+import app.core.entity.DepartamentoEntity;
+import app.core.entity.InstitucionEntity;
+import app.core.entity.PaisEntity;
+import app.core.entity.PersonaEntity;
+import app.core.entity.ProfesionEntity;
+import app.core.entity.ProvinciaEntity;
+import app.core.entity.RolEntity;
+import app.core.entity.UsuarioEntity;
+import app.core.repository.AnioRepository;
+import app.core.repository.DepartamentoRepository;
+import app.core.repository.InstitucionRepository;
+import app.core.repository.PaisRepository;
+import app.core.repository.ProfesionRepository;
+import app.core.repository.ProvinciaRepository;
+import app.core.repository.RolRepository;
+import app.core.repository.PersonaRepository;
+import app.core.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
