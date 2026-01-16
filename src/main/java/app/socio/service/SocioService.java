@@ -1,5 +1,6 @@
 package app.socio.service;
 
+import app.socio.dto.SocioCompleteResponseDTO;
 import app.socio.dto.SocioResponseDTO;
 import app.socio.entity.SocioEntity;
 import app.common.util.GenericServiceNormal;
@@ -32,6 +33,9 @@ public interface SocioService extends GenericServiceNormal<SocioEntity, Integer>
   SocioResponseDTO renovarQRDTO(Integer id);
   
   SocioResponseDTO updateCatalogosDTO(Integer id, List<Integer> catalogIds);
+  
+  // Método para obtener información completa de socios (incluye usuario y empresas)
+  List<SocioCompleteResponseDTO> findAllComplete();
 }
 
 

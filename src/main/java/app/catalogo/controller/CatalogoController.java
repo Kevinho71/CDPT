@@ -42,6 +42,15 @@ public class CatalogoController {
    }
    
    /**
+    * Lista solo catálogos activos (estado = 1)
+    * GET /api/catalogos/active
+    */
+   @GetMapping("/active")
+   public ResponseEntity<List<CatalogoResponseDTO>> getAllActive() {
+       return ResponseEntity.ok(catalogoService.findAllDTO(1));
+   }
+   
+   /**
     * Lista catálogos por estado
     * GET /api/catalogos?estado=1
     */

@@ -69,6 +69,15 @@ public class UsuarioController {
    }
    
    /**
+    * Obtiene usuario por persona ID
+    * GET /api/usuarios/persona/{personaId}
+    */
+   @GetMapping("/persona/{personaId}")
+   public ResponseEntity<UsuarioResponseDTO> getByPersonaId(@PathVariable Integer personaId) {
+       return ResponseEntity.ok(usuarioService.findByPersonaIdDTO(personaId));
+   }
+   
+   /**
     * Crea un nuevo usuario
     * POST /api/usuarios
     */

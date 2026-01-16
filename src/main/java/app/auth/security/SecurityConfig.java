@@ -33,6 +33,12 @@ public class SecurityConfig {
     }
     
     @Bean
+    public org.springframework.security.authentication.AuthenticationManager authenticationManager(
+            org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+    
+    @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
         auth.setUserDetailsService(customUserDetailsService);
@@ -47,7 +53,7 @@ public class SecurityConfig {
             "http://localhost:5173",  // React Frontend
             "http://localhost:8080"   // Backend (para Swagger)
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH","OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
@@ -97,7 +103,8 @@ public class SecurityConfig {
                     "/api/especialidades/**",  // Especialidades
                     "/api/roles/**",  // Roles
                     "/api/usuarios/**",  // Usuarios
-                    "/api/catalogos/**"  // Catálogos
+                    "/api/catalogos/**",  // Catálogos
+                    "/api/locations/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

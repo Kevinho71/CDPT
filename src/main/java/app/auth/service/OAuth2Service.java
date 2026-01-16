@@ -5,7 +5,11 @@ import app.auth.entity.UsuarioSocialEntity;
 import app.auth.repository.UsuarioSocialRepository;
 import app.auth.util.JwtUtil;
 import app.core.entity.PersonaEntity;
+import app.core.entity.UsuarioEntity;
 import app.core.repository.PersonaRepository;
+import app.core.repository.UsuarioRepository;
+import app.socio.entity.SocioEntity;
+import app.socio.repository.SocioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,12 @@ public class OAuth2Service {
     
     @Autowired
     private PersonaRepository personaRepository;
+    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private SocioRepository socioRepository;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -121,13 +131,28 @@ public class OAuth2Service {
      * Genera JWT con la información de la persona y sus roles
      */
     private String generateJwtForPersona(PersonaEntity persona) {
-        // Obtener roles del usuario (si existen en la tabla usuario)
-        String roles = "ROLE_SOCIO"; // Por defecto todos los socios tienen este rol
+        // Buscar usuario tradicional asociado a esta persona para obtener roles
+        UsuarioEntity usuario = usuarioRepository.findByPersonaId(persona.getId());
+        
+        String roles = "ROLE_SOCIO"; // Rol por defecto para OAuth2
+        
+        // Si existe usuario tradicional, obtener sus roles reales
+        if (usuario != null && usuario.getRoles() != null && !usuario.getRoles().isEmpty()) {
+            roles = usuario.getRoles().stream()
+                .map(rol -> rol.getNombre())
+                .reduce((a, b) -> a + "," + b)
+                .orElse("ROLE_SOCIO");
+        }
+        
+        // Buscar socio asociado a esta persona para obtener socioId
+        SocioEntity socio = socioRepository.findByPersonaId(persona.getId());
+        Integer socioId = socio != null ? socio.getId() : null;
         
         return jwtUtil.generateToken(
             persona.getId().longValue(),
             persona.getEmail(),
-            roles
+            roles,
+            socioId
         );
     }
     

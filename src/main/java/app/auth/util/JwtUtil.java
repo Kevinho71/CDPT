@@ -30,11 +30,14 @@ public class JwtUtil {
     /**
      * Genera JWT con información del usuario
      */
-    public String generateToken(Long personaId, String email, String roles) {
+    public String generateToken(Long personaId, String email, String roles, Integer socioId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("personaId", personaId);
         claims.put("email", email);
         claims.put("roles", roles);
+        if (socioId != null) {
+            claims.put("socioId", socioId);
+        }
         
         return Jwts.builder()
                 .setClaims(claims)
@@ -57,6 +60,13 @@ public class JwtUtil {
      */
     public Long extractPersonaId(String token) {
         return extractClaim(token, claims -> claims.get("personaId", Long.class));
+    }
+    
+    /**
+     * Extrae socioId del token
+     */
+    public Integer extractSocioId(String token) {
+        return extractClaim(token, claims -> claims.get("socioId", Integer.class));
     }
     
     /**

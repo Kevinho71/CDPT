@@ -35,6 +35,9 @@ public interface UsuarioRepository extends GenericRepositoryNormal<UsuarioEntity
   
   @Query(value = "SELECT * FROM usuario WHERE estado = ?1", nativeQuery = true)
   List<UsuarioEntity> findByEstado(int estado);
+  
+  @Query(value = "SELECT * FROM usuario WHERE fk_persona = ?1 AND estado = 1", nativeQuery = true)
+  UsuarioEntity findByPersonaId(Integer personaId);
 }
 
 

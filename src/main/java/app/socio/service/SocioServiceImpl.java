@@ -6,12 +6,16 @@ import app.core.entity.ProfesionEntity;
 import app.socio.entity.SocioEntity;
  import app.socio.dto.SocioDTO;
  import app.socio.dto.SocioResponseDTO;
+ import app.socio.dto.SocioCompleteResponseDTO;
  import app.catalogo.repository.CatalogoRepository;
  import app.common.util.GenericRepositoryNormal;
  import app.core.repository.InstitucionRepository;
  import app.core.repository.ProfesionRepository;
  import app.core.repository.PersonaRepository;
  import app.socio.repository.SocioRepository;
+ import app.core.entity.UsuarioEntity;
+ import app.core.entity.RolEntity;
+ import app.core.repository.UsuarioRepository;
  import app.common.util.ArchivoService;
  import app.common.util.GenericServiceImplNormal;
  import app.core.service.PersonaService;
@@ -47,6 +51,8 @@ import app.socio.entity.SocioEntity;
    private ProfesionRepository profesionRepository;
    @Autowired
    private PersonaRepository personaRepository;
+   @Autowired
+   private UsuarioRepository usuarioRepository;
    @Autowired
    private PersonaService personaService;
    @Autowired
@@ -373,14 +379,12 @@ import app.socio.entity.SocioEntity;
            throw new DuplicateResourceException("Persona", "CI", dto.getCi());
        }
        
-       // 3. Verificar existencia de profesión e institución
-       var profesion = profesionRepository.findById(dto.getProfesionId())
-           .orElseThrow(() -> new ResourceNotFoundException("Profesión", "id", dto.getProfesionId()));
+       // 3. Usar profesión e institución por defecto (ID 1)
+       var profesion = profesionRepository.findById(1)
+           .orElseThrow(() -> new ResourceNotFoundException("Profesión por defecto", "id", 1));
        
-       // Usar institución 1 (CADET) por defecto si no se proporciona
-       Integer institucionId = dto.getInstitucionId() != null ? dto.getInstitucionId() : 1;
-       var institucion = institucionRepository.findById(institucionId)
-           .orElseThrow(() -> new ResourceNotFoundException("Institución", "id", institucionId));
+       var institucion = institucionRepository.findById(1)
+           .orElseThrow(() -> new ResourceNotFoundException("Institución por defecto (CADET)", "id", 1));
        
        // 4. Crear PersonaEntity
        PersonaEntity persona = new PersonaEntity();
@@ -410,7 +414,17 @@ import app.socio.entity.SocioEntity;
        socio.setPersona(persona);
        socio.setProfesion(profesion);
        socio.setInstitucion(institucion);
-       socio.setCatalogos(catalogoRepository.findByEstado(1));
+       
+       // Asignar catálogos: usar los proporcionados o todos los activos por defecto
+       if (dto.getCatalogoIds() != null && !dto.getCatalogoIds().isEmpty()) {
+           var catalogos = catalogoRepository.findAllById(dto.getCatalogoIds());
+           if (catalogos.size() != dto.getCatalogoIds().size()) {
+               throw new ResourceNotFoundException("Uno o más catálogos no existen");
+           }
+           socio.setCatalogos(catalogos);
+       } else {
+           socio.setCatalogos(catalogoRepository.findByEstado(1));
+       }
        
        // 6. Procesar logo si existe
        if (logo != null && !logo.isEmpty()) {
@@ -466,17 +480,9 @@ import app.socio.entity.SocioEntity;
        socio.getPersona().setEmail(dto.getEmail());
        socio.getPersona().setCelular(dto.getCelular());
        
-       // 5. Verificar y actualizar profesión
-       ProfesionEntity profesion = profesionRepository.findById(dto.getProfesionId())
-           .orElseThrow(() -> new ResourceNotFoundException("Profesion", "id", dto.getProfesionId()));
-       socio.setProfesion(profesion);
+       // Nota: Profesión e institución no se actualizan, permanecen como fueron creadas
        
-       // 6. Verificar y actualizar institución
-       InstitucionEntity institucion = institucionRepository.findById(dto.getInstitucionId())
-           .orElseThrow(() -> new ResourceNotFoundException("Institucion", "id", dto.getInstitucionId()));
-       socio.setInstitucion(institucion);
-       
-       // 7. Actualizar SocioEntity
+       // 5. Actualizar SocioEntity
        socio.setMatricula(dto.getMatricula());
        socio.setNombresocio(dto.getNombresocio());
        socio.setFechaemision(dto.getFechaemision());
@@ -520,10 +526,6 @@ import app.socio.entity.SocioEntity;
        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
            throw new InvalidDataException("El email es requerido");
        }
-       if (dto.getProfesionId() == null) {
-           throw new InvalidDataException("La profesión es requerida");
-       }
-       // InstitucionId es opcional, se usa 1 por defecto
        if (dto.getFechaemision() == null) {
            throw new InvalidDataException("La fecha de emisión es requerida");
        }
@@ -605,6 +607,92 @@ import app.socio.entity.SocioEntity;
        return findAll().stream()
            .map(this::toResponseDTO)
            .toList();
+   }
+
+   /**
+    * Encuentra todos los socios con información completa (usuario y empresas/catálogos)
+    */
+   @Transactional(readOnly = true)
+   public List<SocioCompleteResponseDTO> findAllComplete() {
+       List<SocioEntity> socios = findAll();
+       return socios.stream()
+           .map(this::toCompleteDTO)
+           .toList();
+   }
+
+   /**
+    * Convierte SocioEntity a SocioCompleteResponseDTO con usuario y empresas
+    */
+   private SocioCompleteResponseDTO toCompleteDTO(SocioEntity socio) {
+       SocioCompleteResponseDTO dto = new SocioCompleteResponseDTO();
+       
+       // Datos básicos del socio
+       dto.setId(socio.getId());
+       dto.setCodigo(socio.getCodigo());
+       dto.setNrodocumento(socio.getNrodocumento());
+       dto.setMatricula(socio.getMatricula());
+       dto.setNombresocio(socio.getNombresocio());
+       dto.setFechaemision(socio.getFechaemision());
+       dto.setFechaexpiracion(socio.getFechaexpiracion());
+       dto.setEstado(socio.getEstado());
+       dto.setImagen(socio.getImagen());
+       
+       // Datos de la persona asociada
+       PersonaEntity persona = socio.getPersona();
+       dto.setPersonaId(persona.getId());
+       dto.setPersonaCi(persona.getCi());
+       dto.setPersonaNombre(persona.getNombrecompleto());
+       dto.setPersonaEmail(persona.getEmail());
+       dto.setPersonaCelular(persona.getCelular());
+       
+       // Datos de profesión
+       if (socio.getProfesion() != null) {
+           dto.setProfesion(socio.getProfesion().getNombre());
+       }
+       
+       // Datos de institución
+       if (socio.getInstitucion() != null) {
+           dto.setInstitucion(socio.getInstitucion().getInstitucion());
+       }
+       
+       // Buscar usuario asociado a la persona
+       UsuarioEntity usuario = usuarioRepository.findByPersonaId(persona.getId());
+       if (usuario != null) {
+           SocioCompleteResponseDTO.UsuarioInfo usuarioInfo = new SocioCompleteResponseDTO.UsuarioInfo();
+           usuarioInfo.setId(usuario.getId());
+           usuarioInfo.setUsername(usuario.getUsername());
+           usuarioInfo.setEstado(usuario.getEstado());
+           
+           // Extraer roles del usuario
+           List<String> roles = usuario.getRoles().stream()
+               .map(RolEntity::getNombre)
+               .toList();
+           usuarioInfo.setRoles(roles);
+           
+           dto.setUsuario(usuarioInfo);
+       }
+       
+       // Mapear catálogos (empresas) asociadas al socio
+       if (socio.getCatalogos() != null && !socio.getCatalogos().isEmpty()) {
+           List<SocioCompleteResponseDTO.EmpresaInfo> empresas = socio.getCatalogos().stream()
+               .map(catalogo -> {
+                   SocioCompleteResponseDTO.EmpresaInfo empresaInfo = new SocioCompleteResponseDTO.EmpresaInfo();
+                   empresaInfo.setId(catalogo.getId());
+                   empresaInfo.setCodigo(catalogo.getCodigo());
+                   empresaInfo.setNit(catalogo.getNit());
+                   empresaInfo.setNombre(catalogo.getNombre());
+                   empresaInfo.setDescripcion(catalogo.getDescripcion());
+                   empresaInfo.setDireccion(catalogo.getDireccion());
+                   empresaInfo.setTipo(catalogo.getTipo());
+                   empresaInfo.setNombrelogo(catalogo.getNombrelogo());
+                   empresaInfo.setEstado(catalogo.getEstado());
+                   return empresaInfo;
+               })
+               .toList();
+           dto.setEmpresas(empresas);
+       }
+       
+       return dto;
    }
 
    /**

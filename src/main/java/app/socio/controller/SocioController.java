@@ -1,5 +1,6 @@
  package app.socio.controller;
 
+import app.socio.dto.SocioCompleteResponseDTO;
 import app.socio.dto.SocioDTO;
 import app.socio.dto.SocioResponseDTO;
 import app.socio.entity.SocioEntity;
@@ -46,6 +47,16 @@ public class SocioController {
     }
 
     /**
+     * Lista todos los socios con información completa (usuario y empresas)
+     * GET /api/partners/complete
+     * Retorna: socio + usuario (si existe) + empresas/catálogos asociadas
+     */
+    @GetMapping("/complete")
+    public ResponseEntity<List<SocioCompleteResponseDTO>> getAllComplete() {
+        return ResponseEntity.ok(socioService.findAllComplete());
+    }
+
+    /**
      * Lista socios con paginación y filtros (DataTables)
      * GET /api/partners/datatable
      */
@@ -79,7 +90,13 @@ public class SocioController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SocioResponseDTO> create(
             @ModelAttribute SocioDTO socioDTO,
+            @RequestParam(value = "catalogoIds", required = false) List<Integer> catalogoIds,
             @RequestParam(value = "logo", required = false) MultipartFile logo) {
+        
+        // Asignar catalogoIds al DTO si se proporcionaron
+        if (catalogoIds != null && !catalogoIds.isEmpty()) {
+            socioDTO.setCatalogoIds(catalogoIds);
+        }
         
         SocioResponseDTO result = socioService.createSocio(socioDTO, logo);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -93,7 +110,13 @@ public class SocioController {
     public ResponseEntity<SocioResponseDTO> update(
             @PathVariable Integer id,
             @ModelAttribute SocioDTO socioDTO,
+            @RequestParam(value = "catalogoIds", required = false) List<Integer> catalogoIds,
             @RequestParam(value = "logo", required = false) MultipartFile logo) {
+        
+        // Asignar catalogoIds al DTO si se proporcionaron
+        if (catalogoIds != null && !catalogoIds.isEmpty()) {
+            socioDTO.setCatalogoIds(catalogoIds);
+        }
         
         SocioResponseDTO result = socioService.updateSocio(id, socioDTO, logo);
         return ResponseEntity.ok(result);
@@ -222,4 +245,4 @@ public class SocioController {
             throw new app.common.exception.FileStorageException("Error al leer el archivo de " + fileType, e);
         }
     }
-}
+}   

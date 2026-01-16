@@ -1,6 +1,7 @@
  package app.socio.dto;
  
  import java.time.LocalDate;
+ import java.util.List;
  import jakarta.persistence.Transient;
  import org.springframework.format.annotation.DateTimeFormat;
  import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +26,7 @@
    private String nombrecompleto;
    private String email;
    private Integer celular;
-   private Integer profesionId;  // Nuevo campo
-   private Integer institucionId; // Nuevo campo
+   private List<Integer> catalogoIds; // IDs de catálogos/empresas asociadas
    @Transient
    private MultipartFile logo;
    
@@ -147,18 +147,11 @@
      this.logo = logo;
    }
    
-   public Integer getProfesionId() {
-     return this.profesionId;
+   public List<Integer> getCatalogoIds() {
+     return this.catalogoIds;
    }
-   public void setProfesionId(Integer profesionId) {
-     this.profesionId = profesionId;
-   }
-   
-   public Integer getInstitucionId() {
-     return this.institucionId;
-   }
-   public void setInstitucionId(Integer institucionId) {
-     this.institucionId = institucionId;
+   public void setCatalogoIds(List<Integer> catalogoIds) {
+     this.catalogoIds = catalogoIds;
    }
    
    public String toString() {

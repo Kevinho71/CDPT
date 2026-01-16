@@ -397,6 +397,18 @@
        
        return dto;
    }
+   
+   /**
+    * Busca un usuario por persona ID
+    */
+   @Transactional(readOnly = true)
+   public UsuarioResponseDTO findByPersonaIdDTO(Integer personaId) {
+       UsuarioEntity usuario = usuarioRepository.findByPersonaId(personaId);
+       if (usuario == null) {
+           throw new ResourceNotFoundException("Usuario no encontrado para persona con ID: " + personaId);
+       }
+       return toResponseDTO(usuario);
+   }
  }
 
 

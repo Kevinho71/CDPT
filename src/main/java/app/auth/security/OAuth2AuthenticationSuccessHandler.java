@@ -30,7 +30,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             OAuth2LoginResponseDTO loginResponse = oauth2Service.processOAuth2Login(oauth2User, "GOOGLE");
             
             // Construir URL de redirección al frontend con el token
-            String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/callback")
+            String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/oauth2/callback")
                     .queryParam("token", loginResponse.getToken())
                     .queryParam("personaId", loginResponse.getPersonaId())
                     .queryParam("email", loginResponse.getEmail())
@@ -41,7 +41,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             
         } catch (Exception e) {
             // Redirigir al frontend con el error
-            String errorUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/callback")
+            String errorUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/oauth2/callback")
                     .queryParam("error", e.getMessage())
                     .build().toUriString();
             

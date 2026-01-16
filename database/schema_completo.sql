@@ -174,8 +174,10 @@ CREATE TABLE socio_catalogos (
 CREATE TABLE perfil_socio (
     id SERIAL PRIMARY KEY,
     fk_socio INTEGER NOT NULL UNIQUE,
+    nombre_completo VARCHAR(200),
+    email VARCHAR(150),
+    telefono VARCHAR(20),
     titulo_profesional VARCHAR(100),
-    especialidad VARCHAR(200),
     anos_experiencia INTEGER,
     resumen_profesional TEXT,
     modalidad_trabajo VARCHAR(20),

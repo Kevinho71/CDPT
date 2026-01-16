@@ -27,6 +27,9 @@ public interface SocioRepository extends GenericRepositoryNormal<SocioEntity, In
   Integer getTotAll(@Param("search") String paramString, @Param("estado") Integer paramInteger);
   
   SocioEntity findByNrodocumento(String paramString);
+  
+  @Query(value = "SELECT * FROM socio WHERE fk_persona = ?1 AND estado = 1", nativeQuery = true)
+  SocioEntity findByPersonaId(Integer personaId);
 }
 
 

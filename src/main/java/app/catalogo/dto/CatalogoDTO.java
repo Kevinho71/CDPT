@@ -24,6 +24,12 @@ public class CatalogoDTO {
     
     private String latitud;
     
+    private Integer departamento;
+    
+    private Integer pais;
+    
+    private Integer provincia;
+    
     @NotNull(message = "El estado es requerido")
     private Integer estado;
     
@@ -31,7 +37,8 @@ public class CatalogoDTO {
     public CatalogoDTO() {}
     
     public CatalogoDTO(String nit, String nombre, String descripcion, String direccion, 
-                      List<String> descuentos, String tipo, String longitud, String latitud, Integer estado) {
+                      List<String> descuentos, String tipo, String longitud, String latitud, 
+                      Integer departamento, Integer pais, Integer provincia, Integer estado) {
         this.nit = nit;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -40,6 +47,9 @@ public class CatalogoDTO {
         this.tipo = tipo;
         this.longitud = longitud;
         this.latitud = latitud;
+        this.departamento = departamento;
+        this.pais = pais;
+        this.provincia = provincia;
         this.estado = estado;
     }
     
@@ -114,6 +124,30 @@ public class CatalogoDTO {
     
     public void setEstado(Integer estado) {
         this.estado = estado;
+    }
+    
+    public Integer getDepartamento() {
+        return departamento;
+    }
+    
+    public void setDepartamento(Integer departamento) {
+        this.departamento = departamento;
+    }
+    
+    public Integer getPais() {
+        return pais;
+    }
+    
+    public void setPais(Integer pais) {
+        this.pais = pais;
+    }
+    
+    public Integer getProvincia() {
+        return provincia;
+    }
+    
+    public void setProvincia(Integer provincia) {
+        this.provincia = provincia;
     }
     
     @Override
