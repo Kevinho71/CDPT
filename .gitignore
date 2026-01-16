@@ -72,3 +72,5 @@ postgres_data/
 src/main/resources/static/logos/*.png
 src/main/resources/static/logos/*.jpg
 src/main/resources/static/catalogosimg/**
+
+database/

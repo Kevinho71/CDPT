@@ -4,18 +4,18 @@ import java.util.List;
 
 public class UsuarioResponseDTO {
     
-    private Integer id;
-    private String username;
-    private Integer estado;
-    
-    // Datos desnormalizados de persona
-    private Integer personaId;
-    private String personaCi;
-    private String personaNombre;
-    private String personaEmail;
-    
-    // Roles del usuario
-    private List<RolResponseDTO> roles;
+        private Integer id;
+        private String username;
+        private Integer estado;
+        
+        // Datos desnormalizados de persona
+        private Integer personaId;
+        private String personaCi;
+        private String personaNombre;
+        private String personaEmail;
+        
+        // Roles del usuario
+        private List<RolResponseDTO> roles;
     
     // Constructores
     public UsuarioResponseDTO() {}
