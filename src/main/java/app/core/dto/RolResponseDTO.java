@@ -2,25 +2,25 @@ package app.core.dto;
 
 public class RolResponseDTO {
     
-    private Long id;
+    private Integer id;
     private String nombre;
     private Integer estado;
     
     // Constructores
     public RolResponseDTO() {}
     
-    public RolResponseDTO(Long id, String nombre, Integer estado) {
+    public RolResponseDTO(Integer id, String nombre, Integer estado) {
         this.id = id;
         this.nombre = nombre;
         this.estado = estado;
     }
     
     // Getters y Setters
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     

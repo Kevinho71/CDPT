@@ -128,23 +128,33 @@ CREATE TABLE socio (
 -- ============================================================================
 -- 4. CATÁLOGOS EXTERNOS (EMPRESAS)
 -- ============================================================================
-
 CREATE TABLE catalogo (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     codigo INTEGER,
-    descripcion TEXT,
-    direccion VARCHAR(500),
-    dominio VARCHAR(255),
-    latitud NUMERIC(10, 8),
-    longitud NUMERIC(11, 8),
+    
+    -- Campos básicos
     nit VARCHAR(50),
     nombre VARCHAR(255),
-    nombrelogo VARCHAR(255),
+    descripcion VARCHAR(800), -- En tu Java pusiste length=800
+    direccion VARCHAR(500),
+    dominio VARCHAR(255),
+    
+    -- El campo que te faltaba (JSONB para Postgres)
+    descuento JSONB,
+    
     tipo VARCHAR(100),
+    nombrelogo VARCHAR(255),
+    
+    -- Coordenadas: Las pongo VARCHAR porque en tu Java son String
+    latitud VARCHAR(50),
+    longitud VARCHAR(50),
+    
+    -- Relaciones geográficas
     fk_departamento INTEGER,
     fk_pais INTEGER,
     fk_provincia INTEGER,
+    
     CONSTRAINT fk_catalogo_departamento FOREIGN KEY (fk_departamento) REFERENCES departamento(id) ON DELETE SET NULL,
     CONSTRAINT fk_catalogo_pais FOREIGN KEY (fk_pais) REFERENCES pais(id) ON DELETE SET NULL,
     CONSTRAINT fk_catalogo_provincia FOREIGN KEY (fk_provincia) REFERENCES provincia(id) ON DELETE SET NULL
@@ -183,7 +193,7 @@ CREATE TABLE perfil_socio (
     modalidad_trabajo VARCHAR(50),
     ciudad VARCHAR(100),
     zona VARCHAR(200),
-    foto_perfil VARCHAR(0),
+    foto_perfil VARCHAR(500),
     foto_banner VARCHAR(500),
     linkedin_url VARCHAR(300),
     facebook_url VARCHAR(300),

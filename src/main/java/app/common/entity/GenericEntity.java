@@ -14,17 +14,17 @@
    private static final long serialVersionUID = 1L;
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
+   private Integer id;
    
    public GenericEntity() {}
    
-   public GenericEntity(Long id) {
+   public GenericEntity(Integer id) {
      this.id = id;
    }
-   public Long getId() {
+   public Integer getId() {
      return this.id;
    }
-   public void setId(Long id) {
+   public void setId(Integer id) {
      this.id = id;
    }
    public static long getSerialversionuid() {

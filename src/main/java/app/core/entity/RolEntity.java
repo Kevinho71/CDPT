@@ -25,10 +25,10 @@
    public RolEntity(String nombre) {
      this.nombre = nombre;
    }
-   public RolEntity(Long id) {
+   
+   public RolEntity(Integer id) {
      super(id);
    }
-
 
    public String getNombre() {
      return this.nombre;

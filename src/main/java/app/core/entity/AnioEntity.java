@@ -14,7 +14,7 @@
  public class AnioEntity
    extends GenericEntity
  {
-   private static final long serialVersionUID = 1L;
+   private static final Integer serialVersionUID = 1;
    @Column(name = "nombre")
    private String nombre;
    @Column(name = "estado")
