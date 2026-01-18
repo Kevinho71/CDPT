@@ -1,21 +1,20 @@
 -- ============================================================================
 -- ESQUEMA COMPLETO DE BASE DE DATOS - SISTEMA CADET
--- Versión: 3.0 (Final)
--- Fecha: 2026-01-14
--- Descripción: Incluye Core, Perfiles, OAuth2, CMS (Noticias/Eventos) y Documentos
+-- Versión: 3.1 (Con IF NOT EXISTS)
+-- Fecha: 2026-01-17
 -- ============================================================================
 
 -- ============================================================================
 -- 1. TABLAS BASE GEOGRÁFICAS Y CATÁLOGOS GLOBALES
 -- ============================================================================
 
-CREATE TABLE pais (
+CREATE TABLE IF NOT EXISTS pais (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE departamento (
+CREATE TABLE IF NOT EXISTS departamento (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(255) NOT NULL,
@@ -24,7 +23,7 @@ CREATE TABLE departamento (
     CONSTRAINT fk_departamento_pais FOREIGN KEY (fk_pais) REFERENCES pais(id) ON DELETE SET NULL
 );
 
-CREATE TABLE provincia (
+CREATE TABLE IF NOT EXISTS provincia (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(255) NOT NULL,
@@ -32,7 +31,7 @@ CREATE TABLE provincia (
     CONSTRAINT fk_provincia_departamento FOREIGN KEY (fk_departamento) REFERENCES departamento(id) ON DELETE SET NULL
 );
 
-CREATE TABLE profesion (
+CREATE TABLE IF NOT EXISTS profesion (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(255) NOT NULL
@@ -42,10 +41,11 @@ CREATE TABLE profesion (
 -- 2. INSTITUCIONES Y AÑOS
 -- ============================================================================
 
-CREATE TABLE institucion (
+CREATE TABLE IF NOT EXISTS institucion (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     compania VARCHAR(255),
+    institucion VARCHAR(255),
     correo VARCHAR(255),
     direccion VARCHAR(500),
     fax VARCHAR(50),
@@ -58,7 +58,7 @@ CREATE TABLE institucion (
     CONSTRAINT fk_institucion_provincia FOREIGN KEY (fk_provincia) REFERENCES provincia(id) ON DELETE SET NULL
 );
 
-CREATE TABLE anio (
+CREATE TABLE IF NOT EXISTS anio (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(50),
@@ -70,24 +70,22 @@ CREATE TABLE anio (
 -- 3. NÚCLEO DE USUARIOS Y SOCIOS
 -- ============================================================================
 
-CREATE TABLE persona (
+CREATE TABLE IF NOT EXISTS persona (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     celular INTEGER,
     ci VARCHAR(50),
     email VARCHAR(255),
-    nombrecompleto VARCHAR(255),
-    fk_departamento INTEGER,
-    CONSTRAINT fk_persona_departamento FOREIGN KEY (fk_departamento) REFERENCES departamento(id) ON DELETE SET NULL
+    nombrecompleto VARCHAR(255)
 );
 
-CREATE TABLE rol (
+CREATE TABLE IF NOT EXISTS rol (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     nombre VARCHAR(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     password VARCHAR(500),
@@ -96,7 +94,7 @@ CREATE TABLE usuario (
     CONSTRAINT fk_usuario_persona FOREIGN KEY (fk_persona) REFERENCES persona(id) ON DELETE CASCADE
 );
 
-CREATE TABLE usuarios_roles (
+CREATE TABLE IF NOT EXISTS usuarios_roles (
     usuario_id INTEGER NOT NULL,
     rol_id INTEGER NOT NULL,
     PRIMARY KEY (usuario_id, rol_id),
@@ -104,14 +102,15 @@ CREATE TABLE usuarios_roles (
     CONSTRAINT fk_usuarios_roles_rol FOREIGN KEY (rol_id) REFERENCES rol(id) ON DELETE CASCADE
 );
 
-CREATE TABLE socio (
+CREATE TABLE IF NOT EXISTS socio (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     codigo INTEGER,
+    nrodocumento VARCHAR(30),
     fechaemision DATE,
     fechaexpiracion DATE,
-    imagen VARCHAR(500), -- Foto carnet para credencial
-    lejendario VARCHAR(100),
+    imagen VARCHAR(500),
+    lejendario INTEGER,
     linkqr VARCHAR(500),
     matricula VARCHAR(100),
     ntodocumento VARCHAR(100),
@@ -128,7 +127,8 @@ CREATE TABLE socio (
 -- ============================================================================
 -- 4. CATÁLOGOS EXTERNOS (EMPRESAS)
 -- ============================================================================
-CREATE TABLE catalogo (
+
+CREATE TABLE IF NOT EXISTS catalogo (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     codigo INTEGER,
@@ -136,7 +136,7 @@ CREATE TABLE catalogo (
     -- Campos básicos
     nit VARCHAR(50),
     nombre VARCHAR(255),
-    descripcion VARCHAR(800), -- En tu Java pusiste length=800
+    descripcion VARCHAR(800),
     direccion VARCHAR(500),
     dominio VARCHAR(255),
     
@@ -160,7 +160,7 @@ CREATE TABLE catalogo (
     CONSTRAINT fk_catalogo_provincia FOREIGN KEY (fk_provincia) REFERENCES provincia(id) ON DELETE SET NULL
 );
 
-CREATE TABLE imagencatalogo (
+CREATE TABLE IF NOT EXISTS imagencatalogo (
     id SERIAL PRIMARY KEY,
     estado INTEGER DEFAULT 1,
     codigo INTEGER,
@@ -169,7 +169,7 @@ CREATE TABLE imagencatalogo (
     CONSTRAINT fk_imagencatalogo_catalogo FOREIGN KEY (fk_catalogo) REFERENCES catalogo(id) ON DELETE CASCADE
 );
 
-CREATE TABLE socio_catalogos (
+CREATE TABLE IF NOT EXISTS socio_catalogos (
     socio_id INTEGER NOT NULL,
     catalogo_id INTEGER NOT NULL,
     PRIMARY KEY (socio_id, catalogo_id),
@@ -181,7 +181,7 @@ CREATE TABLE socio_catalogos (
 -- 5. PERFILES PÚBLICOS
 -- ============================================================================
 
-CREATE TABLE perfil_socio (
+CREATE TABLE IF NOT EXISTS perfil_socio (
     id SERIAL PRIMARY KEY,
     fk_socio INTEGER NOT NULL UNIQUE,
     nombre_completo VARCHAR(200),
@@ -214,7 +214,7 @@ CREATE TABLE perfil_socio (
 -- 6. CATÁLOGOS EXTENSIBLES (Estrategia 1: SISTEMA/USUARIO)
 -- ============================================================================
 
-CREATE TABLE especialidades (
+CREATE TABLE IF NOT EXISTS especialidades (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL UNIQUE,
     descripcion TEXT,
@@ -223,7 +223,7 @@ CREATE TABLE especialidades (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE socio_especialidades (
+CREATE TABLE IF NOT EXISTS socio_especialidades (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     fk_especialidad INTEGER NOT NULL,
@@ -233,7 +233,7 @@ CREATE TABLE socio_especialidades (
     CONSTRAINT uk_socio_especialidad UNIQUE (fk_perfil_socio, fk_especialidad)
 );
 
-CREATE TABLE servicios (
+CREATE TABLE IF NOT EXISTS servicios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
     descripcion TEXT,
@@ -243,7 +243,7 @@ CREATE TABLE servicios (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE socio_servicios (
+CREATE TABLE IF NOT EXISTS socio_servicios (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     fk_servicio INTEGER NOT NULL,
@@ -254,7 +254,7 @@ CREATE TABLE socio_servicios (
     CONSTRAINT uk_socio_servicio UNIQUE (fk_perfil_socio, fk_servicio)
 );
 
-CREATE TABLE sectores (
+CREATE TABLE IF NOT EXISTS sectores (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL UNIQUE,
     descripcion TEXT,
@@ -264,7 +264,7 @@ CREATE TABLE sectores (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE socio_sectores (
+CREATE TABLE IF NOT EXISTS socio_sectores (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     fk_sector INTEGER NOT NULL,
@@ -278,7 +278,7 @@ CREATE TABLE socio_sectores (
 -- 7. DETALLES DE FORMACIÓN (Hijos de Perfil)
 -- ============================================================================
 
-CREATE TABLE formacion (
+CREATE TABLE IF NOT EXISTS formacion (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     tipo VARCHAR(50) NOT NULL,
@@ -295,7 +295,7 @@ CREATE TABLE formacion (
     CONSTRAINT fk_formacion_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE
 );
 
-CREATE TABLE certificaciones (
+CREATE TABLE IF NOT EXISTS certificaciones (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     nombre VARCHAR(300) NOT NULL,
@@ -307,18 +307,20 @@ CREATE TABLE certificaciones (
     CONSTRAINT fk_certificacion_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE
 );
 
-CREATE TABLE idiomas (
+CREATE TABLE IF NOT EXISTS idiomas (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL UNIQUE,
     estado INTEGER DEFAULT 1,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE socio_idiomas (
+CREATE TABLE IF NOT EXISTS socio_idiomas (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     fk_idioma INTEGER NOT NULL,
     nivel VARCHAR(20) NOT NULL,
+    estado INTEGER,
+    fecha_creacion TIMESTAMP,
     CONSTRAINT fk_socio_idioma_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE,
     CONSTRAINT fk_socio_idioma_idioma FOREIGN KEY (fk_idioma) REFERENCES idiomas(id) ON DELETE CASCADE,
     CONSTRAINT uk_socio_idioma UNIQUE (fk_perfil_socio, fk_idioma)
@@ -328,36 +330,36 @@ CREATE TABLE socio_idiomas (
 -- 8. GESTIÓN DOCUMENTAL (NUEVO)
 -- ============================================================================
 
-CREATE TABLE documentos (
+CREATE TABLE IF NOT EXISTS documentos (
     id SERIAL PRIMARY KEY,
     fk_socio INTEGER NOT NULL,
     
-    nombre VARCHAR(255) NOT NULL,       -- Ej: "Título Profesional", "Factura Enero"
-    tipo VARCHAR(50),                   -- 'requisito', 'certificado', 'factura', 'otro'
+    nombre VARCHAR(255) NOT NULL,
+    tipo VARCHAR(50),
     
-    archivo_url VARCHAR(500) NOT NULL,  -- URL del PDF/Imagen
-    mime_type VARCHAR(100),             -- 'application/pdf', 'image/jpeg'
+    archivo_url VARCHAR(500) NOT NULL,
+    mime_type VARCHAR(100),
     
-    estado INTEGER DEFAULT 1,           -- 1: Activo, 2: En revisión
+    estado INTEGER DEFAULT 1,
     fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_documentos_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_documentos_socio ON documentos(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_documentos_socio ON documentos(fk_socio);
 
 -- ============================================================================
 -- 9. MÓDULO DE PUBLICACIONES / CMS (NUEVO)
 -- ============================================================================
 
-CREATE TABLE publicaciones (
+CREATE TABLE IF NOT EXISTS publicaciones (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
-    slug VARCHAR(300) NOT NULL UNIQUE,  -- URL amigable
+    slug VARCHAR(300) NOT NULL UNIQUE,
     resumen TEXT,
-    contenido TEXT,                     -- Texto largo HTML/Markdown
+    contenido TEXT,
     
-    tipo VARCHAR(50) DEFAULT 'noticia', -- 'noticia', 'evento'
-    fecha_evento TIMESTAMP,             -- Solo si es evento, fecha y hora del mismo
+    tipo VARCHAR(50) DEFAULT 'noticia',
+    fecha_evento TIMESTAMP,
     
     publicado BOOLEAN DEFAULT true,
     fk_autor INTEGER,
@@ -365,28 +367,27 @@ CREATE TABLE publicaciones (
     
     CONSTRAINT fk_publicacion_autor FOREIGN KEY (fk_autor) REFERENCES usuario(id) ON DELETE SET NULL
 );
-CREATE INDEX idx_publicaciones_tipo ON publicaciones(tipo);
+CREATE INDEX IF NOT EXISTS idx_publicaciones_tipo ON publicaciones(tipo);
 
--- Tabla para múltiples imágenes por publicación (Galería)
-CREATE TABLE publicacion_imagenes (
+CREATE TABLE IF NOT EXISTS publicacion_imagenes (
     id SERIAL PRIMARY KEY,
     fk_publicacion INTEGER NOT NULL,
     
     imagen_url VARCHAR(500) NOT NULL,
     
-    es_portada BOOLEAN DEFAULT false,   -- true para la imagen principal
-    orden INTEGER DEFAULT 0,            -- Para ordenar la galería
+    es_portada BOOLEAN DEFAULT false,
+    orden INTEGER DEFAULT 0,
     
     CONSTRAINT fk_pub_img_publicacion FOREIGN KEY (fk_publicacion) REFERENCES publicaciones(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_pub_img_publicacion ON publicacion_imagenes(fk_publicacion);
+CREATE INDEX IF NOT EXISTS idx_pub_img_publicacion ON publicacion_imagenes(fk_publicacion);
 
 
 -- ============================================================================
 -- 10. FINANZAS (NUEVO - PARA DASHBOARD)
 -- ============================================================================
 
-CREATE TABLE pagos (
+CREATE TABLE IF NOT EXISTS pagos (
     id SERIAL PRIMARY KEY,
     fk_socio INTEGER NOT NULL,
     monto NUMERIC(10, 2) NOT NULL,
@@ -403,7 +404,7 @@ CREATE TABLE pagos (
 -- 11. AUTENTICACIÓN Y LANDING
 -- ============================================================================
 
-CREATE TABLE usuario_social (
+CREATE TABLE IF NOT EXISTS usuario_social (
     id SERIAL PRIMARY KEY,
     provider VARCHAR(20) NOT NULL DEFAULT 'GOOGLE',
     provider_id VARCHAR(255) NOT NULL,
@@ -422,7 +423,7 @@ CREATE TABLE usuario_social (
     CONSTRAINT uk_provider_id UNIQUE (provider, provider_id)
 );
 
-CREATE TABLE consultas_contacto (
+CREATE TABLE IF NOT EXISTS consultas_contacto (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
     nombre_completo VARCHAR(255) NOT NULL,
@@ -440,12 +441,12 @@ CREATE TABLE consultas_contacto (
     CONSTRAINT fk_consulta_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE
 );
 
-CREATE TABLE estadisticas_publicas (
+CREATE TABLE IF NOT EXISTS estadisticas_publicas (
     id SERIAL PRIMARY KEY,
     clave VARCHAR(100) NOT NULL UNIQUE,
-    titulo VARCHAR(100) NOT NULL, -- Agregado título visual
+    titulo VARCHAR(100) NOT NULL,
     valor VARCHAR(500),
-    icono VARCHAR(100),           -- Agregado icono
+    icono VARCHAR(100),
     descripcion TEXT,
     orden INTEGER DEFAULT 0,
     visible BOOLEAN DEFAULT true,
