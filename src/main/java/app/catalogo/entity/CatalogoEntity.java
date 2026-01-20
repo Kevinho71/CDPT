@@ -61,6 +61,9 @@
 
    @Transient
    private List<MultipartFile> catalogo;
+   
+   @Transient
+   private MultipartFile banner;
 
 
    public CatalogoEntity() {}
@@ -202,6 +205,14 @@
    
    public void setCatalogo(List<MultipartFile> catalogo) {
      this.catalogo = catalogo;
+   }
+   
+   public MultipartFile getBanner() {
+     return this.banner;
+   }
+   
+   public void setBanner(MultipartFile banner) {
+     this.banner = banner;
    }
  }
 

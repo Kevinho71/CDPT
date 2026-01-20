@@ -1,147 +1,169 @@
 package app.common.util;
 
-import app.common.util.URIS;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
- import org.springframework.core.io.DefaultResourceLoader;
- import org.springframework.core.io.Resource;
- import org.springframework.core.io.ResourceLoader;
- import org.springframework.stereotype.Service;
- import org.springframework.web.multipart.MultipartFile;
- 
- @Service
- public class ArchivoServiceImpl
-   implements ArchivoService {
-   private ResourceLoader resourceLoader = (ResourceLoader)new DefaultResourceLoader();
+import java.util.Map;
 
-
-   public String guargarArchivo(String nameFolder, MultipartFile archivo, String nombre) throws IOException {
-     if (!archivo.isEmpty()) {
-       String rutaCatalogos = obtenerRutaArchivos(nameFolder);
-       
-       if (rutaCatalogos == null || rutaCatalogos.isEmpty()) {
-         throw new IOException("No se pudo determinar la ruta de almacenamiento.");
-       }
-       
-       Path rutaDirectorio = Paths.get(rutaCatalogos, new String[0]).toAbsolutePath();
-       
-       if (!Files.exists(rutaDirectorio, new java.nio.file.LinkOption[0])) {
-         Files.createDirectories(rutaDirectorio, (java.nio.file.attribute.FileAttribute<?>[])new java.nio.file.attribute.FileAttribute[0]);
-       }
-       
-       Path rutaArchivo = rutaDirectorio.resolve(nombre);
-       System.out.println("Guardando archivo en la ruta: " + rutaArchivo);
-       
-       Files.copy(archivo.getInputStream(), rutaArchivo, new java.nio.file.CopyOption[] { StandardCopyOption.REPLACE_EXISTING });
-       return nombre;
-     } 
-     System.out.println("El archivo está vacío.");
-     return null;
-   }
-
-
-   public String guargarMultipleArchivos(List<MultipartFile> archivos) throws IOException {
-     for (MultipartFile archivo : archivos) {
-       guargarArchivo("multiple_files_folder", archivo, archivo.getOriginalFilename());
-     }
-     return "Archivos guardados exitosamente";
-   }
-
-
-   public Path linkArchivo(String folder, String nombreArchivo) throws IOException {
-     System.out.println("Nombre de archivo a buscar link antes de eliminar: " + nombreArchivo);
-     String rutaCatalogos = obtenerRutaArchivos(folder);
-     
-     if (rutaCatalogos == null || rutaCatalogos.isEmpty()) {
-       throw new IOException("No se pudo determinar la ruta de almacenamiento.");
-     }
-     
-     Path rutaDirectorio = Paths.get(rutaCatalogos, new String[0]).toAbsolutePath();
-     
-     if (!Files.exists(rutaDirectorio, new java.nio.file.LinkOption[0])) {
-       Files.createDirectories(rutaDirectorio, (java.nio.file.attribute.FileAttribute<?>[])new java.nio.file.attribute.FileAttribute[0]);
-     }
-     
-     if (nombreArchivo != null) {
-       Path rutaArchivo = rutaDirectorio.resolve(nombreArchivo);
-       System.out.println("Ruta de archivo encontrado: " + rutaArchivo);
-       if (Files.exists(rutaArchivo, new java.nio.file.LinkOption[0])) {
-         return rutaArchivo;
-       }
-       return null;
-     } 
-     
-     return null;
-   }
-
-
-   public void eliminarArchivo(String folder, String nombreArchivo) throws IOException {
-     System.out.println("INTENTANDO ELIMINAR ARCHIVO: " + nombreArchivo);
-     Path archivo = linkArchivo(folder, nombreArchivo);
-     System.out.println("INTENTANDO ELIMINAR PATH: " + archivo);
-     try {
-       if (archivo != null) {
-         System.out.println("**********ELIMINANDO ARCHIVO: " + archivo);
-         Files.deleteIfExists(archivo);
-       } 
-     } catch (Exception e) {
-       System.out.println(e);
-     } 
-   }
-
-
-   public String obtenerRutaCarpetaRecursos(String nombreCarpeta) {
-     try {
-       Resource resource = this.resourceLoader.getResource("classpath:static/" + nombreCarpeta);
-       return resource.getFile().getAbsolutePath();
-     } catch (Exception e) {
-       System.out.println("Error al obtener la ruta de la carpeta de recursos: " + e.getMessage());
-       return null;
-     } 
-   }
-
-
-   public String obtenerRutaArchivos(String carpeta) {
-     URIS uris = new URIS();
-     String sistemaOperativo = uris.checkOS();
-     System.out.println("INICIANDO APP");
-     System.out.println("SISTEMA OPERATIVO: " + sistemaOperativo);
-     String rutaCarpeta = "";
-     
-     try {
-       if (sistemaOperativo.contains("Linux")) {
-         System.out.println("DANDO PERMISOS A LA CARPETA DE ARCHIVOS");
-         darPermisosCarpeta("/home");
-         rutaCarpeta = Paths.get("/home", new String[] { carpeta }).toString();
-       } else if (sistemaOperativo.contains("Windows")) {
-         rutaCarpeta = Paths.get("C:\\", new String[] { carpeta }).toString();
-       } 
-     } catch (Exception e) {
-       e.printStackTrace();
-       System.out.println("Error al obtener la ruta de archivos: " + e.getMessage());
-     } 
-     
-     return rutaCarpeta;
-   }
-   
-   private void darPermisosCarpeta(String rutaBase) throws IOException {
-     Process p = Runtime.getRuntime().exec("chmod -R 777 " + rutaBase);
-     try {
-       p.waitFor();
-     } catch (InterruptedException e) {
-       e.printStackTrace();
-     } 
-   }
- }
-
-
-/* Location:              C:\Users\Usuario\Desktop\CADET.jar!\BOOT-INF\classes\app\service\ArchivoServiceImpl.class
- * Java compiler version: 11 (55.0)
- * JD-Core Version:       1.1.3
+/**
+ * Service implementation for managing images using Cloudinary
+ * Handles upload, deletion, and retrieval of images with automatic folder organization
  */
+@Service
+public class ArchivoServiceImpl implements ArchivoService {
+
+    @Autowired
+    private Cloudinary cloudinary;
+
+    /**
+     * Uploads an image to Cloudinary in a specific folder
+     * @param folder The Cloudinary folder name (EMPRESA_LOGO, EMPRESA_BANNER, EMPRESA_GALERIA, SOCIO_PERFIL, SOCIO_BANNER, SOCIO_LOGO)
+     * @param archivo The multipart file to upload
+     * @param publicId The public ID to use (without file extension)
+     * @return The Cloudinary public_id (folder/publicId format)
+     */
+    @Override
+    public String subirImagen(String folder, MultipartFile archivo, String publicId) throws IOException {
+        if (archivo == null || archivo.isEmpty()) {
+            throw new IOException("El archivo está vacío.");
+        }
+
+        try {
+            // Build the full public_id with folder
+            String fullPublicId = folder + "/" + publicId;
+            
+            // Upload parameters
+            Map<String, Object> uploadParams = ObjectUtils.asMap(
+                "public_id", fullPublicId,
+                "folder", folder,
+                "resource_type", "image",
+                "overwrite", true,  // Overwrite if exists
+                "invalidate", true  // Invalidate CDN cache
+            );
+
+            // Upload to Cloudinary
+            Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), uploadParams);
+            
+            // Return the public_id for storage in database
+            String resultPublicId = (String) uploadResult.get("public_id");
+            System.out.println("Imagen subida exitosamente a Cloudinary: " + resultPublicId);
+            
+            return resultPublicId;
+            
+        } catch (Exception e) {
+            System.err.println("Error al subir imagen a Cloudinary: " + e.getMessage());
+            e.printStackTrace();
+            throw new IOException("Error al subir imagen a Cloudinary: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Deletes an image from Cloudinary using its public ID
+     * @param publicId The full public ID including folder (e.g., "EMPRESA_LOGO/empresa_123")
+     */
+    @Override
+    public void eliminarImagen(String publicId) throws IOException {
+        if (publicId == null || publicId.isEmpty()) {
+            System.out.println("Public ID es nulo o vacío, no se puede eliminar");
+            return;
+        }
+
+        try {
+            System.out.println("Eliminando imagen de Cloudinary: " + publicId);
+            
+            Map params = ObjectUtils.asMap(
+                "resource_type", "image",
+                "invalidate", true
+            );
+            
+            Map result = cloudinary.uploader().destroy(publicId, params);
+            
+            String resultStatus = (String) result.get("result");
+            System.out.println("Resultado de eliminación: " + resultStatus);
+            
+            if (!"ok".equals(resultStatus) && !"not found".equals(resultStatus)) {
+                System.err.println("Advertencia: No se pudo eliminar la imagen: " + publicId);
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error al eliminar imagen de Cloudinary: " + e.getMessage());
+            e.printStackTrace();
+            // No lanzamos excepción para no interrumpir el flujo si la imagen ya no existe
+        }
+    }
+
+    /**
+     * Gets information about an uploaded asset
+     * @param publicId The public ID of the asset
+     * @return Map containing asset details (url, secure_url, width, height, format, etc.)
+     */
+    @Override
+    public Map<String, Object> obtenerDetallesImagen(String publicId) throws IOException {
+        if (publicId == null || publicId.isEmpty()) {
+            throw new IOException("Public ID es nulo o vacío");
+        }
+
+        try {
+            Map params = ObjectUtils.emptyMap();
+            Map result = cloudinary.api().resource(publicId, params);
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("Error al obtener detalles de imagen: " + e.getMessage());
+            throw new IOException("Error al obtener detalles de imagen: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Lists all resources in a specific folder
+     * @param folder The folder name (e.g., "EMPRESA_GALERIA")
+     * @param maxResults Maximum number of results to return
+     * @return Map containing the list of resources
+     */
+    @Override
+    public Map<String, Object> listarImagenesCarpeta(String folder, int maxResults) throws IOException {
+        if (folder == null || folder.isEmpty()) {
+            throw new IOException("El nombre de la carpeta es nulo o vacío");
+        }
+
+        try {
+            Map params = ObjectUtils.asMap(
+                "type", "upload",
+                "prefix", folder + "/",
+                "max_results", maxResults > 0 ? maxResults : 50
+            );
+            
+            Map result = cloudinary.api().resources(params);
+            return result;
+            
+        } catch (Exception e) {
+            System.err.println("Error al listar imágenes de carpeta: " + e.getMessage());
+            throw new IOException("Error al listar imágenes: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Extracts the file extension from a MultipartFile
+     */
+    private String obtenerExtension(MultipartFile archivo) {
+        String nombreOriginal = archivo.getOriginalFilename();
+        if (nombreOriginal != null && nombreOriginal.contains(".")) {
+            return nombreOriginal.substring(nombreOriginal.lastIndexOf("."));
+        }
+        return "";
+    }
+
+    /**
+     * Generates a safe filename from a string
+     */
+    private String generarNombreSeguro(String nombre) {
+        if (nombre == null) {
+            return "imagen_" + System.currentTimeMillis();
+        }
+        return nombre.replaceAll("[^a-zA-Z0-9_-]", "_").toLowerCase();
+    }
+}

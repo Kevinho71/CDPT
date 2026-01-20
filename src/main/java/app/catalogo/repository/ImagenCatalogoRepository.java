@@ -25,6 +25,12 @@ public interface ImagenCatalogoRepository extends GenericRepositoryNormal<Imagen
   
   @Query(value = "select count(t.*) from imagencatalogo t where (upper(concat(t.id,t.nombre,'')) like concat('%',upper(:search),'%')) and (t.estado=:estado or :estado=-1) ", nativeQuery = true)
   Integer getTotAll(@Param("search") String paramString, @Param("estado") Integer paramInteger);
+  
+  @Query(value = "SELECT t.* FROM imagencatalogo t WHERE t.fk_catalogo = :catalogoId AND t.tipo = :tipo AND t.estado = 1", nativeQuery = true)
+  List<ImagenesCatalogoEntity> findByCatalogoAndTipo(@Param("catalogoId") Integer catalogoId, @Param("tipo") String tipo);
+  
+  @Query(value = "SELECT COUNT(*) FROM imagencatalogo t WHERE t.fk_catalogo = :catalogoId AND t.tipo = 'GALERIA' AND t.estado = 1", nativeQuery = true)
+  Integer countGaleriaImagesByCatalogo(@Param("catalogoId") Integer catalogoId);
 }
 
 

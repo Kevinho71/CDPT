@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS imagencatalogo (
     estado INTEGER DEFAULT 1,
     codigo INTEGER,
     imagen VARCHAR(500),
+    tipo VARCHAR(30),
     fk_catalogo INTEGER,
     CONSTRAINT fk_imagencatalogo_catalogo FOREIGN KEY (fk_catalogo) REFERENCES catalogo(id) ON DELETE CASCADE
 );

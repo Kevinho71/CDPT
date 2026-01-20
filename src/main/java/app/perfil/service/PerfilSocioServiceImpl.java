@@ -3,6 +3,7 @@ package app.perfil.service;
 import app.common.exception.InvalidDataException;
 import app.common.exception.ResourceNotFoundException;
 import app.common.util.ArchivoService;
+import app.common.util.SocioImagenService;
 import app.common.util.Constantes;
 import app.perfil.dto.*;
 import app.perfil.entity.*;
@@ -42,6 +43,9 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
     
     @Autowired
     private ArchivoService archivoService;
+    
+    @Autowired
+    private SocioImagenService socioImagenService;
     
     @Override
     @Transactional
@@ -149,39 +153,29 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
             perfil.setVisualizaciones(0);
         }
         
-        // Manejar foto de perfil
+        // Manejar foto de perfil con Cloudinary
         if (fotoPerfil != null && !fotoPerfil.isEmpty()) {
-            if (perfil.getFotoPerfil() != null) {
-                try {
-                    archivoService.eliminarArchivo(Constantes.nameFolderFotoPerfil, perfil.getFotoPerfil());
-                } catch (Exception e) {
-                    // Log error but continue
-                }
-            }
-            
             try {
-                String nombreArchivo = "PERFIL-" + dto.getSocioId() + "-" + fotoPerfil.getOriginalFilename();
-                String rutaArchivo = archivoService.guargarArchivo(Constantes.nameFolderFotoPerfil, fotoPerfil, nombreArchivo);
-                perfil.setFotoPerfil(rutaArchivo);
+                String newPublicId = socioImagenService.actualizarFotoPerfil(
+                    dto.getSocioId(),
+                    perfil.getFotoPerfil(),  // Old public_id
+                    fotoPerfil
+                );
+                perfil.setFotoPerfil(newPublicId);
             } catch (Exception e) {
                 throw new InvalidDataException("Error al guardar foto de perfil: " + e.getMessage());
             }
         }
         
-        // Manejar foto de banner
+        // Manejar foto de banner con Cloudinary
         if (fotoBanner != null && !fotoBanner.isEmpty()) {
-            if (perfil.getFotoBanner() != null) {
-                try {
-                    archivoService.eliminarArchivo(Constantes.nameFolderFotoBanner, perfil.getFotoBanner());
-                } catch (Exception e) {
-                    // Log error but continue
-                }
-            }
-            
             try {
-                String nombreArchivo = "BANNER-" + dto.getSocioId() + "-" + fotoBanner.getOriginalFilename();
-                String rutaArchivo = archivoService.guargarArchivo(Constantes.nameFolderFotoBanner, fotoBanner, nombreArchivo);
-                perfil.setFotoBanner(rutaArchivo);
+                String newPublicId = socioImagenService.actualizarBanner(
+                    dto.getSocioId(),
+                    perfil.getFotoBanner(),  // Old public_id
+                    fotoBanner
+                );
+                perfil.setFotoBanner(newPublicId);
             } catch (Exception e) {
                 throw new InvalidDataException("Error al guardar foto de banner: " + e.getMessage());
             }
@@ -269,7 +263,7 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
         
         if (perfil.getFotoPerfil() != null) {
             try {
-                archivoService.eliminarArchivo(Constantes.nameFolderFotoPerfil, perfil.getFotoPerfil());
+                socioImagenService.eliminarFotoPerfil(perfil.getFotoPerfil());
             } catch (Exception e) {
                 // Log error but continue
             }
@@ -289,7 +283,7 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
         
         if (perfil.getFotoBanner() != null) {
             try {
-                archivoService.eliminarArchivo(Constantes.nameFolderFotoBanner, perfil.getFotoBanner());
+                socioImagenService.eliminarBanner(perfil.getFotoBanner());
             } catch (Exception e) {
                 // Log error but continue
             }

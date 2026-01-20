@@ -70,9 +70,6 @@ import app.socio.entity.SocioEntity;
      super(genericRepository);
    }
 
-   /**
-    * Sobrescribe findAll() para no lanzar checked exception
-    */
    @Override
    @Transactional(readOnly = true)
    public List<SocioEntity> findAll() {

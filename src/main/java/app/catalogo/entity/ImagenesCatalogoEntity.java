@@ -24,6 +24,8 @@
    private Integer codigo;
    @Column(name = "imagen")
    private String imagen;
+   @Column(name = "tipo")
+   private String tipo; // PERFIL, BANNER, GALERIA
    @Column(name = "estado")
    private Integer estado;
    @Transient
@@ -33,10 +35,11 @@
    
    public ImagenesCatalogoEntity() {}
    
-   public ImagenesCatalogoEntity(Integer id, Integer codigo, String imagen, Integer estado, CatalogoEntity catalogo) {
+   public ImagenesCatalogoEntity(Integer id, Integer codigo, String imagen, String tipo, Integer estado, CatalogoEntity catalogo) {
      this.id = id;
      this.codigo = codigo;
      this.imagen = imagen;
+     this.tipo = tipo;
      this.estado = estado;
      this.catalogo = catalogo;
    }
@@ -63,6 +66,14 @@
    
    public void setImagen(String imagen) {
      this.imagen = imagen;
+   }
+   
+   public String getTipo() {
+     return this.tipo;
+   }
+   
+   public void setTipo(String tipo) {
+     this.tipo = tipo;
    }
    
    public Integer getEstado() {
