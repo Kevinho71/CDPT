@@ -108,70 +108,30 @@ public class CatalogoController {
    }
    
    /**
-    * Obtiene el logo de un catálogo
+    * Obtiene el logo de un catálogo (redirige a Cloudinary)
     * GET /api/catalogos/logo/{filename}
+    * DEPRECATED: Las imágenes ahora se acceden directamente desde Cloudinary mediante URLs en el DTO
     */
    @GetMapping("/logo/{filename}")
-   public ResponseEntity<Resource> getLogo(@PathVariable String filename) {
-       return serveFile(filename, Constantes.nameFolderLogoCatalogo, "Logo");
+   public ResponseEntity<String> getLogo(@PathVariable String filename) {
+       // Ahora las imágenes están en Cloudinary y se acceden mediante URLs directas
+       // Este endpoint está deprecated, usar la URL directa del catalogo.logo
+       return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+           .body("Este endpoint está deprecated. Use la URL de Cloudinary que viene en el DTO del catálogo.");
    }
    
    /**
-    * Obtiene una imagen del catálogo
+    * Obtiene una imagen del catálogo (redirige a Cloudinary)
     * GET /api/catalogos/imagenes/{filename}
+    * DEPRECATED: Las imágenes ahora se acceden directamente desde Cloudinary mediante URLs en el DTO
     */
    @GetMapping("/imagenes/{filename}")
-   public ResponseEntity<Resource> getImagen(@PathVariable String filename) {
-       return serveFile(filename, Constantes.nameFolderImgCatalogo, "Imagen");
+   public ResponseEntity<String> getImagen(@PathVariable String filename) {
+       // Ahora las imágenes están en Cloudinary y se acceden mediante URLs directas
+       // Este endpoint está deprecated, usar las URLs directas de las imágenes en el DTO
+       return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+           .body("Este endpoint está deprecated. Use las URLs de Cloudinary que vienen en el DTO del catálogo.");
    }
    
-   /**
-    * Método privado para servir archivos (logos, imágenes) con validación y cache
-    */
-   private ResponseEntity<Resource> serveFile(String filename, String folder, String fileType) {
-       // Validar filename (seguridad: prevenir path traversal)
-       if (filename == null || filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
-           throw new app.common.exception.InvalidDataException("Nombre de archivo inválido");
-       }
-
-       try {
-           java.nio.file.Path filePath = archivoService.linkArchivo(folder, filename);
-
-           if (filePath == null || !Files.exists(filePath)) {
-               throw new app.common.exception.ResourceNotFoundException(fileType, "filename", filename);
-           }
-
-           // Usar PathResource en lugar de InputStreamResource (más eficiente)
-           org.springframework.core.io.PathResource resource = 
-               new org.springframework.core.io.PathResource(filePath);
-
-           // Determinar Content-Type
-           String contentType;
-           try {
-               contentType = Files.probeContentType(filePath);
-           } catch (java.io.IOException e) {
-               contentType = null;
-           }
-           
-           if (contentType == null) {
-               // Default para imágenes comunes
-               if (filename.toLowerCase().endsWith(".png")) {
-                   contentType = "image/png";
-               } else if (filename.toLowerCase().endsWith(".jpg") || filename.toLowerCase().endsWith(".jpeg")) {
-                   contentType = "image/jpeg";
-               } else {
-                   contentType = "application/octet-stream";
-               }
-           }
-
-           return ResponseEntity.ok()
-                   .contentType(MediaType.parseMediaType(contentType))
-                   .header("Content-Disposition", "inline; filename=\"" + filename + "\"")
-                   .cacheControl(org.springframework.http.CacheControl.maxAge(7, java.util.concurrent.TimeUnit.DAYS))
-                   .body(resource);
-
-       } catch (Exception e) {
-           throw new app.common.exception.FileStorageException("Error al leer el archivo de " + fileType, e);
-       }
-   }
+   // Método serveFile eliminado - Las imágenes ahora se sirven directamente desde Cloudinary
 }

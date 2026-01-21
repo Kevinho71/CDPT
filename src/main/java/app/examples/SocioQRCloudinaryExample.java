@@ -51,7 +51,7 @@ public class SocioQRCloudinaryExample {
                 .orElseThrow(() -> new Exception("Socio no encontrado con ID: " + socioId));
 
             // 1. Generar el código QR como imagen
-            byte[] qrImageBytes = qrCodeGeneratorService.generateQRCodeImage(qrContent, 300, 300);
+            byte[] qrImageBytes = qrCodeGeneratorService.generateQRCode(qrContent, 300, 300);
             
             // 2. Convertir a MultipartFile para subirlo
             MultipartFile qrMultipartFile = new MultipartFileFromBytes(
@@ -199,7 +199,7 @@ public class SocioQRCloudinaryExample {
      * Clase helper para convertir un array de bytes en MultipartFile
      * Necesaria porque el QRCodeGeneratorService devuelve bytes
      */
-    private static class MultipartFileFromBytes implements MultipartFile {
+    public static class MultipartFileFromBytes implements MultipartFile {
         private final byte[] content;
         private final String name;
         private final String contentType;

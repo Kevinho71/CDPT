@@ -359,13 +359,24 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
                 .collect(Collectors.toList()));
         }
         
-        // Construir URLs de las fotos (relativas)
+        // Las URLs ahora vienen completas de Cloudinary (https://...)
+        // Solo para compatibilidad con datos antiguos, si no empieza con http, construir URL local
         if (perfil.getFotoPerfil() != null) {
-            dto.setFotoPerfilUrl("/api/perfiles/foto-perfil/" + perfil.getFotoPerfil());
+            if (perfil.getFotoPerfil().startsWith("http")) {
+                dto.setFotoPerfilUrl(perfil.getFotoPerfil());
+            } else {
+                // Legacy data - construir URL local
+                dto.setFotoPerfilUrl("/api/perfiles/foto-perfil/" + perfil.getFotoPerfil());
+            }
         }
         
         if (perfil.getFotoBanner() != null) {
-            dto.setFotoBannerUrl("/api/perfiles/foto-banner/" + perfil.getFotoBanner());
+            if (perfil.getFotoBanner().startsWith("http")) {
+                dto.setFotoBannerUrl(perfil.getFotoBanner());
+            } else {
+                // Legacy data - construir URL local
+                dto.setFotoBannerUrl("/api/perfiles/foto-banner/" + perfil.getFotoBanner());
+            }
         }
         
         return dto;

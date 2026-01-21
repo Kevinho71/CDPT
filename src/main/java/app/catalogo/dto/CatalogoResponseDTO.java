@@ -16,6 +16,7 @@ public class CatalogoResponseDTO {
     private String latitud;
     private Integer estado;
     private String logoUrl; // URL del logo
+    private String bannerUrl; // URL del banner
     private List<String> imagenesUrls; // URLs de imágenes adicionales
     
     // Constructores
@@ -116,6 +117,14 @@ public class CatalogoResponseDTO {
     
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
+    }
+    
+    public String getBannerUrl() {
+        return bannerUrl;
+    }
+    
+    public void setBannerUrl(String bannerUrl) {
+        this.bannerUrl = bannerUrl;
     }
     
     public List<String> getImagenesUrls() {

@@ -22,6 +22,8 @@ import app.socio.entity.SocioEntity;
  import app.socio.service.SocioService;
  import app.common.util.Constantes;
  import app.common.util.QRCodeGeneratorService;
+ import app.common.util.CloudinaryFolders;
+ import app.common.util.SocioImagenService;
  import app.common.exception.*;
  import java.io.Serializable;
  import java.util.List;
@@ -61,6 +63,8 @@ import app.socio.entity.SocioEntity;
    private ArchivoService archivoService;
    @Autowired
    private QRCodeGeneratorService qrCodeGeneratorService;
+   @Autowired
+   private SocioImagenService socioImagenService;
    @Value("${server.port}")
    private static String puertoservidor;
    private String IPPUBLICA = "";
@@ -183,25 +187,29 @@ import app.socio.entity.SocioEntity;
          InstitucionEntity institucionEntity = this.institucionRepository.findById(Integer.valueOf(1)).get();
          String bodyQR = institucionEntity.getHost() + "/socios/estadosocio/" + entity.getNrodocumento();
 
-         this.qrCodeGeneratorService.generateQRCode(bodyQR, "QR - " + entity.getPersona().getCi());
-         
-         entity.setPersona(persona2);
-         entity.setProfesion(this.profesionRepository.findById(Integer.valueOf(1)).get());
-         entity.setInstitucion(this.institucionRepository.findById(Integer.valueOf(1)).get());
-         entity.setCatalogos(this.catalogoRepository.findByEstado(1));
+         try {
+           byte[] qrCodeBytes = this.qrCodeGeneratorService.generateQRCode(bodyQR, 200, 200);
+           String qrFileName = "QR - " + entity.getPersona().getCi() + ".png";
+           // Convertir bytes a MultipartFile y subir a Cloudinary
+           MultipartFile qrFile = new app.examples.SocioQRCloudinaryExample.MultipartFileFromBytes(
+             qrCodeBytes, qrFileName, "image/png"
+           );
+           String qrPublicId = socioImagenService.actualizarQR(entity.getId(), entity.getQr(), qrFile);
+           entity.setQr(qrPublicId);
+           entity.setLinkqr(qrPublicId);
+         } catch (Exception qrEx) {
+           System.out.println("ERROR AL GENERAR QR: " + qrEx.getMessage());
+           entity.setLinkqr("QR - " + entity.getPersona().getCi() + ".png");
+         }
 
 
          if (!entity.getLogo().isEmpty()) {
-
-
-           String nombre = "SOCIO - " + entity.getPersona().getCi() + entity.getLogo().getOriginalFilename().substring(entity.getLogo().getOriginalFilename().lastIndexOf('.'));
-           System.out.println("NOMBRE SOCIO LOGO:" + nombre);
-
-
-           entity.setImagen(nombre);
-
-
-           this.archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, entity.getLogo(), nombre);
+           try {
+             String publicId = socioImagenService.actualizarFotoCredencial(entity.getId(), entity.getImagen(), entity.getLogo());
+             entity.setImagen(publicId);
+           } catch (Exception logoEx) {
+             System.out.println("ERROR AL SUBIR LOGO: " + logoEx.getMessage());
+           }
          } 
          
          System.out.println("EntityPost:" + entity.toString());
@@ -261,18 +269,12 @@ import app.socio.entity.SocioEntity;
 
 
        if (!entidad.getLogo().isEmpty()) {
-
-
-         this.archivoService.eliminarArchivo(Constantes.nameFolderLogoSocio, entitymod.getImagen());
-
-
-         String nombre = "SOCIO - " + entitymod.getPersona().getCi() + entidad.getLogo().getOriginalFilename().substring(entidad.getLogo().getOriginalFilename().lastIndexOf('.'));
-
-
-         entitymod.setImagen(nombre);
-
-
-         this.archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, entidad.getLogo(), nombre);
+         try {
+           String publicId = socioImagenService.actualizarFotoCredencial(entitymod.getId(), entitymod.getImagen(), entidad.getLogo());
+           entitymod.setImagen(publicId);
+         } catch (Exception logoEx) {
+           System.out.println("ERROR AL ACTUALIZAR LOGO: " + logoEx.getMessage());
+         }
        } 
 
 
@@ -303,23 +305,21 @@ import app.socio.entity.SocioEntity;
      
      String bodyQR = institucionEntity.getHost() + "/socios/estadosocio/" + entitymod.getNrodocumento();
 
-     try {
-       if (entitymod.getLinkqr() != null) {
-         this.archivoService.eliminarArchivo(Constantes.nameFolderQrSocio, entitymod.getLinkqr());
-       }
-     } catch (Exception e) {
-       // Ignorar si no se puede eliminar
-     }
-
      String qr_nuevo = "QR - " + entitymod.getPersona().getCi();
      
      try {
-       this.qrCodeGeneratorService.generateQRCode(bodyQR, qr_nuevo);
+       byte[] qrCodeBytes = this.qrCodeGeneratorService.generateQRCode(bodyQR, 200, 200);
+       // Convertir bytes a MultipartFile y subir a Cloudinary
+       MultipartFile qrFile = new app.examples.SocioQRCloudinaryExample.MultipartFileFromBytes(
+         qrCodeBytes, qr_nuevo + ".png", "image/png"
+       );
+       String qrPublicId = socioImagenService.actualizarQR(entitymod.getId(), entitymod.getQr(), qrFile);
+       entitymod.setQr(qrPublicId);
+       entitymod.setLinkqr(qrPublicId);
      } catch (Exception e) {
        throw new FileStorageException("Error al generar código QR", e);
      }
 
-     entitymod.setLinkqr(qr_nuevo + ".png");
      return (SocioEntity)this.genericRepository.save(entitymod);
    }
 
@@ -426,10 +426,8 @@ import app.socio.entity.SocioEntity;
        // 6. Procesar logo si existe
        if (logo != null && !logo.isEmpty()) {
            try {
-               String logoNombre = "SOCIO - " + persona.getCi() + 
-                   logo.getOriginalFilename().substring(logo.getOriginalFilename().lastIndexOf('.'));
-               socio.setImagen(logoNombre);
-               archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, logo, logoNombre);
+               String publicId = socioImagenService.actualizarFotoCredencial(socio.getId(), socio.getImagen(), logo);
+               socio.setImagen(publicId);
            } catch (Exception e) {
                throw new FileStorageException("Error al guardar el logo", e);
            }
@@ -437,12 +435,18 @@ import app.socio.entity.SocioEntity;
        
        // 7. Generar QR
        try {
-           String qrNombre = "QR - " + persona.getCi();
-           String bodyQR = institucion.getHost() + "/socios/estadosocio/" + socio.getNrodocumento();
-           qrCodeGeneratorService.generateQRCode(bodyQR, qrNombre);
-           socio.setLinkqr(qrNombre + ".png");
+           String qrContent = institucion.getHost() + "/socios/estadosocio/" + socio.getNrodocumento();
+           byte[] qrCodeBytes = qrCodeGeneratorService.generateQRCode(qrContent, 200, 200);
+           String qrFileName = "QR - " + persona.getCi() + ".png";
+           // Convertir bytes a MultipartFile y subir a Cloudinary
+           MultipartFile qrFile = new app.examples.SocioQRCloudinaryExample.MultipartFileFromBytes(
+             qrCodeBytes, qrFileName, "image/png"
+           );
+           String qrPublicId = socioImagenService.actualizarQR(socio.getId(), socio.getQr(), qrFile);
+           socio.setQr(qrPublicId);
+           socio.setLinkqr(qrPublicId);
        } catch (Exception e) {
-           throw new FileStorageException("Error al generar código QR", e);
+           throw new FileStorageException("Error al generar el código QR", e);
        }
        
        // 8. Guardar socio
@@ -489,15 +493,8 @@ import app.socio.entity.SocioEntity;
        // 8. Actualizar logo si viene uno nuevo
        if (logo != null && !logo.isEmpty()) {
            try {
-               // Eliminar logo anterior si existe
-               if (socio.getImagen() != null) {
-                   archivoService.eliminarArchivo(Constantes.nameFolderLogoSocio, socio.getImagen());
-               }
-               
-               String logoNombre = "SOCIO - " + socio.getPersona().getCi() + 
-                   logo.getOriginalFilename().substring(logo.getOriginalFilename().lastIndexOf('.'));
-               socio.setImagen(logoNombre);
-               archivoService.guargarArchivo(Constantes.nameFolderLogoSocio, logo, logoNombre);
+               String publicId = socioImagenService.actualizarFotoCredencial(socio.getId(), socio.getImagen(), logo);
+               socio.setImagen(publicId);
            } catch (Exception e) {
                throw new FileStorageException("Error al actualizar el logo", e);
            }
@@ -573,12 +570,37 @@ import app.socio.entity.SocioEntity;
        dto.setInstitucionId(socio.getInstitucion().getId());
        dto.setInstitucionNombre(socio.getInstitucion().getInstitucion());
        
-       // URLs de recursos
+       // URLs de recursos (Cloudinary devuelve URL completa)
        if (socio.getImagen() != null) {
-           dto.setLogoUrl("/api/partners/logo/" + socio.getImagen());
+           // Si es URL de Cloudinary (comienza con http), usar directamente
+           // Si es nombre de archivo antiguo, construir URL local (compatibilidad)
+           if (socio.getImagen().startsWith("http")) {
+               dto.setLogoUrl(socio.getImagen());
+           } else {
+               dto.setLogoUrl("/api/partners/logo/" + socio.getImagen());
+           }
        }
-       if (socio.getLinkqr() != null) {
-           dto.setQrUrl("/api/partners/qr/" + socio.getLinkqr());
+       
+       // QR - Usar campo 'qr' que tiene el public_id de Cloudinary
+       if (socio.getQr() != null) {
+           // Si es URL de Cloudinary, usar directamente
+           if (socio.getQr().startsWith("http")) {
+               dto.setQrUrl(socio.getQr());
+           } else {
+               // Fallback a linkqr si qr no es URL
+               if (socio.getLinkqr() != null && socio.getLinkqr().startsWith("http")) {
+                   dto.setQrUrl(socio.getLinkqr());
+               } else {
+                   dto.setQrUrl("/api/partners/qr/" + socio.getLinkqr());
+               }
+           }
+       } else if (socio.getLinkqr() != null) {
+           // Si qr es null pero linkqr existe
+           if (socio.getLinkqr().startsWith("http")) {
+               dto.setQrUrl(socio.getLinkqr());
+           } else {
+               dto.setQrUrl("/api/partners/qr/" + socio.getLinkqr());
+           }
        }
        
        return dto;
@@ -727,8 +749,15 @@ import app.socio.entity.SocioEntity;
        String qrNombre = "QR - " + socio.getPersona().getCi();
        
        try {
-           qrCodeGeneratorService.generateQRCode(bodyQR, qrNombre);
-           socio.setLinkqr(qrNombre + ".png");
+           byte[] qrCodeBytes = qrCodeGeneratorService.generateQRCode(bodyQR, 200, 200);
+           String qrFileName = qrNombre + ".png";
+           // Convertir bytes a MultipartFile y subir a Cloudinary
+           MultipartFile qrFile = new app.examples.SocioQRCloudinaryExample.MultipartFileFromBytes(
+             qrCodeBytes, qrFileName, "image/png"
+           );
+           String qrPublicId = socioImagenService.actualizarQR(socio.getId(), socio.getQr(), qrFile);
+           socio.setQr(qrPublicId);
+           socio.setLinkqr(qrPublicId);
            socio = socioRepository.save(socio);
            return toResponseDTO(socio);
        } catch (Exception e) {

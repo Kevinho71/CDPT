@@ -10,14 +10,14 @@ public interface ArchivoService {
    * @param folder The Cloudinary folder name (e.g., "EMPRESA_LOGO", "SOCIO_PERFIL")
    * @param archivo The multipart file to upload
    * @param publicId The public ID to use for the image (without file extension)
-   * @return The Cloudinary URL of the uploaded image
+   * @return The full Cloudinary HTTPS URL of the uploaded image (e.g., "https://res.cloudinary.com/.../image.jpg")
    * @throws IOException if upload fails
    */
   String subirImagen(String folder, MultipartFile archivo, String publicId) throws IOException;
   
   /**
-   * Deletes an image from Cloudinary using its public ID
-   * @param publicId The full public ID including folder (e.g., "EMPRESA_LOGO/empresa_123")
+   * Deletes an image from Cloudinary using its public ID or URL
+   * @param publicId The full public ID including folder (e.g., "EMPRESA_LOGO/empresa_123") or full Cloudinary URL
    * @throws IOException if deletion fails
    */
   void eliminarImagen(String publicId) throws IOException;

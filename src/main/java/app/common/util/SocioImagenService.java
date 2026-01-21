@@ -21,9 +21,9 @@ public class SocioImagenService {
      * Deletes the old photo before uploading the new one
      * 
      * @param socioId The socio ID
-     * @param oldPublicId The current profile photo public_id (can be null)
+     * @param oldPublicId The current profile photo URL or public_id (can be null)
      * @param newPhoto The new photo file
-     * @return The new Cloudinary public_id
+     * @return The full Cloudinary HTTPS URL of the uploaded image
      * @throws IOException if upload fails
      */
     public String actualizarFotoPerfil(Integer socioId, String oldPublicId, MultipartFile newPhoto) throws IOException {
@@ -39,10 +39,10 @@ public class SocioImagenService {
 
         // Upload new photo
         String publicId = "socio_" + socioId + "_perfil_" + System.currentTimeMillis();
-        String newPublicId = archivoService.subirImagen(CloudinaryFolders.SOCIO_PERFIL, newPhoto, publicId);
+        String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_PERFIL, newPhoto, publicId);
         
-        System.out.println("Nueva foto de perfil subida: " + newPublicId);
-        return newPublicId;
+        System.out.println("Nueva foto de perfil subida. URL: " + newImageUrl);
+        return newImageUrl;
     }
 
     /**
@@ -50,9 +50,9 @@ public class SocioImagenService {
      * Deletes the old banner before uploading the new one
      * 
      * @param socioId The socio ID
-     * @param oldPublicId The current banner public_id (can be null)
+     * @param oldPublicId The current banner URL or public_id (can be null)
      * @param newBanner The new banner file
-     * @return The new Cloudinary public_id
+     * @return The full Cloudinary HTTPS URL of the uploaded image
      * @throws IOException if upload fails
      */
     public String actualizarBanner(Integer socioId, String oldPublicId, MultipartFile newBanner) throws IOException {
@@ -68,10 +68,10 @@ public class SocioImagenService {
 
         // Upload new banner
         String publicId = "socio_" + socioId + "_banner_" + System.currentTimeMillis();
-        String newPublicId = archivoService.subirImagen(CloudinaryFolders.SOCIO_BANNER, newBanner, publicId);
+        String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_BANNER, newBanner, publicId);
         
-        System.out.println("Nuevo banner subido: " + newPublicId);
-        return newPublicId;
+        System.out.println("Nuevo banner subido. URL: " + newImageUrl);
+        return newImageUrl;
     }
 
     /**
@@ -79,9 +79,9 @@ public class SocioImagenService {
      * Deletes the old photo before uploading the new one
      * 
      * @param socioId The socio ID
-     * @param oldPublicId The current credential photo public_id (can be null)
+     * @param oldPublicId The current credential photo URL or public_id (can be null)
      * @param newLogo The new logo file
-     * @return The new Cloudinary public_id
+     * @return The full Cloudinary HTTPS URL of the uploaded image
      * @throws IOException if upload fails
      */
     public String actualizarFotoCredencial(Integer socioId, String oldPublicId, MultipartFile newLogo) throws IOException {
@@ -97,10 +97,10 @@ public class SocioImagenService {
 
         // Upload new credential photo
         String publicId = "socio_" + socioId + "_credencial_" + System.currentTimeMillis();
-        String newPublicId = archivoService.subirImagen(CloudinaryFolders.SOCIO_LOGO, newLogo, publicId);
+        String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_LOGO, newLogo, publicId);
         
-        System.out.println("Nueva foto de credencial subida: " + newPublicId);
-        return newPublicId;
+        System.out.println("Nueva foto de credencial subida. URL: " + newImageUrl);
+        return newImageUrl;
     }
 
     /**
@@ -147,9 +147,9 @@ public class SocioImagenService {
      * Deletes the old QR before uploading the new one
      * 
      * @param socioId The socio ID
-     * @param oldPublicId The current QR public_id (can be null)
+     * @param oldPublicId The current QR URL or public_id (can be null)
      * @param newQR The new QR image file
-     * @return The new Cloudinary public_id
+     * @return The full Cloudinary HTTPS URL of the uploaded image
      * @throws IOException if upload fails
      */
     public String actualizarQR(Integer socioId, String oldPublicId, MultipartFile newQR) throws IOException {
@@ -165,10 +165,10 @@ public class SocioImagenService {
 
         // Upload new QR
         String publicId = "socio_" + socioId + "_qr_" + System.currentTimeMillis();
-        String newPublicId = archivoService.subirImagen(CloudinaryFolders.SOCIO_QR, newQR, publicId);
+        String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_QR, newQR, publicId);
         
-        System.out.println("Nuevo QR subido: " + newPublicId);
-        return newPublicId;
+        System.out.println("Nuevo QR subido. URL: " + newImageUrl);
+        return newImageUrl;
     }
 
     /**

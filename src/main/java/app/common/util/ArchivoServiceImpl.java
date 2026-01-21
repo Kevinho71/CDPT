@@ -24,7 +24,7 @@ public class ArchivoServiceImpl implements ArchivoService {
      * @param folder The Cloudinary folder name (EMPRESA_LOGO, EMPRESA_BANNER, EMPRESA_GALERIA, SOCIO_PERFIL, SOCIO_BANNER, SOCIO_LOGO)
      * @param archivo The multipart file to upload
      * @param publicId The public ID to use (without file extension)
-     * @return The Cloudinary public_id (folder/publicId format)
+     * @return The full Cloudinary HTTPS URL (https://res.cloudinary.com/.../image.jpg)
      */
     @Override
     public String subirImagen(String folder, MultipartFile archivo, String publicId) throws IOException {
@@ -48,11 +48,13 @@ public class ArchivoServiceImpl implements ArchivoService {
             // Upload to Cloudinary
             Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), uploadParams);
             
-            // Return the public_id for storage in database
+            // Return the secure URL for storage in database
+            String secureUrl = (String) uploadResult.get("secure_url");
             String resultPublicId = (String) uploadResult.get("public_id");
             System.out.println("Imagen subida exitosamente a Cloudinary: " + resultPublicId);
+            System.out.println("URL de Cloudinary: " + secureUrl);
             
-            return resultPublicId;
+            return secureUrl;
             
         } catch (Exception e) {
             System.err.println("Error al subir imagen a Cloudinary: " + e.getMessage());
@@ -62,17 +64,26 @@ public class ArchivoServiceImpl implements ArchivoService {
     }
 
     /**
-     * Deletes an image from Cloudinary using its public ID
-     * @param publicId The full public ID including folder (e.g., "EMPRESA_LOGO/empresa_123")
+     * Deletes an image from Cloudinary using its public ID or URL
+     * @param publicIdOrUrl The full public ID including folder (e.g., "EMPRESA_LOGO/empresa_123") or full Cloudinary URL
      */
     @Override
-    public void eliminarImagen(String publicId) throws IOException {
-        if (publicId == null || publicId.isEmpty()) {
-            System.out.println("Public ID es nulo o vacío, no se puede eliminar");
+    public void eliminarImagen(String publicIdOrUrl) throws IOException {
+        if (publicIdOrUrl == null || publicIdOrUrl.isEmpty()) {
+            System.out.println("Public ID/URL es nulo o vacío, no se puede eliminar");
             return;
         }
 
         try {
+            // Extract public_id from URL if it's a full Cloudinary URL
+            String publicId = publicIdOrUrl;
+            if (publicIdOrUrl.startsWith("http")) {
+                // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{transformations}/{version}/{public_id}.{format}
+                // We need to extract the public_id
+                publicId = extractPublicIdFromUrl(publicIdOrUrl);
+                System.out.println("Extracted public_id from URL: " + publicId);
+            }
+            
             System.out.println("Eliminando imagen de Cloudinary: " + publicId);
             
             Map params = ObjectUtils.asMap(
@@ -93,6 +104,41 @@ public class ArchivoServiceImpl implements ArchivoService {
             System.err.println("Error al eliminar imagen de Cloudinary: " + e.getMessage());
             e.printStackTrace();
             // No lanzamos excepción para no interrumpir el flujo si la imagen ya no existe
+        }
+    }
+    
+    /**
+     * Extracts the public_id from a Cloudinary URL
+     * Example: https://res.cloudinary.com/demo/image/upload/v1234/SOCIO_PERFIL/socio_1.jpg
+     * Returns: SOCIO_PERFIL/socio_1
+     */
+    private String extractPublicIdFromUrl(String url) {
+        try {
+            // Find the position of "/upload/" in the URL
+            int uploadIndex = url.indexOf("/upload/");
+            if (uploadIndex == -1) {
+                return url; // Not a valid Cloudinary URL, return as-is
+            }
+            
+            // Get everything after "/upload/"
+            String afterUpload = url.substring(uploadIndex + 8); // +8 for "/upload/"
+            
+            // Skip version if present (starts with 'v' followed by digits)
+            if (afterUpload.matches("^v\\d+/.*")) {
+                afterUpload = afterUpload.substring(afterUpload.indexOf('/') + 1);
+            }
+            
+            // Remove file extension
+            int lastDotIndex = afterUpload.lastIndexOf('.');
+            if (lastDotIndex > 0) {
+                afterUpload = afterUpload.substring(0, lastDotIndex);
+            }
+            
+            return afterUpload;
+            
+        } catch (Exception e) {
+            System.err.println("Error extrayendo public_id de URL: " + e.getMessage());
+            return url; // Return original if extraction fails
         }
     }
 

@@ -188,9 +188,10 @@ public class CloudinaryImagenControllerExample {
             }
 
             // Obtener la imagen actual para saber el catálogo
-            ImagenesCatalogoEntity imagenActual = (ImagenesCatalogoEntity) 
-                imagenCatalogoService.findById(imagenId)
-                .orElseThrow(() -> new Exception("Imagen no encontrada"));
+            ImagenesCatalogoEntity imagenActual = imagenCatalogoService.findById(imagenId);
+            if (imagenActual == null) {
+                return ResponseEntity.badRequest().body("Imagen no encontrada");
+            }
 
             // Eliminar imagen anterior
             imagenCatalogoService.eliminarImagen(imagenId);

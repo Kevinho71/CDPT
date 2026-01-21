@@ -12,6 +12,7 @@
  import app.common.util.GenericServiceImplNormal;
  import app.common.util.Constantes;
  import app.common.util.QRCodeGeneratorService;
+ import app.common.util.CloudinaryFolders;
  import app.common.exception.*;
  import com.fasterxml.jackson.core.type.TypeReference;
  import com.fasterxml.jackson.databind.ObjectMapper;
@@ -126,14 +127,14 @@
            MultipartFile catalogoitem = entity.getCatalogo().get(i);
            System.out.println("CATALOGO:" + catalogoitem.getOriginalFilename());
 
-
-           String nombreLocal = entity.getNit() + " - " + entity.getNit() + this.ImagenCatalogoRepository.getCodigo();
-
-
-           imagenesCatalogoEntity.setImagen(nombreLocal);
-
-
-           this.archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, catalogoitem, nombreLocal);
+           try {
+             String timestamp = String.valueOf(System.currentTimeMillis());
+             String publicId = "empresa_" + entity.getId() + "_galeria_" + imagenesCatalogoEntity.getCodigo() + "_" + timestamp;
+             String cloudinaryUrl = this.archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, catalogoitem, publicId);
+             imagenesCatalogoEntity.setImagen(cloudinaryUrl);
+           } catch (Exception ex) {
+             throw new Exception("Error al subir imagen de galería: " + ex.getMessage());
+           }
            
            imagenesCatalogoEntity.setEstado(Integer.valueOf(1));
            
@@ -150,14 +151,14 @@
 
 
        if (!entity.getLogo().isEmpty()) {
-         
-         String nombreLocal = entity.getNit() + entity.getNit();
-
-
-         entity.setNombrelogo(nombreLocal);
-
-
-         this.archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombreLocal);
+         try {
+           String timestamp = String.valueOf(System.currentTimeMillis());
+           String publicId = "empresa_" + entity.getId() + "_logo_" + timestamp;
+           String cloudinaryUrl = this.archivoService.subirImagen(CloudinaryFolders.EMPRESA_LOGO, entity.getLogo(), publicId);
+           entity.setNombrelogo(cloudinaryUrl);
+         } catch (Exception ex) {
+           throw new Exception("Error al subir logo a Cloudinary: " + ex.getMessage());
+         }
        } 
        
        System.out.println("EntityPost:" + entity.toString());
@@ -186,10 +187,15 @@
          !entity.getCatalogo().isEmpty()) {
          
          for (ImagenesCatalogoEntity imgEntity : catalogoEntity2.getImagenesCatalogos()) {
-           String nombreImagen = imgEntity.getImagen();
-
-
-           this.archivoService.eliminarArchivo(Constantes.nameFolderImgCatalogo, nombreImagen);
+           // Eliminar imagen de Cloudinary si es una URL de Cloudinary
+           if (imgEntity.getImagen() != null && imgEntity.getImagen().contains("cloudinary")) {
+             try {
+               String publicId = extractPublicIdFromUrl(imgEntity.getImagen());
+               if (publicId != null) {
+                 this.archivoService.eliminarImagen(publicId);
+               }
+             } catch (Exception ignored) {}
+           }
            this.ImagenCatalogoRepository.delete(imgEntity);
          } 
          
@@ -200,13 +206,14 @@
            imagenesCatalogoEntity.setId(Integer.valueOf(this.ImagenCatalogoRepository.getIdPrimaryKey()));
            imagenesCatalogoEntity.setCodigo(this.ImagenCatalogoRepository.getCodigo());
            
-           String nombre = catalogoEntity2.getNit() + "-" + catalogoEntity2.getNit() + this.ImagenCatalogoRepository.getCodigo();
-           System.out.println("NOMBRECATALOGOLOG: " + nombre);
-
-
-           imagenesCatalogoEntity.setImagen(nombre);
-           
-           this.archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, catalogoitem, nombre);
+           try {
+             String timestamp = String.valueOf(System.currentTimeMillis());
+             String publicId = "empresa_" + catalogoEntity2.getId() + "_galeria_" + imagenesCatalogoEntity.getCodigo() + "_" + timestamp;
+             String cloudinaryUrl = this.archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, catalogoitem, publicId);
+             imagenesCatalogoEntity.setImagen(cloudinaryUrl);
+           } catch (Exception ex) {
+             throw new Exception("Error al subir imagen de galería: " + ex.getMessage());
+           }
 
 
            imagenesCatalogoEntity.setEstado(Integer.valueOf(1));
@@ -221,15 +228,25 @@
 
 
        if (!entity.getLogo().isEmpty()) {
-         
-         this.archivoService.eliminarArchivo(Constantes.nameFolderLogoCatalogo, catalogoEntity2.getNombrelogo());
-         
-         String nombre = catalogoEntity2.getNit() + catalogoEntity2.getNit();
-
-
-         entity.setNombrelogo(nombre);
-         
-         this.archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, entity.getLogo(), nombre);
+         try {
+           // Eliminar logo antiguo de Cloudinary si existe
+           if (catalogoEntity2.getNombrelogo() != null && catalogoEntity2.getNombrelogo().contains("cloudinary")) {
+             String oldPublicId = extractPublicIdFromUrl(catalogoEntity2.getNombrelogo());
+             try {
+               this.archivoService.eliminarImagen(oldPublicId);
+             } catch (Exception ignored) {
+               // Imagen antigua no existe o no se puede eliminar
+             }
+           }
+           
+           // Subir nuevo logo
+           String timestamp = String.valueOf(System.currentTimeMillis());
+           String publicId = "empresa_" + catalogoEntity2.getId() + "_logo_" + timestamp;
+           String cloudinaryUrl = this.archivoService.subirImagen(CloudinaryFolders.EMPRESA_LOGO, entity.getLogo(), publicId);
+           entity.setNombrelogo(cloudinaryUrl);
+         } catch (Exception ex) {
+           throw new Exception("Error al actualizar logo en Cloudinary: " + ex.getMessage());
+         }
        } 
 
 
@@ -286,9 +303,10 @@
        // 4. Procesar logo si existe
        if (logo != null && !logo.isEmpty()) {
            try {
-               String nombreLogo = dto.getNit() + "-" + dto.getNit();
-               catalogo.setNombrelogo(nombreLogo);
-               archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, logo, nombreLogo);
+               String timestamp = String.valueOf(System.currentTimeMillis());
+               String publicId = "empresa_" + catalogo.getId() + "_logo_" + timestamp;
+               String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_LOGO, logo, publicId);
+               catalogo.setNombrelogo(cloudinaryUrl);
            } catch (Exception e) {
                throw new FileStorageException("Error al guardar el logo", e);
            }
@@ -303,11 +321,12 @@
                    imagenEntity.setId(ImagenCatalogoRepository.getIdPrimaryKey());
                    imagenEntity.setCodigo(ImagenCatalogoRepository.getCodigo());
                    
-                   String nombreImagen = dto.getNit() + "-" + imagenEntity.getCodigo();
-                   imagenEntity.setImagen(nombreImagen);
+                   String timestamp = String.valueOf(System.currentTimeMillis());
+                   String publicId = "empresa_" + catalogo.getId() + "_galeria_" + imagenEntity.getCodigo() + "_" + timestamp;
+                   String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, imagen, publicId);
+                   imagenEntity.setImagen(cloudinaryUrl);
                    imagenEntity.setEstado(1);
                    
-                   archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, imagen, nombreImagen);
                    imagenEntity = ImagenCatalogoRepository.save(imagenEntity);
                    imagenesEntities.add(imagenEntity);
                } catch (Exception e) {
@@ -360,14 +379,21 @@
        // 5. Actualizar logo si se proporciona uno nuevo
        if (logo != null && !logo.isEmpty()) {
            try {
-               // Eliminar logo anterior
-               if (catalogo.getNombrelogo() != null) {
-                   archivoService.eliminarArchivo(Constantes.nameFolderLogoCatalogo, catalogo.getNombrelogo());
+               // Eliminar logo antiguo si existe y es de Cloudinary
+               if (catalogo.getNombrelogo() != null && catalogo.getNombrelogo().contains("cloudinary")) {
+                   String oldPublicId = extractPublicIdFromUrl(catalogo.getNombrelogo());
+                   if (oldPublicId != null) {
+                       try {
+                           archivoService.eliminarImagen(oldPublicId);
+                       } catch (Exception ignored) {}
+                   }
                }
                
-               String nombreLogo = dto.getNit() + "-" + dto.getNit();
-               catalogo.setNombrelogo(nombreLogo);
-               archivoService.guargarArchivo(Constantes.nameFolderLogoCatalogo, logo, nombreLogo);
+               // Subir nuevo logo
+               String timestamp = String.valueOf(System.currentTimeMillis());
+               String publicId = "empresa_" + catalogo.getId() + "_logo_" + timestamp;
+               String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_LOGO, logo, publicId);
+               catalogo.setNombrelogo(cloudinaryUrl);
            } catch (Exception e) {
                throw new FileStorageException("Error al actualizar el logo", e);
            }
@@ -378,7 +404,15 @@
            try {
                // Eliminar imágenes anteriores
                for (ImagenesCatalogoEntity img : catalogo.getImagenesCatalogos()) {
-                   archivoService.eliminarArchivo(Constantes.nameFolderImgCatalogo, img.getImagen());
+                   // Eliminar de Cloudinary si es una URL de Cloudinary
+                   if (img.getImagen() != null && img.getImagen().contains("cloudinary")) {
+                       String publicId = extractPublicIdFromUrl(img.getImagen());
+                       if (publicId != null) {
+                           try {
+                               archivoService.eliminarImagen(publicId);
+                           } catch (Exception ignored) {}
+                       }
+                   }
                    ImagenCatalogoRepository.delete(img);
                }
                
@@ -389,11 +423,12 @@
                    imagenEntity.setId(ImagenCatalogoRepository.getIdPrimaryKey());
                    imagenEntity.setCodigo(ImagenCatalogoRepository.getCodigo());
                    
-                   String nombreImagen = dto.getNit() + "-" + imagenEntity.getCodigo();
-                   imagenEntity.setImagen(nombreImagen);
+                   String timestamp = String.valueOf(System.currentTimeMillis());
+                   String publicId = "empresa_" + catalogo.getId() + "_galeria_" + imagenEntity.getCodigo() + "_" + timestamp;
+                   String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, imagen, publicId);
+                   imagenEntity.setImagen(cloudinaryUrl);
                    imagenEntity.setEstado(1);
                    
-                   archivoService.guargarArchivo(Constantes.nameFolderImgCatalogo, imagen, nombreImagen);
                    imagenEntity = ImagenCatalogoRepository.save(imagenEntity);
                    nuevasImagenes.add(imagenEntity);
                }
@@ -512,20 +547,65 @@
            }
        }
        
-       // URL del logo
+       // URL del logo (Cloudinary devuelve URL completa)
        if (catalogo.getNombrelogo() != null) {
-           dto.setLogoUrl("/api/catalogos/logo/" + catalogo.getNombrelogo());
+           // Si es URL de Cloudinary (comienza con http), usar directamente
+           // Si es nombre de archivo antiguo, construir URL local (compatibilidad)
+           if (catalogo.getNombrelogo().startsWith("http")) {
+               dto.setLogoUrl(catalogo.getNombrelogo());
+           } else {
+               dto.setLogoUrl("/api/catalogos/logo/" + catalogo.getNombrelogo());
+           }
        }
        
-       // URLs de imágenes adicionales
+       // TODO: Agregar campo 'banner' (String) a CatalogoEntity para almacenar URL del banner
+       // Por ahora, el banner se maneja a través de ImagenesCatalogoEntity con tipo='BANNER'
+       
+       // URLs de imágenes adicionales (Cloudinary devuelve URLs completas)
        if (catalogo.getImagenesCatalogos() != null && !catalogo.getImagenesCatalogos().isEmpty()) {
            List<String> imagenesUrls = catalogo.getImagenesCatalogos().stream()
-               .map(img -> "/api/catalogos/imagenes/" + img.getImagen())
+               .map(img -> {
+                   // Si es URL de Cloudinary, usar directamente
+                   if (img.getImagen() != null && img.getImagen().startsWith("http")) {
+                       return img.getImagen();
+                   }
+                   // Si es nombre de archivo antiguo, construir URL local
+                   return "/api/catalogos/imagenes/" + img.getImagen();
+               })
                .collect(Collectors.toList());
            dto.setImagenesUrls(imagenesUrls);
        }
        
        return dto;
+   }
+   
+   /**
+    * Extrae el public_id de una URL de Cloudinary
+    */
+   private String extractPublicIdFromUrl(String url) {
+       if (url == null || !url.contains("cloudinary")) {
+           return null;
+       }
+       // URL típica: https://res.cloudinary.com/CLOUD_NAME/image/upload/v123456/FOLDER/public_id.ext
+       // Queremos: FOLDER/public_id
+       try {
+           int uploadIndex = url.indexOf("/upload/");
+           if (uploadIndex == -1) return null;
+           
+           String afterUpload = url.substring(uploadIndex + 8); // "/upload/" tiene 8 caracteres
+           // Remover versión si existe (v123456/)
+           if (afterUpload.matches("^v\\d+/.*")) {
+               afterUpload = afterUpload.substring(afterUpload.indexOf('/') + 1);
+           }
+           // Remover extensión
+           int lastDot = afterUpload.lastIndexOf('.');
+           if (lastDot > 0) {
+               afterUpload = afterUpload.substring(0, lastDot);
+           }
+           return afterUpload;
+       } catch (Exception e) {
+           return null;
+       }
    }
  }
 

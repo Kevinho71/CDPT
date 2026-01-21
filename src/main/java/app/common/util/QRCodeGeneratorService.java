@@ -55,24 +55,49 @@
      }
    }
 
+  /**
+   * Genera un código QR como byte array para subirlo a Cloudinary
+   * 
+   * @param message El contenido del QR
+   * @param width Ancho de la imagen QR
+   * @param height Alto de la imagen QR
+   * @return Byte array de la imagen PNG del QR
+   * @throws WriterException Si hay error al codificar el QR
+   * @throws IOException Si hay error al convertir la imagen
+   */
+  public byte[] generateQRCode(String message, int width, int height) throws WriterException, IOException {
+    BitMatrix matrix = new MultiFormatWriter().encode(
+      new String(message.getBytes("UTF-8"), "UTF-8"), 
+      BarcodeFormat.QR_CODE, 
+      width, 
+      height
+    );
+    
+    BufferedImage image = MatrixToImageWriter.toBufferedImage(matrix);
+    
+    // Convertir BufferedImage a byte array
+    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    ImageIO.write(image, "png", baos);
+    return baos.toByteArray();
+  }
 
-   private String prepareOutputFileName(String nombre) throws IOException {
-     String ruta = obtenerRutaArchivos(Constantes.nameFolderQrSocio);
-     
-     if (ruta == null || ruta.isEmpty()) {
-       throw new IOException("No se pudo determinar la ruta de almacenamiento.");
-     }
-     
-     Path rutaDirectorio = Paths.get(ruta, new String[0]).toAbsolutePath();
-     if (!Files.exists(rutaDirectorio, new java.nio.file.LinkOption[0])) {
-       System.out.println("*********CREANDO CARPETA DE QRS");
-       Files.createDirectories(rutaDirectorio, (FileAttribute<?>[])new FileAttribute[0]);
-     } 
-     
-     this.ruta_logos = Paths.get(ruta, new String[0]).toAbsolutePath().resolve(nombre).toString();
-     System.out.println("RUTA DE QR FOLDER: " + this.ruta_logos);
-     return this.ruta_logos + ".png";
-   }
+  private String prepareOutputFileName(String nombre) throws IOException {
+    String ruta = obtenerRutaArchivos(Constantes.nameFolderQrSocio);
+    
+    if (ruta == null || ruta.isEmpty()) {
+      throw new IOException("No se pudo determinar la ruta de almacenamiento.");
+    }
+    
+    Path rutaDirectorio = Paths.get(ruta, new String[0]).toAbsolutePath();
+    if (!Files.exists(rutaDirectorio, new java.nio.file.LinkOption[0])) {
+      System.out.println("*********CREANDO CARPETA DE QRS");
+      Files.createDirectories(rutaDirectorio, (FileAttribute<?>[])new FileAttribute[0]);
+    } 
+    
+    this.ruta_logos = Paths.get(ruta, new String[0]).toAbsolutePath().resolve(nombre).toString();
+    System.out.println("RUTA DE QR FOLDER: " + this.ruta_logos);
+    return this.ruta_logos + ".png";
+  }
 
 
    private void processQRCode(String data, String path, String charset, int height, int width) throws WriterException, IOException {
