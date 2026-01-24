@@ -19,11 +19,12 @@ public class SocioImagenService {
     /**
      * Updates a socio's profile photo
      * Deletes the old photo before uploading the new one
+     * If newPhoto is null or empty, only deletes the old photo and returns null
      * 
      * @param socioId The socio ID
      * @param oldPublicId The current profile photo URL or public_id (can be null)
-     * @param newPhoto The new photo file
-     * @return The full Cloudinary HTTPS URL of the uploaded image
+     * @param newPhoto The new photo file (can be null/empty to delete)
+     * @return The full Cloudinary HTTPS URL of the uploaded image, or null if deleted
      * @throws IOException if upload fails
      */
     public String actualizarFotoPerfil(Integer socioId, String oldPublicId, MultipartFile newPhoto) throws IOException {
@@ -37,6 +38,12 @@ public class SocioImagenService {
             }
         }
 
+        // Si newPhoto es null o está vacío, solo eliminar (retornar null)
+        if (newPhoto == null || newPhoto.isEmpty()) {
+            System.out.println("Foto de perfil eliminada (no se subió reemplazo)");
+            return null;
+        }
+
         // Upload new photo
         String publicId = "socio_" + socioId + "_perfil_" + System.currentTimeMillis();
         String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_PERFIL, newPhoto, publicId);
@@ -48,11 +55,12 @@ public class SocioImagenService {
     /**
      * Updates a socio's banner photo
      * Deletes the old banner before uploading the new one
+     * If newBanner is null or empty, only deletes the old banner and returns null
      * 
      * @param socioId The socio ID
      * @param oldPublicId The current banner URL or public_id (can be null)
-     * @param newBanner The new banner file
-     * @return The full Cloudinary HTTPS URL of the uploaded image
+     * @param newBanner The new banner file (can be null/empty to delete)
+     * @return The full Cloudinary HTTPS URL of the uploaded image, or null if deleted
      * @throws IOException if upload fails
      */
     public String actualizarBanner(Integer socioId, String oldPublicId, MultipartFile newBanner) throws IOException {
@@ -64,6 +72,12 @@ public class SocioImagenService {
             } catch (Exception e) {
                 System.err.println("Error al eliminar banner anterior: " + e.getMessage());
             }
+        }
+
+        // Si newBanner es null o está vacío, solo eliminar (retornar null)
+        if (newBanner == null || newBanner.isEmpty()) {
+            System.out.println("Banner eliminado (no se subió reemplazo)");
+            return null;
         }
 
         // Upload new banner

@@ -69,31 +69,50 @@ public class CatalogoController {
    }
    
    /**
-    * Crea un nuevo catálogo con logo e imágenes
+    * Crea un nuevo catálogo con logo, banner e imágenes de galería
     * POST /api/catalogos (multipart/form-data)
+    * Banner: codigo=0, tipo=BANNER (máximo 1)
+    * Galería: codigo=1,2,3, tipo=GALERIA (máximo 3)
     */
    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
    public ResponseEntity<CatalogoResponseDTO> create(
            @Valid @ModelAttribute CatalogoDTO catalogoDTO,
            @RequestParam(value = "logo", required = false) MultipartFile logo,
-           @RequestParam(value = "imagenes", required = false) List<MultipartFile> imagenes) {
+           @RequestParam(value = "banner", required = false) MultipartFile banner,
+           @RequestParam(value = "galeria1", required = false) MultipartFile galeria1,
+           @RequestParam(value = "galeria2", required = false) MultipartFile galeria2,
+           @RequestParam(value = "galeria3", required = false) MultipartFile galeria3) {
        
-       CatalogoResponseDTO result = catalogoService.create(catalogoDTO, logo, imagenes);
+       CatalogoResponseDTO result = catalogoService.create(catalogoDTO, logo, banner, galeria1, galeria2, galeria3);
        return ResponseEntity.status(HttpStatus.CREATED).body(result);
    }
    
    /**
-    * Actualiza un catálogo existente con logo e imágenes
+    * Actualiza un catálogo existente con logo, banner e imágenes
     * PUT /api/catalogos/{id} (multipart/form-data)
+    * Si se envía banner (codigo=0), reemplaza el anterior
+    * Si se envía galeria1/2/3 (codigo=1/2/3), reemplaza la correspondiente
     */
    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
    public ResponseEntity<CatalogoResponseDTO> update(
            @PathVariable Integer id,
            @Valid @ModelAttribute CatalogoDTO catalogoDTO,
            @RequestParam(value = "logo", required = false) MultipartFile logo,
-           @RequestParam(value = "imagenes", required = false) List<MultipartFile> imagenes) {
+           @RequestParam(value = "banner", required = false) MultipartFile banner,
+           @RequestParam(value = "galeria1", required = false) MultipartFile galeria1,
+           @RequestParam(value = "galeria2", required = false) MultipartFile galeria2,
+           @RequestParam(value = "galeria3", required = false) MultipartFile galeria3) {
        
-       CatalogoResponseDTO result = catalogoService.updateCatalogo(id, catalogoDTO, logo, imagenes);
+       // Log para debug - verificar qué está llegando
+       System.out.println("=== UPDATE CATALOGO DEBUG ===");
+       System.out.println("Logo: " + (logo == null ? "null" : (logo.isEmpty() ? "empty" : "file: " + logo.getOriginalFilename())));
+       System.out.println("Banner: " + (banner == null ? "null" : (banner.isEmpty() ? "empty" : "file: " + banner.getOriginalFilename())));
+       System.out.println("Galeria1: " + (galeria1 == null ? "null" : (galeria1.isEmpty() ? "empty" : "file: " + galeria1.getOriginalFilename())));
+       System.out.println("Galeria2: " + (galeria2 == null ? "null" : (galeria2.isEmpty() ? "empty" : "file: " + galeria2.getOriginalFilename())));
+       System.out.println("Galeria3: " + (galeria3 == null ? "null" : (galeria3.isEmpty() ? "empty" : "file: " + galeria3.getOriginalFilename())));
+       System.out.println("============================");
+       
+       CatalogoResponseDTO result = catalogoService.updateCatalogo(id, catalogoDTO, logo, banner, galeria1, galeria2, galeria3);
        return ResponseEntity.ok(result);
    }
    

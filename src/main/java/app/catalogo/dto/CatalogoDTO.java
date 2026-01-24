@@ -24,11 +24,11 @@ public class CatalogoDTO {
     
     private String latitud;
     
-    private Integer departamento;
+    private Integer departamentoId;
     
-    private Integer pais;
+    private Integer paisId;
     
-    private Integer provincia;
+    private Integer provinciaId;
     
     @NotNull(message = "El estado es requerido")
     private Integer estado;
@@ -38,7 +38,7 @@ public class CatalogoDTO {
     
     public CatalogoDTO(String nit, String nombre, String descripcion, String direccion, 
                       List<String> descuentos, String tipo, String longitud, String latitud, 
-                      Integer departamento, Integer pais, Integer provincia, Integer estado) {
+                      Integer departamentoId, Integer paisId, Integer provinciaId, Integer estado) {
         this.nit = nit;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -47,9 +47,9 @@ public class CatalogoDTO {
         this.tipo = tipo;
         this.longitud = longitud;
         this.latitud = latitud;
-        this.departamento = departamento;
-        this.pais = pais;
-        this.provincia = provincia;
+        this.departamentoId = departamentoId;
+        this.paisId = paisId;
+        this.provinciaId = provinciaId;
         this.estado = estado;
     }
     
@@ -126,28 +126,28 @@ public class CatalogoDTO {
         this.estado = estado;
     }
     
-    public Integer getDepartamento() {
-        return departamento;
+    public Integer getDepartamentoId() {
+        return departamentoId;
     }
     
-    public void setDepartamento(Integer departamento) {
-        this.departamento = departamento;
+    public void setDepartamentoId(Integer departamentoId) {
+        this.departamentoId = departamentoId;
     }
     
-    public Integer getPais() {
-        return pais;
+    public Integer getPaisId() {
+        return paisId;
     }
     
-    public void setPais(Integer pais) {
-        this.pais = pais;
+    public void setPaisId(Integer paisId) {
+        this.paisId = paisId;
     }
     
-    public Integer getProvincia() {
-        return provincia;
+    public Integer getProvinciaId() {
+        return provinciaId;
     }
     
-    public void setProvincia(Integer provincia) {
-        this.provincia = provincia;
+    public void setProvinciaId(Integer provinciaId) {
+        this.provinciaId = provinciaId;
     }
     
     @Override

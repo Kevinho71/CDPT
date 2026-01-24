@@ -19,9 +19,11 @@ public interface CatalogoService extends GenericServiceNormal<CatalogoEntity, In
   Integer getTotAll(String paramString, int paramInt) throws Exception;
   
   // Nuevos métodos con DTOs
-  CatalogoResponseDTO create(CatalogoDTO dto, MultipartFile logo, List<MultipartFile> imagenes);
-  
-  CatalogoResponseDTO updateCatalogo(Integer id, CatalogoDTO dto, MultipartFile logo, List<MultipartFile> imagenes);
+CatalogoResponseDTO create(CatalogoDTO dto, MultipartFile logo, MultipartFile banner, 
+                               MultipartFile galeria1, MultipartFile galeria2, MultipartFile galeria3);
+    
+    CatalogoResponseDTO updateCatalogo(Integer id, CatalogoDTO dto, MultipartFile logo, MultipartFile banner,
+                                       MultipartFile galeria1, MultipartFile galeria2, MultipartFile galeria3);
   
   CatalogoResponseDTO findByIdDTO(Integer id);
   

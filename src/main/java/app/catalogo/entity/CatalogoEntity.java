@@ -50,6 +50,16 @@
    private String latitud;
    @Column(name = "estado")
    private Integer estado;
+   
+   @Column(name = "fk_pais")
+   private Integer fkPais;
+   
+   @Column(name = "fk_departamento")
+   private Integer fkDepartamento;
+   
+   @Column(name = "fk_provincia")
+   private Integer fkProvincia;
+   
    @OneToMany(cascade = {CascadeType.REFRESH})
    @JoinColumn(name = "fk_catalogo")
    private List<ImagenesCatalogoEntity> imagenesCatalogos = new ArrayList<>();
@@ -181,6 +191,30 @@
    
    public void setEstado(Integer estado) {
      this.estado = estado;
+   }
+   
+   public Integer getFkPais() {
+     return this.fkPais;
+   }
+   
+   public void setFkPais(Integer fkPais) {
+     this.fkPais = fkPais;
+   }
+   
+   public Integer getFkDepartamento() {
+     return this.fkDepartamento;
+   }
+   
+   public void setFkDepartamento(Integer fkDepartamento) {
+     this.fkDepartamento = fkDepartamento;
+   }
+   
+   public Integer getFkProvincia() {
+     return this.fkProvincia;
+   }
+   
+   public void setFkProvincia(Integer fkProvincia) {
+     this.fkProvincia = fkProvincia;
    }
    
    public List<ImagenesCatalogoEntity> getImagenesCatalogos() {

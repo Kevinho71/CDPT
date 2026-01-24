@@ -2,6 +2,7 @@
  
  import app.core.dto.RolResponseDTO;
  import app.core.dto.UsuarioDTO;
+ import app.core.dto.UsuarioUpdateDTO;
  import app.core.dto.UsuarioResponseDTO;
  import app.core.entity.PersonaEntity;
  import app.core.entity.RolEntity;
@@ -241,41 +242,39 @@
     */
    @Override
    @Transactional
-   public UsuarioResponseDTO updateUsuario(Integer id, UsuarioDTO dto) {
+   public UsuarioResponseDTO updateUsuario(Integer id, UsuarioUpdateDTO dto) {
        // 1. Buscar usuario existente
        UsuarioEntity usuario = usuarioRepository.findById(id)
            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
        
-       // 2. Validar datos
-       validateData(dto);
-       
-       // 3. Verificar duplicado de username (excepto el mismo usuario)
+       // 2. Verificar duplicado de username (excepto el mismo usuario)
        UsuarioEntity existingByUsername = usuarioRepository.findByUsername(dto.getUsername());
        if (existingByUsername != null && !existingByUsername.getId().equals(id)) {
            throw new DuplicateResourceException("Usuario", "username", dto.getUsername());
        }
        
-       // 4. Verificar existencia de persona
+       // 3. Verificar existencia de persona
        PersonaEntity persona = personaRepository.findById(dto.getPersonaId())
            .orElseThrow(() -> new ResourceNotFoundException("Persona", "id", dto.getPersonaId()));
        
-       // 5. Verificar y obtener roles
-       List<RolEntity> roles = rolRepository.findAllById(dto.getRoleIds());
-       if (roles.size() != dto.getRoleIds().size()) {
-           throw new ResourceNotFoundException("Uno o más roles no existen");
-       }
-       
-       // 6. Actualizar datos
+       // 4. Actualizar datos básicos
        usuario.setUsername(dto.getUsername());
+       usuario.setEstado(dto.getEstado());
+       usuario.setPersona(persona);
        
-       // Solo actualizar password si cambió
-       if (!passwordEncoder.matches(dto.getPassword(), usuario.getPassword())) {
+       // 5. Solo actualizar password si se proveyó uno nuevo
+       if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
            usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
        }
        
-       usuario.setEstado(dto.getEstado());
-       usuario.setPersona(persona);
-       usuario.setRoles(roles);
+       // 6. Solo actualizar roles si se proveyeron
+       if (dto.getRoleIds() != null && !dto.getRoleIds().isEmpty()) {
+           List<RolEntity> roles = rolRepository.findAllById(dto.getRoleIds());
+           if (roles.size() != dto.getRoleIds().size()) {
+               throw new ResourceNotFoundException("Uno o más roles no existen");
+           }
+           usuario.setRoles(roles);
+       }
        
        usuario = usuarioRepository.save(usuario);
        return toResponseDTO(usuario);
@@ -332,6 +331,14 @@
        int nuevoEstado = usuario.getEstado() == 1 ? 0 : 1;
        usuario.setEstado(nuevoEstado);
        usuario = usuarioRepository.save(usuario);
+       
+       // Forzar carga de relaciones lazy antes de convertir a DTO
+       if (usuario.getPersona() != null) {
+           usuario.getPersona().getNombrecompleto(); // Trigger lazy loading
+       }
+       if (usuario.getRoles() != null) {
+           usuario.getRoles().size(); // Trigger lazy loading
+       }
        
        return toResponseDTO(usuario);
    }

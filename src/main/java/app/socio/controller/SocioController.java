@@ -4,6 +4,7 @@ import app.socio.dto.SocioCompleteResponseDTO;
 import app.socio.dto.SocioDTO;
 import app.socio.dto.SocioResponseDTO;
 import app.socio.entity.SocioEntity;
+import app.common.exception.InvalidDataException;
 import app.common.util.ArchivoService;
 import app.socio.service.SocioServiceImpl;
 import app.common.util.Constantes;
@@ -147,11 +148,10 @@ public class SocioController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<SocioResponseDTO> updateStatus(
             @PathVariable Integer id,
-            @RequestBody Map<String, Integer> body) {
+            @RequestParam (value= "estado") Integer newStatus) {
         
-        Integer newStatus = body.get("estado");
         if (newStatus == null) {
-            throw new app.common.exception.InvalidDataException("Campo 'estado' es requerido");
+            throw new InvalidDataException("Campo 'estado' es requerido");
         }
         
         SocioResponseDTO result = socioService.changeStatus(id, newStatus);

@@ -13,7 +13,7 @@ public interface UsuarioRepository extends GenericRepositoryNormal<UsuarioEntity
   @Query(value = "select COALESCE(max(id),0)+1 as id from usuario", nativeQuery = true)
   int getIdPrimaryKey();
   
-  @Query(value = "select t.* from usuario t where (t.estado=:estado or :estado=-1) and  (upper(concat(t.id,t.username,'')) like concat('%',upper(:search),'%')) ORDER BY t.id ASC LIMIT :length OFFSET :start ", countQuery = "SELECT count(t.*) FROM usuario t where (t.estado=:estado or :estado=-1) and  (upper(concat(t.id,t.num,'')) like concat('%',upper(:search),'%')) LIMIT :length OFFSET :start ", nativeQuery = true)
+  @Query(value = "select t.* from usuario t where (upper(concat(t.id,t.username,'')) like concat('%',upper(:search),'%')) ORDER BY t.id ASC LIMIT :length OFFSET :start ", countQuery = "SELECT count(t.*) FROM usuario t where (t.estado=:estado or :estado=-1) and  (upper(concat(t.id,t.num,'')) like concat('%',upper(:search),'%')) LIMIT :length OFFSET :start ", nativeQuery = true)
   List<UsuarioEntity> findAll(@Param("estado") int paramInt1, @Param("search") String paramString, @Param("length") int paramInt2, @Param("start") int paramInt3);
   
   @Modifying
@@ -36,7 +36,7 @@ public interface UsuarioRepository extends GenericRepositoryNormal<UsuarioEntity
   @Query(value = "SELECT * FROM usuario WHERE estado = ?1", nativeQuery = true)
   List<UsuarioEntity> findByEstado(int estado);
   
-  @Query(value = "SELECT * FROM usuario WHERE fk_persona = ?1 AND estado = 1", nativeQuery = true)
+  @Query(value = "SELECT * FROM usuario WHERE fk_persona = ?1", nativeQuery = true)
   UsuarioEntity findByPersonaId(Integer personaId);
 }
 

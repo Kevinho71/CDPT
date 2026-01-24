@@ -1,6 +1,7 @@
  package app.core.controller;
  
  import app.core.dto.UsuarioDTO;
+ import app.core.dto.UsuarioUpdateDTO;
  import app.core.dto.UsuarioResponseDTO;
  import app.core.service.UsuarioServiceImpl;
  import jakarta.validation.Valid;
@@ -94,7 +95,7 @@ public class UsuarioController {
    @PutMapping("/{id}")
    public ResponseEntity<UsuarioResponseDTO> update(
            @PathVariable Integer id,
-           @Valid @RequestBody UsuarioDTO dto) {
+           @Valid @RequestBody UsuarioUpdateDTO dto) {
        
        UsuarioResponseDTO result = usuarioService.updateUsuario(id, dto);
        return ResponseEntity.ok(result);

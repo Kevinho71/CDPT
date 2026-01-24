@@ -1,6 +1,7 @@
 package app.core.service;
 
 import app.core.dto.UsuarioDTO;
+import app.core.dto.UsuarioUpdateDTO;
 import app.core.dto.UsuarioResponseDTO;
 import app.core.entity.UsuarioEntity;
 import app.common.util.GenericServiceNormal;
@@ -22,7 +23,7 @@ public interface UsuarioService extends GenericServiceNormal<UsuarioEntity, Inte
   // Nuevos métodos con DTOs
   UsuarioResponseDTO create(UsuarioDTO dto);
   
-  UsuarioResponseDTO updateUsuario(Integer id, UsuarioDTO dto);
+  UsuarioResponseDTO updateUsuario(Integer id, UsuarioUpdateDTO dto);
   
   UsuarioResponseDTO findByIdDTO(Integer id);
   

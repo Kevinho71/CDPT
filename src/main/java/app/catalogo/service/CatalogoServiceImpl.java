@@ -264,11 +264,15 @@
    private final ObjectMapper objectMapper = new ObjectMapper();
    
    /**
-    * Crea un nuevo catálogo
+    * Crea un nuevo catálogo con logo, banner y hasta 3 imágenes de galería
+    * Lógica de códigos:
+    * - Banner: codigo=0, tipo=BANNER (máximo 1)
+    * - Galería: codigo=1,2,3, tipo=GALERIA (máximo 3)
     */
    @Override
    @Transactional
-   public CatalogoResponseDTO create(CatalogoDTO dto, MultipartFile logo, List<MultipartFile> imagenes) {
+   public CatalogoResponseDTO create(CatalogoDTO dto, MultipartFile logo, MultipartFile banner,
+                                      MultipartFile galeria1, MultipartFile galeria2, MultipartFile galeria3) {
        // 1. Validar datos
        validateData(dto);
        
@@ -289,6 +293,11 @@
        catalogo.setLongitud(dto.getLongitud());
        catalogo.setLatitud(dto.getLatitud());
        catalogo.setEstado(dto.getEstado());
+       
+       // Mapear campos geográficos
+       catalogo.setFkPais(dto.getPaisId());
+       catalogo.setFkDepartamento(dto.getDepartamentoId());
+       catalogo.setFkProvincia(dto.getProvinciaId());
        
        // 3. Convertir List<String> descuentos a JSON
        try {
@@ -312,28 +321,25 @@
            }
        }
        
-       // 5. Procesar imágenes adicionales si existen
+       // 5. Procesar imágenes (banner y galería)
        List<ImagenesCatalogoEntity> imagenesEntities = new ArrayList<>();
-       if (imagenes != null && !imagenes.isEmpty()) {
-           for (MultipartFile imagen : imagenes) {
-               try {
-                   ImagenesCatalogoEntity imagenEntity = new ImagenesCatalogoEntity();
-                   imagenEntity.setId(ImagenCatalogoRepository.getIdPrimaryKey());
-                   imagenEntity.setCodigo(ImagenCatalogoRepository.getCodigo());
-                   
-                   String timestamp = String.valueOf(System.currentTimeMillis());
-                   String publicId = "empresa_" + catalogo.getId() + "_galeria_" + imagenEntity.getCodigo() + "_" + timestamp;
-                   String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, imagen, publicId);
-                   imagenEntity.setImagen(cloudinaryUrl);
-                   imagenEntity.setEstado(1);
-                   
-                   imagenEntity = ImagenCatalogoRepository.save(imagenEntity);
-                   imagenesEntities.add(imagenEntity);
-               } catch (Exception e) {
-                   throw new FileStorageException("Error al guardar imágenes del catálogo", e);
-               }
-           }
+       
+       // Banner: codigo=0, tipo=BANNER
+       if (banner != null && !banner.isEmpty()) {
+           imagenesEntities.add(crearImagenCatalogo(catalogo.getId(), banner, 0, "BANNER"));
        }
+       
+       // Galería: codigo=1,2,3, tipo=GALERIA
+       if (galeria1 != null && !galeria1.isEmpty()) {
+           imagenesEntities.add(crearImagenCatalogo(catalogo.getId(), galeria1, 1, "GALERIA"));
+       }
+       if (galeria2 != null && !galeria2.isEmpty()) {
+           imagenesEntities.add(crearImagenCatalogo(catalogo.getId(), galeria2, 2, "GALERIA"));
+       }
+       if (galeria3 != null && !galeria3.isEmpty()) {
+           imagenesEntities.add(crearImagenCatalogo(catalogo.getId(), galeria3, 3, "GALERIA"));
+       }
+       
        catalogo.setImagenesCatalogos(imagenesEntities);
        
        // 6. Guardar catálogo
@@ -342,11 +348,17 @@
    }
    
    /**
-    * Actualiza un catálogo existente
+    * Actualiza un catálogo existente con logo, banner y galería
+    * Lógica de reemplazo por código:
+    * - Si se envía banner (codigo=0), reemplaza el banner anterior
+    * - Si se envía galeria1 (codigo=1), reemplaza la galeria1 anterior
+    * - Si se envía galeria2 (codigo=2), reemplaza la galeria2 anterior
+    * - Si se envía galeria3 (codigo=3), reemplaza la galeria3 anterior
     */
    @Override
    @Transactional
-   public CatalogoResponseDTO updateCatalogo(Integer id, CatalogoDTO dto, MultipartFile logo, List<MultipartFile> imagenes) {
+   public CatalogoResponseDTO updateCatalogo(Integer id, CatalogoDTO dto, MultipartFile logo, MultipartFile banner,
+                                              MultipartFile galeria1, MultipartFile galeria2, MultipartFile galeria3) {
        // 1. Buscar catálogo existente
        CatalogoEntity catalogo = catalogoRepository.findById(id)
            .orElseThrow(() -> new ResourceNotFoundException("Catálogo", "id", id));
@@ -364,6 +376,11 @@
        catalogo.setLatitud(dto.getLatitud());
        catalogo.setEstado(dto.getEstado());
        
+       // Actualizar campos geográficos
+       catalogo.setFkPais(dto.getPaisId());
+       catalogo.setFkDepartamento(dto.getDepartamentoId());
+       catalogo.setFkProvincia(dto.getProvinciaId());
+       
        // 4. Actualizar descuentos JSON
        try {
            if (dto.getDescuentos() != null && !dto.getDescuentos().isEmpty()) {
@@ -376,7 +393,8 @@
            throw new InvalidDataException("Error al procesar descuentos: " + e.getMessage());
        }
        
-       // 5. Actualizar logo si se proporciona uno nuevo
+       // 5. Actualizar logo
+       // Si logo viene explícitamente como parámetro (aunque sea null), procesarlo
        if (logo != null && !logo.isEmpty()) {
            try {
                // Eliminar logo antiguo si existe y es de Cloudinary
@@ -397,45 +415,41 @@
            } catch (Exception e) {
                throw new FileStorageException("Error al actualizar el logo", e);
            }
+       } else if (logo != null && logo.isEmpty()) {
+           // Si logo es un archivo vacío (indicador de eliminación)
+           // Eliminar logo actual de Cloudinary y poner null en BD
+           System.out.println("Logo vacío detectado - procediendo a eliminar");
+           if (catalogo.getNombrelogo() != null && catalogo.getNombrelogo().contains("cloudinary")) {
+               String oldPublicId = extractPublicIdFromUrl(catalogo.getNombrelogo());
+               if (oldPublicId != null) {
+                   try {
+                       System.out.println("Eliminando logo de Cloudinary: " + oldPublicId);
+                       archivoService.eliminarImagen(oldPublicId);
+                       System.out.println("Logo eliminado exitosamente");
+                   } catch (Exception e) {
+                       System.out.println("Error al eliminar logo: " + e.getMessage());
+                   }
+               }
+           }
+           catalogo.setNombrelogo(null);
+           System.out.println("Logo establecido a null en BD");
        }
        
-       // 6. Actualizar imágenes si se proporcionan nuevas
-       if (imagenes != null && !imagenes.isEmpty()) {
-           try {
-               // Eliminar imágenes anteriores
-               for (ImagenesCatalogoEntity img : catalogo.getImagenesCatalogos()) {
-                   // Eliminar de Cloudinary si es una URL de Cloudinary
-                   if (img.getImagen() != null && img.getImagen().contains("cloudinary")) {
-                       String publicId = extractPublicIdFromUrl(img.getImagen());
-                       if (publicId != null) {
-                           try {
-                               archivoService.eliminarImagen(publicId);
-                           } catch (Exception ignored) {}
-                       }
-                   }
-                   ImagenCatalogoRepository.delete(img);
-               }
-               
-               // Agregar nuevas imágenes
-               List<ImagenesCatalogoEntity> nuevasImagenes = new ArrayList<>();
-               for (MultipartFile imagen : imagenes) {
-                   ImagenesCatalogoEntity imagenEntity = new ImagenesCatalogoEntity();
-                   imagenEntity.setId(ImagenCatalogoRepository.getIdPrimaryKey());
-                   imagenEntity.setCodigo(ImagenCatalogoRepository.getCodigo());
-                   
-                   String timestamp = String.valueOf(System.currentTimeMillis());
-                   String publicId = "empresa_" + catalogo.getId() + "_galeria_" + imagenEntity.getCodigo() + "_" + timestamp;
-                   String cloudinaryUrl = archivoService.subirImagen(CloudinaryFolders.EMPRESA_GALERIA, imagen, publicId);
-                   imagenEntity.setImagen(cloudinaryUrl);
-                   imagenEntity.setEstado(1);
-                   
-                   imagenEntity = ImagenCatalogoRepository.save(imagenEntity);
-                   nuevasImagenes.add(imagenEntity);
-               }
-               catalogo.setImagenesCatalogos(nuevasImagenes);
-           } catch (Exception e) {
-               throw new FileStorageException("Error al actualizar imágenes del catálogo", e);
-           }
+       // 6. Actualizar banner y/o galería por código
+       // Reemplazar banner si se envía (codigo=0, tipo=BANNER) - puede ser empty para eliminar
+       if (banner != null) {
+           reemplazarImagenPorCodigo(catalogo, banner, 0, "BANNER");
+       }
+       
+       // Reemplazar imágenes de galería si se envían (codigo=1/2/3, tipo=GALERIA) - pueden ser empty para eliminar
+       if (galeria1 != null) {
+           reemplazarImagenPorCodigo(catalogo, galeria1, 1, "GALERIA");
+       }
+       if (galeria2 != null) {
+           reemplazarImagenPorCodigo(catalogo, galeria2, 2, "GALERIA");
+       }
+       if (galeria3 != null) {
+           reemplazarImagenPorCodigo(catalogo, galeria3, 3, "GALERIA");
        }
        
        // 7. Guardar cambios
@@ -533,6 +547,11 @@
        dto.setLatitud(catalogo.getLatitud());
        dto.setEstado(catalogo.getEstado());
        
+       // IDs geográficos
+       dto.setPaisId(catalogo.getFkPais());
+       dto.setDepartamentoId(catalogo.getFkDepartamento());
+       dto.setProvinciaId(catalogo.getFkProvincia());
+       
        // Convertir JSON descuento a List<String>
        if (catalogo.getDescuento() != null) {
            try {
@@ -547,7 +566,7 @@
            }
        }
        
-       // URL del logo (Cloudinary devuelve URL completa)
+       // URL del logo desde el campo nombrelogo de CatalogoEntity
        if (catalogo.getNombrelogo() != null) {
            // Si es URL de Cloudinary (comienza con http), usar directamente
            // Si es nombre de archivo antiguo, construir URL local (compatibilidad)
@@ -558,25 +577,134 @@
            }
        }
        
-       // TODO: Agregar campo 'banner' (String) a CatalogoEntity para almacenar URL del banner
-       // Por ahora, el banner se maneja a través de ImagenesCatalogoEntity con tipo='BANNER'
-       
-       // URLs de imágenes adicionales (Cloudinary devuelve URLs completas)
+       // Procesar imágenes de ImagenesCatalogoEntity
        if (catalogo.getImagenesCatalogos() != null && !catalogo.getImagenesCatalogos().isEmpty()) {
-           List<String> imagenesUrls = catalogo.getImagenesCatalogos().stream()
+           // Filtrar y obtener URL del BANNER (solo debe haber 1)
+           catalogo.getImagenesCatalogos().stream()
+               .filter(img -> "BANNER".equalsIgnoreCase(img.getTipo()))
+               .findFirst()
+               .ifPresent(banner -> {
+                   if (banner.getImagen() != null) {
+                       if (banner.getImagen().startsWith("http")) {
+                           dto.setBannerUrl(banner.getImagen());
+                       } else {
+                           dto.setBannerUrl("/api/catalogos/imagenes/" + banner.getImagen());
+                       }
+                   }
+               });
+           
+           // Filtrar y obtener URLs de GALERIA (máximo 3)
+           List<String> galeriaUrls = catalogo.getImagenesCatalogos().stream()
+               .filter(img -> "GALERIA".equalsIgnoreCase(img.getTipo()))
+               .limit(3) // Limitar a máximo 3
                .map(img -> {
-                   // Si es URL de Cloudinary, usar directamente
                    if (img.getImagen() != null && img.getImagen().startsWith("http")) {
                        return img.getImagen();
                    }
-                   // Si es nombre de archivo antiguo, construir URL local
                    return "/api/catalogos/imagenes/" + img.getImagen();
                })
                .collect(Collectors.toList());
-           dto.setImagenesUrls(imagenesUrls);
+           dto.setGaleriaUrls(galeriaUrls);
        }
        
        return dto;
+   }
+   
+   /**
+    * Crea una nueva imagen de catálogo (banner o galería)
+    * @param catalogoId ID del catálogo
+    * @param archivo Archivo de imagen
+    * @param codigo Código de la imagen (0=banner, 1/2/3=galería)
+    * @param tipo Tipo de imagen ("BANNER" o "GALERIA")
+    */
+   private ImagenesCatalogoEntity crearImagenCatalogo(Integer catalogoId, MultipartFile archivo, Integer codigo, String tipo) {
+       try {
+           ImagenesCatalogoEntity imagenEntity = new ImagenesCatalogoEntity();
+           imagenEntity.setId(ImagenCatalogoRepository.getIdPrimaryKey());
+           imagenEntity.setCodigo(codigo);
+           
+           String timestamp = String.valueOf(System.currentTimeMillis());
+           String folder = "BANNER".equals(tipo) ? CloudinaryFolders.EMPRESA_BANNER : CloudinaryFolders.EMPRESA_GALERIA;
+           String publicId = "empresa_" + catalogoId + "_" + tipo.toLowerCase() + "_" + codigo + "_" + timestamp;
+           String cloudinaryUrl = archivoService.subirImagen(folder, archivo, publicId);
+           
+           imagenEntity.setImagen(cloudinaryUrl);
+           imagenEntity.setTipo(tipo);
+           imagenEntity.setEstado(1);
+           
+           return ImagenCatalogoRepository.save(imagenEntity);
+       } catch (Exception e) {
+           throw new FileStorageException("Error al crear imagen " + tipo + " con codigo " + codigo, e);
+       }
+   }
+   
+   /**
+    * Reemplaza una imagen existente del catálogo basándose en el código
+    * Si existe una imagen con el mismo código y tipo, la elimina y crea una nueva
+    * Si archivo es vacío, solo elimina la imagen existente (pone null)
+    * @param catalogo Entidad del catálogo
+    * @param archivo Nuevo archivo de imagen (puede ser empty para indicar eliminación)
+    * @param codigo Código de la imagen (0=banner, 1/2/3=galería)
+    * @param tipo Tipo de imagen ("BANNER" o "GALERIA")
+    */
+   private void reemplazarImagenPorCodigo(CatalogoEntity catalogo, MultipartFile archivo, Integer codigo, String tipo) {
+       try {
+           System.out.println("=== reemplazarImagenPorCodigo ===");
+           System.out.println("Codigo: " + codigo + ", Tipo: " + tipo);
+           System.out.println("Archivo: " + (archivo == null ? "null" : (archivo.isEmpty() ? "empty" : archivo.getOriginalFilename())));
+           
+           // Buscar imagen existente con el mismo código y tipo
+           ImagenesCatalogoEntity imagenExistente = catalogo.getImagenesCatalogos().stream()
+               .filter(img -> codigo.equals(img.getCodigo()) && tipo.equalsIgnoreCase(img.getTipo()))
+               .findFirst()
+               .orElse(null);
+           
+           System.out.println("Imagen existente: " + (imagenExistente != null ? imagenExistente.getId() : "ninguna"));
+           
+           // Si archivo es vacío, significa que se quiere eliminar la imagen
+           if (archivo.isEmpty()) {
+               System.out.println("Archivo vacío - procediendo a eliminar");
+               if (imagenExistente != null) {
+                   // Eliminar de Cloudinary
+                   if (imagenExistente.getImagen() != null && imagenExistente.getImagen().startsWith("http")) {
+                       try {
+                           System.out.println("Eliminando de Cloudinary: " + imagenExistente.getImagen());
+                           archivoService.eliminarImagen(imagenExistente.getImagen());
+                           System.out.println("Eliminado exitosamente de Cloudinary");
+                       } catch (Exception e) {
+                           System.err.println("Error al eliminar imagen de Cloudinary: " + e.getMessage());
+                       }
+                   }
+                   // Eliminar de BD
+                   System.out.println("Eliminando de BD");
+                   ImagenCatalogoRepository.delete(imagenExistente);
+                   catalogo.getImagenesCatalogos().remove(imagenExistente);
+                   System.out.println("Eliminado exitosamente de BD");
+               } else {
+                   System.out.println("No hay imagen existente para eliminar");
+               }
+               return; // No crear nueva imagen
+           }
+           
+           // Si existe, eliminarla de Cloudinary y BD antes de crear la nueva
+           if (imagenExistente != null) {
+               if (imagenExistente.getImagen() != null && imagenExistente.getImagen().startsWith("http")) {
+                   try {
+                       archivoService.eliminarImagen(imagenExistente.getImagen());
+                   } catch (Exception e) {
+                       System.err.println("Error al eliminar imagen anterior: " + e.getMessage());
+                   }
+               }
+               ImagenCatalogoRepository.delete(imagenExistente);
+               catalogo.getImagenesCatalogos().remove(imagenExistente);
+           }
+           
+           // Crear y agregar nueva imagen
+           ImagenesCatalogoEntity nuevaImagen = crearImagenCatalogo(catalogo.getId(), archivo, codigo, tipo);
+           catalogo.getImagenesCatalogos().add(nuevaImagen);
+       } catch (Exception e) {
+           throw new FileStorageException("Error al reemplazar imagen " + tipo + " con codigo " + codigo, e);
+       }
    }
    
    /**

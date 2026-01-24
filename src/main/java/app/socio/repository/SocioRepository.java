@@ -20,7 +20,7 @@ public interface SocioRepository extends GenericRepositoryNormal<SocioEntity, In
   List<SocioEntity> findAll(@Param("estado") int paramInt1, @Param("search") String paramString, @Param("length") int paramInt2, @Param("start") int paramInt3);
   
   @Modifying
-  @Query(value = "UPDATE socio SET estado= CASE ?1 WHEN 1 THEN 0 ELSE 1 END WHERE id=?2", nativeQuery = true)
+  @Query(value = "UPDATE socio SET estado= ?1 WHERE id=?2", nativeQuery = true)
   void updateStatus(Integer paramInteger1, Integer paramInteger2);
   
   @Query(value = "select count(t.*) from socio t where (upper(concat(t.id,t.matricula,'')) like concat('%',upper(:search),'%')) and (t.estado=:estado or :estado=-1) ", nativeQuery = true)

@@ -17,7 +17,12 @@ public class CatalogoResponseDTO {
     private Integer estado;
     private String logoUrl; // URL del logo
     private String bannerUrl; // URL del banner
-    private List<String> imagenesUrls; // URLs de imágenes adicionales
+    private List<String> galeriaUrls; // URLs de imágenes de galería (máximo 3)
+    
+    // IDs de ubicación geográfica
+    private Integer paisId;
+    private Integer departamentoId;
+    private Integer provinciaId;
     
     // Constructores
     public CatalogoResponseDTO() {}
@@ -127,12 +132,36 @@ public class CatalogoResponseDTO {
         this.bannerUrl = bannerUrl;
     }
     
-    public List<String> getImagenesUrls() {
-        return imagenesUrls;
+    public List<String> getGaleriaUrls() {
+        return galeriaUrls;
     }
     
-    public void setImagenesUrls(List<String> imagenesUrls) {
-        this.imagenesUrls = imagenesUrls;
+    public void setGaleriaUrls(List<String> galeriaUrls) {
+        this.galeriaUrls = galeriaUrls;
+    }
+    
+    public Integer getPaisId() {
+        return paisId;
+    }
+    
+    public void setPaisId(Integer paisId) {
+        this.paisId = paisId;
+    }
+    
+    public Integer getDepartamentoId() {
+        return departamentoId;
+    }
+    
+    public void setDepartamentoId(Integer departamentoId) {
+        this.departamentoId = departamentoId;
+    }
+    
+    public Integer getProvinciaId() {
+        return provinciaId;
+    }
+    
+    public void setProvinciaId(Integer provinciaId) {
+        this.provinciaId = provinciaId;
     }
     
     @Override
