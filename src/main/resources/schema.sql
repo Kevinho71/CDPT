@@ -348,41 +348,6 @@ CREATE TABLE IF NOT EXISTS documentos (
 );
 CREATE INDEX IF NOT EXISTS idx_documentos_socio ON documentos(fk_socio);
 
--- ============================================================================
--- 9. MÓDULO DE PUBLICACIONES / CMS (NUEVO)
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS publicaciones (
-    id SERIAL PRIMARY KEY,
-    titulo VARCHAR(255) NOT NULL,
-    slug VARCHAR(300) NOT NULL UNIQUE,
-    resumen TEXT,
-    contenido TEXT,
-    
-    tipo VARCHAR(50) DEFAULT 'noticia',
-    fecha_evento TIMESTAMP,
-    
-    publicado BOOLEAN DEFAULT true,
-    fk_autor INTEGER,
-    fecha_publicacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_publicacion_autor FOREIGN KEY (fk_autor) REFERENCES usuario(id) ON DELETE SET NULL
-);
-CREATE INDEX IF NOT EXISTS idx_publicaciones_tipo ON publicaciones(tipo);
-
-CREATE TABLE IF NOT EXISTS publicacion_imagenes (
-    id SERIAL PRIMARY KEY,
-    fk_publicacion INTEGER NOT NULL,
-    
-    imagen_url VARCHAR(500) NOT NULL,
-    
-    es_portada BOOLEAN DEFAULT false,
-    orden INTEGER DEFAULT 0,
-    
-    CONSTRAINT fk_pub_img_publicacion FOREIGN KEY (fk_publicacion) REFERENCES publicaciones(id) ON DELETE CASCADE
-);
-CREATE INDEX IF NOT EXISTS idx_pub_img_publicacion ON publicacion_imagenes(fk_publicacion);
-
 
 -- ============================================================================
 -- 10. FINANZAS (NUEVO - PARA DASHBOARD)
@@ -454,3 +419,74 @@ CREATE TABLE IF NOT EXISTS estadisticas_publicas (
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado INTEGER DEFAULT 1
 );
+
+-- ============================================================================
+-- 12. SISTEMA DE PUBLICACIONES (POSTS: NOTICIAS Y EVENTOS)
+-- ============================================================================
+
+-- TABLA PRINCIPAL (Gestiona Noticias y Eventos)
+CREATE TABLE IF NOT EXISTS posts (
+    id SERIAL PRIMARY KEY,
+    estado INTEGER DEFAULT 1,
+
+    -- RELACIÓN CON USUARIO (Auditoría)
+    fk_usuario INTEGER,
+    CONSTRAINT fk_posts_usuario FOREIGN KEY (fk_usuario) REFERENCES usuario(id) ON DELETE SET NULL,
+
+    -- DATOS OBLIGATORIOS COMUNES
+    titulo VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    intro TEXT NOT NULL,
+    portada_url VARCHAR(500),
+    autor VARCHAR(100) NOT NULL,
+    
+    -- CLASIFICACIÓN Y ESTADO
+    tipo VARCHAR(20) NOT NULL,
+    publicado BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    -- DATOS EXCLUSIVOS DE EVENTOS (Nullables)
+    fecha_evento TIMESTAMP,
+    lugar_evento VARCHAR(255),
+    direccion_evento VARCHAR(500)
+);
+
+-- TABLA DE SECCIONES (El contenido dinámico)
+CREATE TABLE IF NOT EXISTS post_secciones (
+    id SERIAL PRIMARY KEY,
+    estado INTEGER DEFAULT 1,
+
+    -- RELACIÓN CON EL POST PADRE
+    fk_post INTEGER NOT NULL,
+    CONSTRAINT fk_post_secciones_post FOREIGN KEY (fk_post) REFERENCES posts(id) ON DELETE CASCADE,
+
+    -- ORDENAMIENTO
+    orden INTEGER NOT NULL,
+
+    -- TIPO DE CONTENIDO
+    tipo_seccion VARCHAR(20) DEFAULT 'ESTANDAR',
+
+    -- CAMPOS DE CONTENIDO
+    subtitulo VARCHAR(255), 
+    contenido TEXT,
+    imagen_url VARCHAR(500),
+    video_url VARCHAR(500)
+);
+
+-- ============================================================================
+-- ÍNDICES PARA OPTIMIZACIÓN DE POSTS
+-- ============================================================================
+
+-- Índices para posts
+CREATE INDEX IF NOT EXISTS idx_posts_tipo ON posts(tipo);
+CREATE INDEX IF NOT EXISTS idx_posts_publicado ON posts(publicado);
+CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+CREATE INDEX IF NOT EXISTS idx_posts_usuario ON posts(fk_usuario);
+CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_estado ON posts(estado);
+
+-- Índices para post_secciones
+CREATE INDEX IF NOT EXISTS idx_post_secciones_post ON post_secciones(fk_post);
+CREATE INDEX IF NOT EXISTS idx_post_secciones_orden ON post_secciones(fk_post, orden);
+CREATE INDEX IF NOT EXISTS idx_post_secciones_tipo ON post_secciones(tipo_seccion);
+CREATE INDEX IF NOT EXISTS idx_post_secciones_estado ON post_secciones(estado);

@@ -2,8 +2,11 @@
  
  import app.core.entity.PersonaEntity;
  import app.core.entity.RolEntity;
+ import app.posts.entity.PostEntity;
  import java.io.Serializable;
+ import java.util.ArrayList;
  import java.util.Collection;
+ import java.util.List;
  import jakarta.persistence.CascadeType;
  import jakarta.persistence.Entity;
  import jakarta.persistence.FetchType;
@@ -12,6 +15,7 @@
  import jakarta.persistence.JoinTable;
  import jakarta.persistence.ManyToMany;
  import jakarta.persistence.ManyToOne;
+ import jakarta.persistence.OneToMany;
  import jakarta.persistence.Table;
  import jakarta.persistence.UniqueConstraint;
 
@@ -33,6 +37,9 @@
    @ManyToOne(optional = false)
    @JoinColumn(name = "fk_persona")
    private PersonaEntity persona;
+   
+   @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   private List<PostEntity> posts = new ArrayList<>();
    
    public UsuarioEntity() {}
    
@@ -91,6 +98,14 @@
    
    public void setPersona(PersonaEntity persona) {
      this.persona = persona;
+   }
+   
+   public List<PostEntity> getPosts() {
+     return this.posts;
+   }
+   
+   public void setPosts(List<PostEntity> posts) {
+     this.posts = posts;
    }
  }
 

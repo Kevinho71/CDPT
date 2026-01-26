@@ -70,6 +70,7 @@ public class SecurityConfig {
             .headers(headers -> headers.disable())
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authorize -> authorize
+                // Recursos estáticos
                 .requestMatchers(
                     "/registro**",
                     "/js/**",
@@ -78,34 +79,56 @@ public class SecurityConfig {
                     "/logos/**",
                     "/socioslogos/**",
                     "/catalogosimg/**",
-                    "/catalogoscrt/**",
+                    "/catalogoscrt/**"
+                ).permitAll()
+                
+                // Legacy endpoints (mantener compatibilidad)
+                .requestMatchers(
                     "/socios/estadosocio/**",
                     "/socios/empresas/**",
                     "/RestSocios/findByNrodocumento/**",
                     "/RestSocios/logo_socio/**",
                     "/RestCatalogos/buscar/**",
                     "/RestCatalogos/logo_empresa/**",
-                    "/RestCatalogos/img_catalogos_empresa/**",
+                    "/RestCatalogos/img_catalogos_empresa/**"
+                ).permitAll()
+                
+                // Documentación API
+                .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
-                    "/webjars/**",
-                    "/oauth2/**",
-                    "/api/auth/**",
-                    "/api/partners/**",  // Socios
-                    "/api/perfiles/**",  // Perfiles de socios
-                    "/api/profesiones/**",  // Profesiones
-                    "/api/instituciones/**",  // Instituciones
-                    "/api/servicios/**",  // Servicios
-                    "/api/sectores/**",  // Sectores
-                    "/api/idiomas/**",  // Idiomas
-                    "/api/especialidades/**",  // Especialidades
-                    "/api/roles/**",  // Roles
-                    "/api/usuarios/**",  // Usuarios
-                    "/api/catalogos/**",  // Catálogos
-                    "/api/locations/**"
+                    "/webjars/**"
                 ).permitAll()
+                
+                // OAuth2 y autenticación
+                .requestMatchers("/oauth2/**", "/api/auth/**").permitAll()
+                
+                // Posts públicos (sin autenticación)
+                .requestMatchers("/api/public/posts/**").permitAll()
+                
+                // Posts admin (requiere ROLE_ADMIN)
+                .requestMatchers("/api/admin/posts/**").hasRole("ADMIN")
+                
+                // Endpoints de socios y perfiles (requieren autenticación)
+                .requestMatchers("/api/partners/**", "/api/perfiles/**").hasAnyRole("SOCIO", "ADMIN")
+                
+                // Catálogos de datos (públicos por ahora)
+                .requestMatchers(
+                    "/api/profesiones/**",
+                    "/api/instituciones/**",
+                    "/api/servicios/**",
+                    "/api/sectores/**",
+                    "/api/idiomas/**",
+                    "/api/especialidades/**",
+                    "/api/locations/**",
+                    "/api/catalogos/**"
+                ).permitAll()
+                
+                // Gestión de usuarios y roles (solo ADMIN)
+                .requestMatchers("/api/roles/**", "/api/usuarios/**").hasRole("ADMIN")
+                
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2

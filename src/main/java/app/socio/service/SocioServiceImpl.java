@@ -399,7 +399,7 @@ import app.socio.entity.SocioEntity;
            }
            socio.setCatalogos(catalogos);
        } else {
-           socio.setCatalogos(catalogoRepository.findByEstado(1));
+           socio.setCatalogos(catalogoRepository.findByEstadoOrderByIdAsc(1));
        }
        
        // 6. Procesar logo si existe
