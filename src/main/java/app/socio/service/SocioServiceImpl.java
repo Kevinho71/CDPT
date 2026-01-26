@@ -8,7 +8,6 @@ import app.socio.entity.SocioEntity;
  import app.socio.dto.SocioResponseDTO;
  import app.socio.dto.SocioCompleteResponseDTO;
  import app.catalogo.repository.CatalogoRepository;
- import app.common.util.GenericRepositoryNormal;
  import app.core.repository.InstitucionRepository;
  import app.core.repository.ProfesionRepository;
  import app.core.repository.PersonaRepository;
@@ -17,7 +16,6 @@ import app.socio.entity.SocioEntity;
  import app.core.entity.RolEntity;
  import app.core.repository.UsuarioRepository;
  import app.common.util.ArchivoService;
- import app.common.util.GenericServiceImplNormal;
  import app.core.service.PersonaService;
  import app.socio.service.SocioService;
  import app.common.util.Constantes;
@@ -36,12 +34,16 @@ import app.socio.entity.SocioEntity;
  import org.springframework.stereotype.Service;
  import org.springframework.transaction.annotation.Transactional;
  import org.springframework.web.multipart.MultipartFile;
+ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
 
 
+ /**
+  * Servicio independiente para Socio
+  * No extiende de ningún servicio genérico
+  */
  @Service
- public class SocioServiceImpl
-   extends GenericServiceImplNormal<SocioEntity, Integer>
-   implements SocioService
+ public class SocioServiceImpl implements SocioService
  {
    @Autowired
    private SocioRepository socioRepository;
@@ -60,44 +62,57 @@ import app.socio.entity.SocioEntity;
    @Autowired
    private BCryptPasswordEncoder passwordEncoder;
    @Autowired
-   private ArchivoService archivoService;
-   @Autowired
    private QRCodeGeneratorService qrCodeGeneratorService;
    @Autowired
    private SocioImagenService socioImagenService;
-   @Value("${server.port}")
-   private static String puertoservidor;
-   private String IPPUBLICA = "";
-   private String PORT = "";
 
-   SocioServiceImpl(GenericRepositoryNormal<SocioEntity, Integer> genericRepository) {
-     super(genericRepository);
-   }
 
+   // ============================================
+   // CRUD Básico - Implementación directa
+   // ============================================
+
+   /**
+    * Lista todos los socios
+    */
    @Override
    @Transactional(readOnly = true)
    public List<SocioEntity> findAll() {
      try {
-       return super.findAll();
+       return socioRepository.findAllByOrderByIdAsc();
      } catch (Exception e) {
        throw new RuntimeException("Error al listar socios: " + e.getMessage(), e);
      }
    }
 
    /**
-    * Sobrescribe findById() para no lanzar checked exception
+    * Busca un socio por ID
     */
    @Override
    @Transactional(readOnly = true)
    public SocioEntity findById(Integer id) {
      try {
-       SocioEntity socio = super.findById(id);
-       if (socio == null) {
-         throw new ResourceNotFoundException("Socio", "id", id);
-       }
-       return socio;
+       return socioRepository.findById(id)
+         .orElseThrow(() -> new ResourceNotFoundException("Socio", "id", id));
+     } catch (ResourceNotFoundException e) {
+       throw e;
      } catch (Exception e) {
-       throw new ResourceNotFoundException("Socio", "id", id);
+       throw new RuntimeException("Error al buscar socio por ID: " + e.getMessage(), e);
+     }
+   }
+
+   /**
+    * Elimina un socio (cambia su estado a 0)
+    */
+   @Override
+   @Transactional
+   public boolean delete(Integer id) {
+     try {
+       SocioEntity socio = findById(id);
+       socio.setEstado(0);
+       socioRepository.save(socio);
+       return true;
+     } catch (Exception e) {
+       throw new RuntimeException("Error al eliminar socio: " + e.getMessage(), e);
      }
    }
 
@@ -122,16 +137,6 @@ import app.socio.entity.SocioEntity;
        System.out.println(e.getMessage());
        
        return Integer.valueOf(0);
-     } 
-   }
-
-
-   @Transactional(readOnly = true)
-   public List<SocioEntity> findAll(int estado, String search, int length, int start) {
-     try {
-       return this.socioRepository.findAll(estado, search, length, start);
-     } catch (Exception e) {
-       throw new RuntimeException("Error al listar socios: " + e.getMessage(), e);
      } 
    }
 
@@ -232,7 +237,7 @@ import app.socio.entity.SocioEntity;
 
    @Transactional
    public SocioEntity updatecatalogos(Integer id, SocioEntity entidad) {
-     SocioEntity entitymod = this.socioRepository.findById(id)
+     SocioEntity entitymod = socioRepository.findById(id)
          .orElseThrow(() -> new ResourceNotFoundException("Socio", "id", id));
      
      entitymod.getPersona().setCi(entidad.getPersona().getCi());
@@ -246,7 +251,7 @@ import app.socio.entity.SocioEntity;
        entitymod.setCatalogos(entidad.getCatalogos());
      }
 
-     return (SocioEntity)this.genericRepository.save(entitymod);
+     return socioRepository.save(entitymod);
    }
 
 
@@ -278,7 +283,7 @@ import app.socio.entity.SocioEntity;
        } 
 
 
-       entitymod = (SocioEntity)this.genericRepository.save(entitymod);
+       entitymod = (SocioEntity)socioRepository.save(entitymod);
        return entitymod;
      } catch (Exception e) {
        e.printStackTrace();
@@ -320,7 +325,7 @@ import app.socio.entity.SocioEntity;
        throw new FileStorageException("Error al generar código QR", e);
      }
 
-     return (SocioEntity)this.genericRepository.save(entitymod);
+     return (SocioEntity)socioRepository.save(entitymod);
    }
 
 
@@ -334,32 +339,6 @@ import app.socio.entity.SocioEntity;
      } catch (Exception e) {
        throw new ResourceNotFoundException("Socio", "nrodocumento", codigo);
      } 
-   }
-
-   /**
-    * Obtiene datos para DataTables con paginación
-    */
-   @Transactional(readOnly = true)
-   public Map<String, Object> getDataTableData(int draw, int length, int start, int estado, String search) {
-     try {
-       List<SocioEntity> lista = findAll(estado, search, length, start);
-       String total = String.valueOf(getTotAll(search, estado));
-       
-       Map<String, Object> data = new HashMap<>();
-       data.put("draw", draw);
-       data.put("recordsTotal", total);
-       data.put("data", lista);
-       
-       if (search != null && !search.isEmpty()) {
-         data.put("recordsFiltered", lista.size());
-       } else {
-         data.put("recordsFiltered", total);
-       }
-       
-       return data;
-     } catch (Exception e) {
-       throw new RuntimeException("Error al obtener datos para DataTable: " + e.getMessage(), e);
-     }
    }
 
    /**

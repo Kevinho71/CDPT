@@ -1,15 +1,16 @@
 package app.catalogo.repository;
 
 import app.catalogo.entity.ImagenesCatalogoEntity;
-import app.common.util.GenericRepositoryNormal;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ImagenCatalogoRepository extends GenericRepositoryNormal<ImagenesCatalogoEntity, Integer> {
+public interface ImagenCatalogoRepository extends JpaRepository<ImagenesCatalogoEntity, Integer> {
   @Query(value = "select COALESCE(max(id),0)+1 as id from imagencatalogo", nativeQuery = true)
   int getIdPrimaryKey();
   

@@ -19,14 +19,15 @@
  import org.springframework.web.bind.annotation.RequestMapping;
  import org.springframework.web.bind.annotation.RequestParam;
  import org.springframework.web.bind.annotation.RestController;
- import org.springframework.web.multipart.MultipartFile;
+ import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
 
  @RestController
 @RequestMapping({"/RestImagenesCatalogos"})
-public class ImagenesCatalogosController
-   extends RestControllerGenericNormalImpl<ImagenesCatalogoEntity, ImagenCatalogoServiceImpl>
- {
+public class ImagenesCatalogosController {
+   @Autowired
+   private ImagenCatalogoServiceImpl servicio;
    @GetMapping({"/listar"})
    public ResponseEntity<?> getAll(HttpServletRequest request, @Param("draw") int draw, @Param("length") int length, @Param("start") int start, @Param("estado") int estado) throws IOException {
      String total = "";
@@ -36,11 +37,11 @@ public class ImagenesCatalogosController
        String search = request.getParameter("search[value]");
        int tot = Constantes.NUM_MAX_DATATABLE.intValue();
        System.out.println("tot:" + tot + "estado:" + estado + "search:" + search + "length:" + length + "start:" + start);
-       List<?> lista = ((ImagenCatalogoServiceImpl)this.servicio).findAll(estado, search, length, start);
+       List<?> lista = this.servicio.findAll(estado, search, length, start);
        System.out.println("listar:" + lista.toString());
        
        try {
-         total = String.valueOf(((ImagenCatalogoServiceImpl)this.servicio).getTotAll(search, estado));
+         total = String.valueOf(this.servicio.getTotAll(search, estado));
        }
        catch (Exception e) {
          total = "0";
@@ -66,8 +67,9 @@ public class ImagenesCatalogosController
    public ResponseEntity<?> updateStatus(@RequestBody ImagenesCatalogoEntity entity) {
      try {
        System.out.println("Entidad:" + entity.toString());
-       ((ImagenCatalogoServiceImpl)this.servicio).updateStatus(entity.getEstado().intValue(), entity.getId().intValue());
-       ImagenesCatalogoEntity entity2 = (ImagenesCatalogoEntity)((ImagenCatalogoServiceImpl)this.servicio).findById(entity.getId());
+       this.servicio.updateStatus(entity.getEstado().intValue(), entity.getId().intValue());
+       ImagenesCatalogoEntity entity2 = this.servicio.findById(entity.getId())
+         .orElseThrow(() -> new Exception("Imagen no encontrada"));
        return ResponseEntity.status(HttpStatus.OK).body(entity2);
      } catch (Exception e) {
        System.out.println(e.getMessage());
@@ -83,7 +85,7 @@ public class ImagenesCatalogosController
 
 
      try {
-       return ResponseEntity.status(HttpStatus.OK).body(((ImagenCatalogoServiceImpl)this.servicio).save(entidad));
+       return ResponseEntity.status(HttpStatus.OK).body(this.servicio.save(entidad));
      } catch (Exception e) {
        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error, Por favor intente mas tarde. \"}");
      } 
@@ -92,7 +94,8 @@ public class ImagenesCatalogosController
    public ResponseEntity<?> update(@PathVariable Integer id, ImagenesCatalogoEntity entidad, @RequestParam("logo") MultipartFile file, @RequestParam("catalogo") MultipartFile catalogo) {
      try {
        System.out.println("EntidadModificar LLEGO:" + entidad.toString());
-       return ResponseEntity.status(HttpStatus.OK).body(((ImagenCatalogoServiceImpl)this.servicio).update(id, entidad));
+       entidad.setId(id);
+       return ResponseEntity.status(HttpStatus.OK).body(this.servicio.save(entidad));
      } catch (Exception e) {
        e.printStackTrace();
        System.out.println(e.getMessage());

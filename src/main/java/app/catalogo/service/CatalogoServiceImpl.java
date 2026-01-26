@@ -5,11 +5,9 @@
  import app.catalogo.entity.CatalogoEntity;
  import app.catalogo.entity.ImagenesCatalogoEntity;
  import app.catalogo.repository.CatalogoRepository;
- import app.common.util.GenericRepositoryNormal;
  import app.catalogo.repository.ImagenCatalogoRepository;
  import app.common.util.ArchivoService;
  import app.catalogo.service.CatalogoService;
- import app.common.util.GenericServiceImplNormal;
  import app.common.util.Constantes;
  import app.common.util.QRCodeGeneratorService;
  import app.common.util.CloudinaryFolders;
@@ -29,7 +27,6 @@
 
  @Service
  public class CatalogoServiceImpl
-   extends GenericServiceImplNormal<CatalogoEntity, Integer>
    implements CatalogoService
  {
    @Autowired
@@ -42,10 +39,6 @@
    QRCodeGeneratorService qrCodeGeneratorService;
    @Value("${server.port}")
    private static String puertoservidor;
-   
-   CatalogoServiceImpl(GenericRepositoryNormal<CatalogoEntity, Integer> genericRepository) {
-     super(genericRepository);
-   }
 
 
    public int getIdPrimaryKey() throws Exception {
@@ -73,9 +66,9 @@
 
 
    @Transactional
-   public List<CatalogoEntity> findAll(int estado, String search, int length, int start) throws Exception {
+   public List<CatalogoEntity> findAll() throws Exception {
      try {
-       List<CatalogoEntity> entities = this.catalogoRepository.findAll(estado, search, length, start);
+       List<CatalogoEntity> entities = this.catalogoRepository.findAllByOrderByIdAsc();
        return entities;
      } catch (Exception e) {
        System.out.println(e.getMessage());
@@ -250,7 +243,7 @@
        } 
 
 
-       entity = (CatalogoEntity)this.genericRepository.save(entity);
+       entity = (CatalogoEntity)this.catalogoRepository.save(entity);
        return entity;
      } catch (Exception e) {
        e.printStackTrace();
@@ -475,7 +468,7 @@
    @Transactional(readOnly = true)
    public List<CatalogoResponseDTO> findAllDTO() {
        try {
-           return findAll().stream()
+           return catalogoRepository.findAllByOrderByIdAsc().stream()
                .map(this::toResponseDTO)
                .collect(Collectors.toList());
        } catch (Exception e) {
@@ -489,7 +482,7 @@
    @Override
    @Transactional(readOnly = true)
    public List<CatalogoResponseDTO> findAllDTO(int estado) {
-       List<CatalogoEntity> catalogos = catalogoRepository.findByEstado(estado);
+       List<CatalogoEntity> catalogos = catalogoRepository.findByEstadoOrderByIdAsc(estado);
        return catalogos.stream()
            .map(this::toResponseDTO)
            .collect(Collectors.toList());
@@ -735,6 +728,8 @@
            return null;
        }
    }
+
+
  }
 
 

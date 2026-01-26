@@ -3,16 +3,15 @@ package app.catalogo.service;
 import app.catalogo.dto.CatalogoDTO;
 import app.catalogo.dto.CatalogoResponseDTO;
 import app.catalogo.entity.CatalogoEntity;
-import app.common.util.GenericServiceNormal;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
-public interface CatalogoService extends GenericServiceNormal<CatalogoEntity, Integer> {
+public interface CatalogoService {
   int getIdPrimaryKey() throws Exception;
   
   Integer getCodigo() throws Exception;
   
-  List<CatalogoEntity> findAll(int paramInt1, String paramString, int paramInt2, int paramInt3) throws Exception;
+  List<CatalogoEntity> findAll() throws Exception;
   
   void updateStatus(int paramInt1, int paramInt2) throws Exception;
   

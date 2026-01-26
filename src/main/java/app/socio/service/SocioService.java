@@ -3,43 +3,92 @@ package app.socio.service;
 import app.socio.dto.SocioCompleteResponseDTO;
 import app.socio.dto.SocioResponseDTO;
 import app.socio.entity.SocioEntity;
-import app.common.util.GenericServiceNormal;
 import java.util.List;
 
-public interface SocioService extends GenericServiceNormal<SocioEntity, Integer> {
+/**
+ * Servicio independiente para Socio
+ * No extiende de ningún servicio genérico
+ */
+public interface SocioService {
+  
+  // ============================================
+  // CRUD Básico
+  // ============================================
+  
+  /**
+   * Lista todos los socios (entidades completas)
+   */
+  List<SocioEntity> findAll() throws Exception;
+  
+  /**
+   * Busca un socio por ID
+   */
+  SocioEntity findById(Integer id) throws Exception;
+  
+  /**
+   * Guarda un nuevo socio
+   */
+  SocioEntity save(SocioEntity socio) throws Exception;
+  
+  /**
+   * Actualiza un socio existente
+   */
+  SocioEntity update(Integer id, SocioEntity socio) throws Exception;
+  
+  /**
+   * Elimina un socio
+   */
+  boolean delete(Integer id) throws Exception;
+  
+  // ============================================
+  // Métodos específicos de negocio
+  // ============================================
+  
   int getIdPrimaryKey() throws Exception;
   
   Integer getCodigo() throws Exception;
+    
+  void updateStatus(int status, int id) throws Exception;
   
-  List<SocioEntity> findAll(int paramInt1, String paramString, int paramInt2, int paramInt3) throws Exception;
+  Integer getTotAll(String search, int estado) throws Exception;
   
-  void updateStatus(int paramInt1, int paramInt2) throws Exception;
+  SocioEntity findByNrodocumento(String nrodocumento) throws Exception;
   
-  Integer getTotAll(String paramString, int paramInt) throws Exception;
+  SocioEntity renovarQR(Integer id, SocioEntity socio) throws Exception;
   
-  SocioEntity findByNrodocumento(String paramString) throws Exception;
+  SocioEntity updatecatalogos(Integer id, SocioEntity socio) throws Exception;
   
-  SocioEntity renovarQR(Integer paramInteger, SocioEntity paramSocioEntity) throws Exception;
+  // ============================================
+  // Métodos con DTOs
+  // ============================================
   
-  SocioEntity updatecatalogos(Integer paramInteger, SocioEntity paramSocioEntity) throws Exception;
-  
-  // Nuevos métodos con DTOs
+  /**
+   * Lista todos los socios (versión DTO simplificada)
+   */
   List<SocioResponseDTO> findAllDTO();
   
+  /**
+   * Busca un socio por ID (versión DTO)
+   */
   SocioResponseDTO findByIdDTO(Integer id);
   
+  /**
+   * Busca un socio por número de documento (versión DTO)
+   */
   SocioResponseDTO findByNrodocumentoDTO(String nrodocumento);
   
+  /**
+   * Renueva el QR de un socio (versión DTO)
+   */
   SocioResponseDTO renovarQRDTO(Integer id);
   
+  /**
+   * Actualiza los catálogos de un socio (versión DTO)
+   */
   SocioResponseDTO updateCatalogosDTO(Integer id, List<Integer> catalogIds);
   
-  // Método para obtener información completa de socios (incluye usuario y empresas)
+  /**
+   * Lista completa de socios con toda su información (usuario, empresas, etc.)
+   */
   List<SocioCompleteResponseDTO> findAllComplete();
 }
-
-
-/* Location:              C:\Users\Usuario\Desktop\CADET.jar!\BOOT-INF\classes\app\service\SocioService.class
- * Java compiler version: 11 (55.0)
- * JD-Core Version:       1.1.3
- */

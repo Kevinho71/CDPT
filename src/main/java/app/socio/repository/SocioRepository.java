@@ -1,24 +1,29 @@
 package app.socio.repository;
 
 import app.socio.entity.SocioEntity;
-import app.common.util.GenericRepositoryNormal;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository independiente para Socio
+ * No extiende de ningún repository genérico
+ */
 @Repository
-public interface SocioRepository extends GenericRepositoryNormal<SocioEntity, Integer> {
+public interface SocioRepository extends JpaRepository<SocioEntity, Integer> {
+
+  List<SocioEntity> findAllByOrderByIdAsc();
+
   @Query(value = "select COALESCE(max(id),0)+1 as id from socio", nativeQuery = true)
   int getIdPrimaryKey();
   
   @Query(value = "SELECT COALESCE(max(codigo),0)+1 as id from socio", nativeQuery = true)
   Integer getCodigo();
-  
-  @Query(value = "select t.* from socio t where (t.estado=:estado or :estado=-1) and  (upper(concat(t.id,t.matricula,'')) like concat('%',upper(:search),'%')) ORDER BY t.id ASC LIMIT :length OFFSET :start ", countQuery = "SELECT count(t.*) FROM socio t where (t.estado=:estado or :estado=-1) and  (upper(concat(t.id,t.matricula,'')) like concat('%',upper(:search),'%')) LIMIT :length OFFSET :start ", nativeQuery = true)
-  List<SocioEntity> findAll(@Param("estado") int paramInt1, @Param("search") String paramString, @Param("length") int paramInt2, @Param("start") int paramInt3);
-  
+    
   @Modifying
   @Query(value = "UPDATE socio SET estado= ?1 WHERE id=?2", nativeQuery = true)
   void updateStatus(Integer paramInteger1, Integer paramInteger2);

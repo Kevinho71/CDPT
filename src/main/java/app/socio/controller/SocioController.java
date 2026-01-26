@@ -56,24 +56,7 @@ public class SocioController {
     public ResponseEntity<List<SocioCompleteResponseDTO>> getAllComplete() {
         return ResponseEntity.ok(socioService.findAllComplete());
     }
-
-    /**
-     * Lista socios con paginación y filtros (DataTables)
-     * GET /api/partners/datatable
-     */
-    @GetMapping("/datatable")
-    public ResponseEntity<Map<String, Object>> getDataTable(
-            HttpServletRequest request,
-            @Param("draw") int draw,
-            @Param("length") int length,
-            @Param("start") int start,
-            @Param("estado") int estado) {
-        
-        String search = request.getParameter("search[value]");
-        Map<String, Object> result = socioService.getDataTableData(draw, length, start, estado, search);
-        return ResponseEntity.ok(result);
-    }
-
+ 
     /**
      * Obtiene un socio por ID
      * GET /api/partners/{id}

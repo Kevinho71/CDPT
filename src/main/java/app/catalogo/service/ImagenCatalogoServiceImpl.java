@@ -1,13 +1,11 @@
  package app.catalogo.service;
  
  import app.catalogo.entity.ImagenesCatalogoEntity;
- import app.common.util.GenericRepositoryNormal;
  import app.catalogo.repository.ImagenCatalogoRepository;
  import app.common.util.ArchivoService;
- import app.common.util.GenericServiceImplNormal;
  import app.catalogo.service.ImagenCatalogoService;
- import java.io.Serializable;
  import java.util.List;
+ import java.util.Optional;
  import org.springframework.beans.factory.annotation.Autowired;
  import org.springframework.stereotype.Service;
  import org.springframework.transaction.annotation.Transactional;
@@ -15,10 +13,7 @@
 
 
  @Service
- public class ImagenCatalogoServiceImpl
-   extends GenericServiceImplNormal<ImagenesCatalogoEntity, Integer>
-   implements ImagenCatalogoService
- {
+ public class ImagenCatalogoServiceImpl implements ImagenCatalogoService {
    @Autowired
    private ImagenCatalogoRepository ImagenCatalogoRepository;
    @Autowired
@@ -36,10 +31,6 @@
    
    private static final int MAX_GALERIA_IMAGES = 3;
    
-   ImagenCatalogoServiceImpl(GenericRepositoryNormal<ImagenesCatalogoEntity, Integer> genericRepository) {
-     super(genericRepository);
-   }
-
 
    public int getIdPrimaryKey() throws Exception {
      try {
@@ -103,21 +94,60 @@
    }
 
 
+   @Override
    @Transactional
-   public ImagenesCatalogoEntity update(Integer id, ImagenesCatalogoEntity entidad) throws Exception {
+   public ImagenesCatalogoEntity save(ImagenesCatalogoEntity entidad) throws Exception {
      try {
-       System.out.println("Modificar1:" + entidad.toString());
-
-
-       ImagenesCatalogoEntity entitymod = new ImagenesCatalogoEntity();
-       
-       entitymod = (ImagenesCatalogoEntity)this.genericRepository.save(entidad);
-       return entitymod;
+       return this.ImagenCatalogoRepository.save(entidad);
      } catch (Exception e) {
        e.printStackTrace();
        System.out.println(e.getMessage());
        throw new Exception(e.getMessage());
      } 
+   }
+   
+   @Override
+   @Transactional
+   public Optional<ImagenesCatalogoEntity> findById(Integer id) throws Exception {
+     try {
+       return this.ImagenCatalogoRepository.findById(id);
+     } catch (Exception e) {
+       System.out.println(e.getMessage());
+       throw new Exception(e.getMessage());
+     }
+   }
+   
+   @Override
+   @Transactional
+   public List<ImagenesCatalogoEntity> findAll() throws Exception {
+     try {
+       return this.ImagenCatalogoRepository.findAll();
+     } catch (Exception e) {
+       System.out.println(e.getMessage());
+       throw new Exception(e.getMessage());
+     }
+   }
+   
+   @Override
+   @Transactional
+   public void delete(ImagenesCatalogoEntity entity) throws Exception {
+     try {
+       this.ImagenCatalogoRepository.delete(entity);
+     } catch (Exception e) {
+       System.out.println(e.getMessage());
+       throw new Exception(e.getMessage());
+     }
+   }
+   
+   @Override
+   @Transactional
+   public void deleteById(Integer id) throws Exception {
+     try {
+       this.ImagenCatalogoRepository.deleteById(id);
+     } catch (Exception e) {
+       System.out.println(e.getMessage());
+       throw new Exception(e.getMessage());
+     }
    }
    
    @Override
@@ -186,7 +216,7 @@
        }
        
        // Save to database
-       return (ImagenesCatalogoEntity) this.genericRepository.save(imagenEntity);
+       return this.ImagenCatalogoRepository.save(imagenEntity);
        
      } catch (Exception e) {
        System.err.println("Error al guardar imagen: " + e.getMessage());
@@ -199,7 +229,7 @@
    @Transactional
    public void eliminarImagen(Integer id) throws Exception {
      try {
-       ImagenesCatalogoEntity imagen = (ImagenesCatalogoEntity) this.genericRepository.findById(id)
+       ImagenesCatalogoEntity imagen = this.ImagenCatalogoRepository.findById(id)
          .orElseThrow(() -> new Exception("Imagen no encontrada con id: " + id));
        
        // Delete from Cloudinary
@@ -212,7 +242,7 @@
        }
        
        // Delete from database
-       this.genericRepository.deleteById(id);
+       this.ImagenCatalogoRepository.deleteById(id);
        
      } catch (Exception e) {
        System.err.println("Error al eliminar imagen: " + e.getMessage());

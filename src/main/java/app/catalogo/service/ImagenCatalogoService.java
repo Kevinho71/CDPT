@@ -1,11 +1,23 @@
 package app.catalogo.service;
 
 import app.catalogo.entity.ImagenesCatalogoEntity;
-import app.common.util.GenericServiceNormal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.web.multipart.MultipartFile;
 
-public interface ImagenCatalogoService extends GenericServiceNormal<ImagenesCatalogoEntity, Integer> {
+public interface ImagenCatalogoService {
+  // CRUD methods
+  Optional<ImagenesCatalogoEntity> findById(Integer id) throws Exception;
+  
+  ImagenesCatalogoEntity save(ImagenesCatalogoEntity entity) throws Exception;
+  
+  List<ImagenesCatalogoEntity> findAll() throws Exception;
+  
+  void delete(ImagenesCatalogoEntity entity) throws Exception;
+  
+  void deleteById(Integer id) throws Exception;
+  
+  // Custom methods
   int getIdPrimaryKey() throws Exception;
   
   Integer getCodigo() throws Exception;

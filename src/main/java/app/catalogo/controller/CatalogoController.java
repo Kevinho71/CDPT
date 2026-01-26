@@ -29,9 +29,6 @@ public class CatalogoController {
    @Autowired
    private CatalogoServiceImpl catalogoService;
    
-   @Autowired
-   private ArchivoService archivoService;
-   
    /**
     * Lista todos los catálogos
     * GET /api/catalogos
