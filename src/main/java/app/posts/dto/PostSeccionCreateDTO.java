@@ -23,7 +23,10 @@ public class PostSeccionCreateDTO {
     private String contenido; // HTML String - puede ser largo
     
     @Size(max = 500, message = "La URL de imagen no puede exceder 500 caracteres")
-    private String imagenUrl; // Cloudinary URL
+    private String imagenUrl; // Cloudinary URL (si ya está subida)
+    
+    // Base64 de la imagen de sección (alternativa a imagenUrl)
+    private String imagenBase64;
     
     @Size(max = 500, message = "La URL de video no puede exceder 500 caracteres")
     private String videoUrl; // YouTube URL
@@ -81,6 +84,14 @@ public class PostSeccionCreateDTO {
 
     public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
+    }
+
+    public String getImagenBase64() {
+        return imagenBase64;
+    }
+
+    public void setImagenBase64(String imagenBase64) {
+        this.imagenBase64 = imagenBase64;
     }
 
     public String getVideoUrl() {

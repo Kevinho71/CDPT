@@ -1,0 +1,101 @@
+# ============================================================================
+# Docker Compose para Producción (Dokploy)
+# ============================================================================
+# Este archivo puede ser usado como referencia en Dokploy
+# Dokploy puede auto-detectar y usar este archivo
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Base de Datos PostgreSQL
+  # ============================================================================
+  db:
+    image: postgres:17-alpine
+    container_name: cadet_db_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_DEV_USER}
+      POSTGRES_PASSWORD: ${DB_DEV_PASSWORD}
+      POSTGRES_DB: ${DB_DEV_NAME}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=es_ES.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d:ro
+    networks:
+      - cadet-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_DEV_USER} -d ${DB_DEV_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  # ============================================================================
+  # Aplicación Spring Boot
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cadet_app_prod
+    restart: unless-stopped
+    environment:
+      # Base de datos
+      DB_DEV_URL: jdbc:postgresql://db:5432/${DB_DEV_NAME}
+      DB_DEV_USER: ${DB_DEV_USER}
+      DB_DEV_PASSWORD: ${DB_DEV_PASSWORD}
+      
+      # Seguridad
+      JWT_SECRET: ${JWT_SECRET}
+      USER_ADMIN_PASSWORD: ${USER_ADMIN_PASSWORD}
+      
+      # OAuth2
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # Cloudinary
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      
+      # Aplicación
+      APP_DOMAIN: ${APP_DOMAIN}
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+      
+      # JVM Options
+      JAVA_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+    
+    ports:
+      - "8080:8080"
+    
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    networks:
+      - cadet-network
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  cadet-network:
+    driver: bridge

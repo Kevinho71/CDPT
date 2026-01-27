@@ -20,7 +20,10 @@ public class PostUpdateDTO {
     private String autor;
     
     @Size(max = 500, message = "La URL de portada no puede exceder 500 caracteres")
-    private String portadaUrl;
+    private String portadaUrl; // URL si ya está subida
+    
+    // Base64 de la imagen de portada (para subir nueva imagen)
+    private String portadaBase64;
     
     @Size(max = 20, message = "El tipo no puede exceder 20 caracteres")
     private String tipo; // 'NOTICIA' o 'EVENTO'
@@ -90,6 +93,14 @@ public class PostUpdateDTO {
 
     public void setPortadaUrl(String portadaUrl) {
         this.portadaUrl = portadaUrl;
+    }
+
+    public String getPortadaBase64() {
+        return portadaBase64;
+    }
+
+    public void setPortadaBase64(String portadaBase64) {
+        this.portadaBase64 = portadaBase64;
     }
 
     public String getTipo() {

@@ -25,7 +25,10 @@ public class PostCreateDTO {
     private String autor; // Texto público (Ej: "La Directiva")
     
     @Size(max = 500, message = "La URL de portada no puede exceder 500 caracteres")
-    private String portadaUrl; // Cloudinary URL
+    private String portadaUrl; // Cloudinary URL (si ya está subida)
+    
+    // Base64 de la imagen de portada (alternativa a portadaUrl)
+    private String portadaBase64;
     
     @NotBlank(message = "El tipo de post es obligatorio")
     @Size(max = 20, message = "El tipo no puede exceder 20 caracteres")
@@ -96,6 +99,14 @@ public class PostCreateDTO {
 
     public void setPortadaUrl(String portadaUrl) {
         this.portadaUrl = portadaUrl;
+    }
+
+    public String getPortadaBase64() {
+        return portadaBase64;
+    }
+
+    public void setPortadaBase64(String portadaBase64) {
+        this.portadaBase64 = portadaBase64;
     }
 
     public String getTipo() {

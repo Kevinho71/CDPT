@@ -23,7 +23,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UsuarioEntity usuario = usuarioRepository.findByUsername(username);
+        UsuarioEntity usuario;
+        
+        // Si el username contiene @, es un email (usado por JWT)
+        if (username.contains("@")) {
+            usuario = usuarioRepository.findByPersonaEmail(username);
+        } else {
+            // Si no, es un username (usado por login normal)
+            usuario = usuarioRepository.findByUsername(username);
+        }
+        
         if (usuario == null) {
             throw new UsernameNotFoundException("Usuario o password Invalido");
         }

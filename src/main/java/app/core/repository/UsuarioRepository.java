@@ -38,6 +38,9 @@ public interface UsuarioRepository extends GenericRepositoryNormal<UsuarioEntity
   
   @Query(value = "SELECT * FROM usuario WHERE fk_persona = ?1", nativeQuery = true)
   UsuarioEntity findByPersonaId(Integer personaId);
+  
+  @Query(value = "SELECT u.* FROM usuario u INNER JOIN persona p ON u.fk_persona = p.id WHERE p.email = ?1 AND u.estado = 1", nativeQuery = true)
+  UsuarioEntity findByPersonaEmail(String email);
 }
 
 
