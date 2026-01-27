@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Controlador público para consulta de posts (noticias y eventos)
  * No requiere autenticación
+ * Soporta ambas rutas: /api/public/posts y /public/posts
  */
 @RestController
 @RequestMapping("/api/public/posts")

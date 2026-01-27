@@ -60,6 +60,9 @@ Thumbs.db
 
 # Application specific
 .env
+.env.local
+.env.production
+.env.*.local
 application-local.properties
 cadet-sistema-*.json
 **/qrcodes/**
@@ -74,3 +77,9 @@ src/main/resources/static/logos/*.jpg
 src/main/resources/static/catalogosimg/**
 
 database/
+
+# Deployment secrets (NUNCA commitear con valores reales)
+# Solo commitear los .template
+.env.production
+!.env.template
+!.env.production.template

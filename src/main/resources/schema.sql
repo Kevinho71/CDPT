@@ -490,3 +490,175 @@ CREATE INDEX IF NOT EXISTS idx_post_secciones_post ON post_secciones(fk_post);
 CREATE INDEX IF NOT EXISTS idx_post_secciones_orden ON post_secciones(fk_post, orden);
 CREATE INDEX IF NOT EXISTS idx_post_secciones_tipo ON post_secciones(tipo_seccion);
 CREATE INDEX IF NOT EXISTS idx_post_secciones_estado ON post_secciones(estado);
+
+-- ============================================================================
+-- 13. SISTEMA DE GESTIÓN DE CONTENIDOS ESTÁTICOS (CMS SIMPLIFICADO)
+-- ============================================================================
+
+-- TABLA ÚNICA: DICCIONARIO DE CONTENIDOS (Arquitectura Clave-Valor)
+-- Almacena todo el contenido editable de la Landing Page
+CREATE TABLE IF NOT EXISTS web_static_content (
+    clave VARCHAR(100) PRIMARY KEY, -- ID único (ej: 'home_hero_titulo', 'footer_copy')
+    
+    -- CONTENIDO EDITABLE
+    valor TEXT, -- El contenido (Texto, URL imagen, Link)
+    
+    -- AGRUPACIÓN Y TIPO
+    seccion VARCHAR(50), -- Agrupador para el Panel Admin (ej: 'HOME', 'CONTACTO', 'GLOBAL')
+    tipo_input VARCHAR(20) DEFAULT 'TEXT', -- Instrucción de renderizado para el Admin:
+                                           -- 'TEXT' (Input simple)
+                                           -- 'TEXTAREA' (Caja grande)
+                                           -- 'IMAGE' (Uploader)
+                                           -- 'LINK' (Input para URL externa)
+    
+    -- AUDITORÍA (Solo se guarda quién modificó y cuándo)
+    fk_usuario_modificador INTEGER,
+    fecha_modificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_static_content_modificador FOREIGN KEY (fk_usuario_modificador) REFERENCES usuario(id) ON DELETE SET NULL
+);
+
+-- ============================================================================
+-- ÍNDICES PARA OPTIMIZACIÓN DE TABLAS BASE
+-- ============================================================================
+
+-- Índices para tablas geográficas
+CREATE INDEX IF NOT EXISTS idx_departamento_pais ON departamento(fk_pais);
+CREATE INDEX IF NOT EXISTS idx_provincia_departamento ON provincia(fk_departamento);
+CREATE INDEX IF NOT EXISTS idx_pais_estado ON pais(estado);
+CREATE INDEX IF NOT EXISTS idx_departamento_estado ON departamento(estado);
+CREATE INDEX IF NOT EXISTS idx_provincia_estado ON provincia(estado);
+
+-- Índices para instituciones
+CREATE INDEX IF NOT EXISTS idx_institucion_provincia ON institucion(fk_provincia);
+CREATE INDEX IF NOT EXISTS idx_institucion_estado ON institucion(estado);
+CREATE INDEX IF NOT EXISTS idx_anio_institucion ON anio(fk_institucion);
+
+-- Índices para personas y usuarios
+CREATE INDEX IF NOT EXISTS idx_persona_email ON persona(email);
+CREATE INDEX IF NOT EXISTS idx_persona_ci ON persona(ci);
+CREATE INDEX IF NOT EXISTS idx_persona_estado ON persona(estado);
+CREATE INDEX IF NOT EXISTS idx_usuario_username ON usuario(username);
+CREATE INDEX IF NOT EXISTS idx_usuario_persona ON usuario(fk_persona);
+CREATE INDEX IF NOT EXISTS idx_usuario_estado ON usuario(estado);
+CREATE INDEX IF NOT EXISTS idx_usuarios_roles_usuario ON usuarios_roles(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_roles_rol ON usuarios_roles(rol_id);
+
+-- Índices para socios (búsquedas frecuentes)
+CREATE INDEX IF NOT EXISTS idx_socio_persona ON socio(fk_persona);
+CREATE INDEX IF NOT EXISTS idx_socio_institucion ON socio(fk_institucion);
+CREATE INDEX IF NOT EXISTS idx_socio_profesion ON socio(fk_profesion);
+CREATE INDEX IF NOT EXISTS idx_socio_matricula ON socio(matricula);
+CREATE INDEX IF NOT EXISTS idx_socio_codigo ON socio(codigo);
+CREATE INDEX IF NOT EXISTS idx_socio_estado ON socio(estado);
+CREATE INDEX IF NOT EXISTS idx_socio_nrodocumento ON socio(nrodocumento);
+
+-- ============================================================================
+-- ÍNDICES PARA OPTIMIZACIÓN DE IMÁGENES Y CATÁLOGOS
+-- ============================================================================
+
+-- Índices para catálogo (empresas)
+CREATE INDEX IF NOT EXISTS idx_catalogo_tipo ON catalogo(tipo);
+CREATE INDEX IF NOT EXISTS idx_catalogo_nit ON catalogo(nit);
+CREATE INDEX IF NOT EXISTS idx_catalogo_estado ON catalogo(estado);
+CREATE INDEX IF NOT EXISTS idx_catalogo_departamento ON catalogo(fk_departamento);
+CREATE INDEX IF NOT EXISTS idx_catalogo_provincia ON catalogo(fk_provincia);
+CREATE INDEX IF NOT EXISTS idx_catalogo_pais ON catalogo(fk_pais);
+
+-- Índices CRÍTICOS para imágenes de catálogo (optimización principal)
+CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo ON imagencatalogo(fk_catalogo);
+CREATE INDEX IF NOT EXISTS idx_imagencatalogo_tipo ON imagencatalogo(tipo);
+CREATE INDEX IF NOT EXISTS idx_imagencatalogo_estado ON imagencatalogo(estado);
+CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo_tipo ON imagencatalogo(fk_catalogo, tipo);
+CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo_estado ON imagencatalogo(fk_catalogo, estado);
+
+-- Índice para relación socio-catálogo
+CREATE INDEX IF NOT EXISTS idx_socio_catalogos_socio ON socio_catalogos(socio_id);
+CREATE INDEX IF NOT EXISTS idx_socio_catalogos_catalogo ON socio_catalogos(catalogo_id);
+
+-- ============================================================================
+-- ÍNDICES PARA PERFILES PÚBLICOS Y BÚSQUEDA DE PROFESIONALES
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_socio ON perfil_socio(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_publico ON perfil_socio(perfil_publico);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_estado ON perfil_socio(estado);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_ciudad ON perfil_socio(ciudad);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_titulo ON perfil_socio(titulo_profesional);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_visualizaciones ON perfil_socio(visualizaciones DESC);
+CREATE INDEX IF NOT EXISTS idx_perfil_socio_publico_estado ON perfil_socio(perfil_publico, estado);
+
+-- Índices para especialidades y servicios
+CREATE INDEX IF NOT EXISTS idx_especialidades_estado ON especialidades(estado);
+CREATE INDEX IF NOT EXISTS idx_especialidades_origen ON especialidades(origen);
+CREATE INDEX IF NOT EXISTS idx_socio_especialidades_perfil ON socio_especialidades(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_especialidades_especialidad ON socio_especialidades(fk_especialidad);
+
+CREATE INDEX IF NOT EXISTS idx_servicios_estado ON servicios(estado);
+CREATE INDEX IF NOT EXISTS idx_servicios_categoria ON servicios(categoria);
+CREATE INDEX IF NOT EXISTS idx_servicios_origen ON servicios(origen);
+CREATE INDEX IF NOT EXISTS idx_socio_servicios_perfil ON socio_servicios(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_servicios_servicio ON socio_servicios(fk_servicio);
+CREATE INDEX IF NOT EXISTS idx_socio_servicios_destacado ON socio_servicios(destacado);
+
+CREATE INDEX IF NOT EXISTS idx_sectores_estado ON sectores(estado);
+CREATE INDEX IF NOT EXISTS idx_sectores_origen ON sectores(origen);
+CREATE INDEX IF NOT EXISTS idx_socio_sectores_perfil ON socio_sectores(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_sectores_sector ON socio_sectores(fk_sector);
+
+-- ============================================================================
+-- ÍNDICES PARA FORMACIÓN Y CERTIFICACIONES
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_formacion_perfil ON formacion(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_formacion_tipo ON formacion(tipo);
+CREATE INDEX IF NOT EXISTS idx_formacion_estado ON formacion(estado);
+CREATE INDEX IF NOT EXISTS idx_formacion_orden ON formacion(fk_perfil_socio, orden);
+
+CREATE INDEX IF NOT EXISTS idx_certificaciones_perfil ON certificaciones(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_certificaciones_estado ON certificaciones(estado);
+CREATE INDEX IF NOT EXISTS idx_certificaciones_orden ON certificaciones(fk_perfil_socio, orden);
+
+CREATE INDEX IF NOT EXISTS idx_socio_idiomas_perfil ON socio_idiomas(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_idiomas_idioma ON socio_idiomas(fk_idioma);
+
+-- ============================================================================
+-- ÍNDICES PARA GESTIÓN DOCUMENTAL
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_documentos_tipo ON documentos(tipo);
+CREATE INDEX IF NOT EXISTS idx_documentos_estado ON documentos(estado);
+CREATE INDEX IF NOT EXISTS idx_documentos_fecha ON documentos(fecha_subida DESC);
+
+-- ============================================================================
+-- ÍNDICES PARA PAGOS Y FINANZAS
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_pagos_socio ON pagos(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_pagos_estado ON pagos(estado);
+CREATE INDEX IF NOT EXISTS idx_pagos_fecha ON pagos(fecha_pago DESC);
+CREATE INDEX IF NOT EXISTS idx_pagos_metodo ON pagos(metodo_pago);
+
+-- ============================================================================
+-- ÍNDICES PARA AUTENTICACIÓN SOCIAL Y CONSULTAS
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_usuario_social_persona ON usuario_social(fk_persona);
+CREATE INDEX IF NOT EXISTS idx_usuario_social_email ON usuario_social(email);
+CREATE INDEX IF NOT EXISTS idx_usuario_social_provider ON usuario_social(provider);
+CREATE INDEX IF NOT EXISTS idx_usuario_social_estado ON usuario_social(estado);
+
+CREATE INDEX IF NOT EXISTS idx_consultas_perfil ON consultas_contacto(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_consultas_estado ON consultas_contacto(estado);
+CREATE INDEX IF NOT EXISTS idx_consultas_fecha ON consultas_contacto(fecha_creacion DESC);
+
+CREATE INDEX IF NOT EXISTS idx_estadisticas_orden ON estadisticas_publicas(orden);
+CREATE INDEX IF NOT EXISTS idx_estadisticas_visible ON estadisticas_publicas(visible);
+
+-- ============================================================================
+-- ÍNDICES PARA CONTENIDO WEB ESTÁTICO
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_static_content_seccion ON web_static_content(seccion);
+CREATE INDEX IF NOT EXISTS idx_static_content_tipo ON web_static_content(tipo_input);
+CREATE INDEX IF NOT EXISTS idx_static_content_modificador ON web_static_content(fk_usuario_modificador);

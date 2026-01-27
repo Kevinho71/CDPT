@@ -110,7 +110,12 @@ public class PostAdminController {
     /**
      * POST /api/admin/posts/upload/portada
      * Sube una imagen de portada a Cloudinary
+     * 
+     * @deprecated Este endpoint sube imágenes ANTES de crear el post, lo cual puede generar imágenes huérfanas.
+     * Se recomienda enviar las imágenes como Base64 en el campo 'portadaBase64' del DTO de creación/actualización.
+     * Este endpoint se mantiene solo para compatibilidad con frontend antiguo.
      */
+    @Deprecated
     @PostMapping("/upload/portada")
     public ResponseEntity<ImageUploadResponse> uploadPortada(@RequestParam("file") MultipartFile file) {
         String url = postService.uploadPortada(file);
@@ -121,7 +126,12 @@ public class PostAdminController {
     /**
      * POST /api/admin/posts/upload/seccion
      * Sube una imagen de sección a Cloudinary
+     * 
+     * @deprecated Este endpoint sube imágenes ANTES de crear el post, lo cual puede generar imágenes huérfanas.
+     * Se recomienda enviar las imágenes como Base64 en el campo 'imagenBase64' del DTO de sección.
+     * Este endpoint se mantiene solo para compatibilidad con frontend antiguo.
      */
+    @Deprecated
     @PostMapping("/upload/seccion")
     public ResponseEntity<ImageUploadResponse> uploadSeccionImagen(@RequestParam("file") MultipartFile file) {
         String url = postService.uploadSeccionImagen(file);
@@ -132,7 +142,11 @@ public class PostAdminController {
     /**
      * DELETE /api/admin/posts/upload/{publicId}
      * Elimina una imagen de Cloudinary
+     * 
+     * @deprecated La eliminación de imágenes ahora se maneja automáticamente al actualizar/eliminar posts.
+     * Este endpoint se mantiene solo para compatibilidad con frontend antiguo.
      */
+    @Deprecated
     @DeleteMapping("/upload/{publicId}")
     public ResponseEntity<Void> deleteImage(@PathVariable String publicId) {
         postService.deleteImage(publicId);

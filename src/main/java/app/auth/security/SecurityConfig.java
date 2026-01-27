@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,6 +27,9 @@ public class SecurityConfig {
     
     @Autowired
     private OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+    
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
     
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -69,6 +73,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .headers(headers -> headers.disable())
             .csrf(csrf -> csrf.disable())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize -> authorize
                 // Recursos estáticos
                 .requestMatchers(
@@ -105,14 +110,20 @@ public class SecurityConfig {
                 // OAuth2 y autenticación
                 .requestMatchers("/oauth2/**", "/api/auth/**").permitAll()
                 
-                // Posts públicos (sin autenticación)
-                .requestMatchers("/api/public/posts/**").permitAll()
+                // Posts públicos (sin autenticación) - con y sin prefijo /api
+                .requestMatchers("/api/public/posts/**", "/public/posts/**").permitAll()
+                
+                // CMS públicos (sin autenticación) - con y sin prefijo /api
+                .requestMatchers("/api/public/content", "/public/content").permitAll()
                 
                 // Posts admin (requiere ROLE_ADMIN)
                 .requestMatchers("/api/admin/posts/**").hasRole("ADMIN")
                 
+                // CMS admin (requiere ROLE_ADMIN)
+                .requestMatchers("/api/admin/content/**").hasRole("ADMIN")
+                
                 // Endpoints de socios y perfiles (requieren autenticación)
-                .requestMatchers("/api/partners/**", "/api/perfiles/**").hasAnyRole("SOCIO", "ADMIN")
+                .requestMatchers("/api/partners/**").hasAnyRole("SOCIO", "ADMIN")
                 
                 // Catálogos de datos (públicos por ahora)
                 .requestMatchers(
@@ -123,7 +134,8 @@ public class SecurityConfig {
                     "/api/idiomas/**",
                     "/api/especialidades/**",
                     "/api/locations/**",
-                    "/api/catalogos/**"
+                    "/api/catalogos/**",
+                     "/api/perfiles/**"
                 ).permitAll()
                 
                 // Gestión de usuarios y roles (solo ADMIN)
