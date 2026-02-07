@@ -5,6 +5,7 @@ import app.finanza.dto.TransaccionPagoResponseDTO;
 import app.finanza.dto.TransaccionPagoUpdateDTO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,9 +21,9 @@ public interface TransaccionPagoService {
     
     TransaccionPagoResponseDTO findById(Integer id);
     
-    TransaccionPagoResponseDTO create(TransaccionPagoCreateDTO dto, MultipartFile comprobante);
+    TransaccionPagoResponseDTO create(TransaccionPagoCreateDTO dto, MultipartFile comprobante) throws IOException;
     
-    TransaccionPagoResponseDTO update(Integer id, TransaccionPagoUpdateDTO dto, MultipartFile comprobante);
+    TransaccionPagoResponseDTO update(Integer id, TransaccionPagoUpdateDTO dto, MultipartFile comprobante) throws IOException;
     
     void delete(Integer id);
     

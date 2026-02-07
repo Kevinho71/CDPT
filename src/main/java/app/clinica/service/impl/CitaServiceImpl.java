@@ -97,8 +97,9 @@ public class CitaServiceImpl implements CitaService {
         entity.setHoraFin(dto.getHoraFin());
         entity.setModalidad(dto.getModalidad());
         entity.setTipoSesion(dto.getTipoSesion());
-        entity.setMotivoBreve(dto.getMotivo());
-        entity.setNotasInternas(dto.getObservaciones());
+        entity.setMotivoBreve(dto.getMotivoBreve());
+        entity.setNotasInternas(dto.getNotasInternas());
+        entity.setMontoAcordado(dto.getMontoAcordado() != null ? dto.getMontoAcordado() : java.math.BigDecimal.ZERO);
         entity.setEstadoCita("PROGRAMADA"); // Estado por defecto
         
         CitaEntity saved = repository.save(entity);
@@ -115,8 +116,8 @@ public class CitaServiceImpl implements CitaService {
         if (dto.getHoraFin() != null) entity.setHoraFin(dto.getHoraFin());
         if (dto.getModalidad() != null) entity.setModalidad(dto.getModalidad());
         if (dto.getTipoSesion() != null) entity.setTipoSesion(dto.getTipoSesion());
-        if (dto.getMotivo() != null) entity.setMotivoBreve(dto.getMotivo());
-        if (dto.getObservaciones() != null) entity.setNotasInternas(dto.getObservaciones());
+        if (dto.getMotivoBreve() != null) entity.setMotivoBreve(dto.getMotivoBreve());
+        if (dto.getNotasInternas() != null) entity.setNotasInternas(dto.getNotasInternas());
         if (dto.getEstadoCita() != null) entity.setEstadoCita(dto.getEstadoCita());
         
         CitaEntity updated = repository.save(entity);
@@ -131,12 +132,16 @@ public class CitaServiceImpl implements CitaService {
         repository.deleteById(id);
     }
     
+    /**
+     * ADVERTENCIA: Este servicio usa el modelo clásico "1 Cita = 1 Paciente".
+     * Para terapias multi-paciente (pareja, familiar), usar CitaSistemicaService.
+     */
     private CitaResponseDTO toResponseDTO(CitaEntity entity) {
         CitaResponseDTO dto = new CitaResponseDTO();
         dto.setId(entity.getId());
         dto.setFkPerfilSocio(entity.getPerfilSocio() != null ? entity.getPerfilSocio().getId() : null);
-        dto.setPerfilSocioNombre(entity.getPerfilSocio() != null && entity.getPerfilSocio().getFkSocio() != null 
-                ? entity.getPerfilSocio().getFkSocio().getNombresocio() : null);
+        dto.setPerfilSocioNombre(entity.getPerfilSocio() != null && entity.getPerfilSocio().getSocio() != null 
+                ? entity.getPerfilSocio().getSocio().getNombresocio() : null);
         dto.setFkPaciente(entity.getPaciente() != null ? entity.getPaciente().getId() : null);
         dto.setPacienteNombre(entity.getPaciente() != null 
                 ? entity.getPaciente().getNombres() + " " + entity.getPaciente().getApellidos() : null);
@@ -145,10 +150,15 @@ public class CitaServiceImpl implements CitaService {
         dto.setHoraFin(entity.getHoraFin());
         dto.setModalidad(entity.getModalidad());
         dto.setTipoSesion(entity.getTipoSesion());
-        dto.setMotivo(entity.getMotivoBreve());
-        dto.setObservaciones(entity.getNotasInternas());
+        dto.setMotivoBreve(entity.getMotivoBreve()); // CORREGIDO: era setMotivo
+        dto.setNotasInternas(entity.getNotasInternas()); // CORREGIDO: era setObservaciones
+        dto.setMontoAcordado(entity.getMontoAcordado());
         dto.setEstadoCita(entity.getEstadoCita());
         dto.setFechaCreacion(entity.getFechaCreacion());
+        
+        // Nota: Este DTO no incluye participantes (modelo clásico)
+        // Para obtener participantes, usar CitaSistemicaService
+        
         return dto;
     }
 }

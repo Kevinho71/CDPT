@@ -2,6 +2,8 @@ package app.clinica.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -31,6 +33,17 @@ public class CitaCreateDTO {
     @Size(max = 255, message = "El motivo breve no puede exceder 255 caracteres")
     private String motivoBreve;
     
+
+    private BigDecimal montoAcordado;
+    
+    public BigDecimal getMontoAcordado() {
+        return montoAcordado;
+    }
+
+    public void setMontoAcordado(BigDecimal montoAcordado) {
+        this.montoAcordado = montoAcordado;
+    }
+
     private String notasInternas;
     
     // Constructor vacío

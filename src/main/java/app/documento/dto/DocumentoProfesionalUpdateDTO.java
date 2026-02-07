@@ -10,7 +10,28 @@ public class DocumentoProfesionalUpdateDTO {
     private String descripcion;
     
     private Integer estado;
+
+    @Size(max = 50, message = "El tipo de archivo no puede exceder 50 caracteres")
+    private String tipoArchivo; // PDF, JPG, PNG
+
+    private String archivoUrl;
     
+    public String getArchivoUrl() {
+        return archivoUrl;
+    }
+
+    public void setArchivoUrl(String archivoUrl) {
+        this.archivoUrl = archivoUrl;
+    }
+
+    public String getTipoArchivo() {
+        return tipoArchivo;
+    }
+
+    public void setTipoArchivo(String tipoArchivo) {
+        this.tipoArchivo = tipoArchivo;
+    }
+
     // Constructor vacío
     public DocumentoProfesionalUpdateDTO() {}
     

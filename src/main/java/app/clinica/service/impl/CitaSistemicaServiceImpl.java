@@ -52,6 +52,11 @@ public class CitaSistemicaServiceImpl implements CitaSistemicaService {
     @Override
     @Transactional
     public CitaResponseDTO crearCitaConParticipantes(CitaConParticipantesCreateDTO dto) {
+        // 0. VALIDACIÓN CRÍTICA: Debe haber al menos un participante
+        if (dto.getParticipantes() == null || dto.getParticipantes().isEmpty()) {
+            throw new IllegalArgumentException("Debe especificar al menos un participante para la cita");
+        }
+        
         // 1. Validar perfil psicólogo
         PerfilSocioEntity perfil = perfilSocioRepository.findById(dto.getFkPerfilSocio())
             .orElseThrow(() -> new RuntimeException("Perfil de psicólogo no encontrado"));
@@ -200,13 +205,21 @@ public class CitaSistemicaServiceImpl implements CitaSistemicaService {
         return citaCreada;
     }
     
-    // Método auxiliar para mapear entidad a DTO
+    // Método auxiliar para mapear entidad a DTO (MODELO SISTÉMICO)
     private CitaResponseDTO mapearACitaResponseDTO(CitaEntity cita, List<ParticipanteSimpleDTO> participantes) {
         CitaResponseDTO dto = new CitaResponseDTO();
         dto.setId(cita.getId());
         dto.setFkPerfilSocio(cita.getPerfilSocio().getId());
+        
+        // Nombre del psicólogo
+        if (cita.getPerfilSocio().getSocio() != null) {
+            dto.setPerfilSocioNombre(cita.getPerfilSocio().getSocio().getNombresocio());
+        }
+        
+        // Paciente titular (responsable administrativo/económico)
         dto.setFkPaciente(cita.getPaciente().getId());
-        dto.setNombrePaciente(cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos());
+        dto.setPacienteNombre(cita.getPaciente().getNombres() + " " + cita.getPaciente().getApellidos());
+        
         dto.setFechaCita(cita.getFechaCita());
         dto.setHoraInicio(cita.getHoraInicio());
         dto.setHoraFin(cita.getHoraFin());
@@ -215,13 +228,11 @@ public class CitaSistemicaServiceImpl implements CitaSistemicaService {
         dto.setEstadoCita(cita.getEstadoCita());
         dto.setMotivoBreve(cita.getMotivoBreve());
         dto.setNotasInternas(cita.getNotasInternas());
+        dto.setMontoAcordado(cita.getMontoAcordado());
         dto.setFechaCreacion(cita.getFechaCreacion());
         
-        // Añadir participantes (si existen)
-        if (participantes != null && !participantes.isEmpty()) {
-            // Aquí podrías añadir un campo en CitaResponseDTO para los participantes
-            // Por ahora lo dejamos así
-        }
+        // CRÍTICO: Incluir participantes (modelo sistémico)
+        dto.setParticipantes(participantes);
         
         return dto;
     }

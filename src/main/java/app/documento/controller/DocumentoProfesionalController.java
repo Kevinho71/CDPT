@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -59,7 +60,7 @@ public class DocumentoProfesionalController {
     public ResponseEntity<DocumentoProfesionalResponseDTO> update(
             @PathVariable Integer id,
             @Valid @ModelAttribute DocumentoProfesionalUpdateDTO dto,
-            @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
+            @RequestParam(value = "archivo", required = false) MultipartFile archivo) throws IOException {
         
         return ResponseEntity.ok(documentoProfesionalService.update(id, dto, archivo));
     }

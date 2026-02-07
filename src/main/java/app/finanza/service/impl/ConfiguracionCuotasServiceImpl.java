@@ -52,7 +52,6 @@ public class ConfiguracionCuotasServiceImpl implements ConfiguracionCuotasServic
         entity.setGestion(dto.getGestion());
         entity.setMontoMatricula(dto.getMontoMatricula());
         entity.setMontoMensualidad(dto.getMontoMensualidad());
-        entity.setDescripcion(dto.getDescripcion());
         entity.setDiaLimitePago(dto.getDiaLimitePago() != null ? dto.getDiaLimitePago() : 10);
         entity.setEstado(1); // Activo por defecto
         
@@ -67,7 +66,6 @@ public class ConfiguracionCuotasServiceImpl implements ConfiguracionCuotasServic
         
         if (dto.getMontoMatricula() != null) entity.setMontoMatricula(dto.getMontoMatricula());
         if (dto.getMontoMensualidad() != null) entity.setMontoMensualidad(dto.getMontoMensualidad());
-        if (dto.getDescripcion() != null) entity.setDescripcion(dto.getDescripcion());
         if (dto.getDiaLimitePago() != null) entity.setDiaLimitePago(dto.getDiaLimitePago());
         if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
         
@@ -89,7 +87,6 @@ public class ConfiguracionCuotasServiceImpl implements ConfiguracionCuotasServic
         dto.setGestion(entity.getGestion());
         dto.setMontoMatricula(entity.getMontoMatricula());
         dto.setMontoMensualidad(entity.getMontoMensualidad());
-        dto.setDescripcion(entity.getDescripcion());
         dto.setDiaLimitePago(entity.getDiaLimitePago());
         dto.setEstado(entity.getEstado());
         return dto;

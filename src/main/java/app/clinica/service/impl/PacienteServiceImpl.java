@@ -76,8 +76,8 @@ public class PacienteServiceImpl implements PacienteService {
         entity.setDireccion(dto.getDireccion());
         entity.setOcupacion(dto.getOcupacion());
         entity.setEstadoCivil(dto.getEstadoCivil());
-        entity.setNombreContactoEmergencia(dto.getContactoEmergenciaNombre());
-        entity.setTelefonoContactoEmergencia(dto.getContactoEmergenciaTelefono());
+        entity.setNombreContactoEmergencia(dto.getNombreContactoEmergencia());
+        entity.setTelefonoContactoEmergencia(dto.getTelefonoContactoEmergencia());
         entity.setEstado(1); // Activo por defecto
         
         PacienteEntity saved = repository.save(entity);
@@ -99,8 +99,8 @@ public class PacienteServiceImpl implements PacienteService {
         if (dto.getDireccion() != null) entity.setDireccion(dto.getDireccion());
         if (dto.getOcupacion() != null) entity.setOcupacion(dto.getOcupacion());
         if (dto.getEstadoCivil() != null) entity.setEstadoCivil(dto.getEstadoCivil());
-        if (dto.getContactoEmergenciaNombre() != null) entity.setNombreContactoEmergencia(dto.getContactoEmergenciaNombre());
-        if (dto.getContactoEmergenciaTelefono() != null) entity.setTelefonoContactoEmergencia(dto.getContactoEmergenciaTelefono());
+        if (dto.getNombreContactoEmergencia() != null) entity.setNombreContactoEmergencia(dto.getNombreContactoEmergencia());
+        if (dto.getTelefonoContactoEmergencia() != null) entity.setTelefonoContactoEmergencia(dto.getTelefonoContactoEmergencia());
         if (dto.getEstado() != null) entity.setEstado(dto.getEstado());
         
         PacienteEntity updated = repository.save(entity);
@@ -115,6 +115,10 @@ public class PacienteServiceImpl implements PacienteService {
         repository.deleteById(id);
     }
     
+    /**
+     * Mapea entidad Paciente a DTO de respuesta.
+     * NOTA: Un paciente puede participar en múltiples citas (modelo sistémico).
+     */
     private PacienteResponseDTO toResponseDTO(PacienteEntity entity) {
         PacienteResponseDTO dto = new PacienteResponseDTO();
         dto.setId(entity.getId());
@@ -130,8 +134,8 @@ public class PacienteServiceImpl implements PacienteService {
         dto.setDireccion(entity.getDireccion());
         dto.setOcupacion(entity.getOcupacion());
         dto.setEstadoCivil(entity.getEstadoCivil());
-        dto.setContactoEmergenciaNombre(entity.getNombreContactoEmergencia());
-        dto.setContactoEmergenciaTelefono(entity.getTelefonoContactoEmergencia());
+        dto.setNombreContactoEmergencia(entity.getNombreContactoEmergencia());
+        dto.setTelefonoContactoEmergencia(entity.getTelefonoContactoEmergencia());
         dto.setFechaRegistro(entity.getFechaRegistro());
         dto.setEstado(entity.getEstado());
         return dto;

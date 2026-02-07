@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -47,7 +48,7 @@ public class SolicitudAfiliacionController {
             @RequestParam(value = "fotoCarnetAnverso", required = false) MultipartFile fotoCarnetAnverso,
             @RequestParam(value = "fotoCarnetReverso", required = false) MultipartFile fotoCarnetReverso,
             @RequestParam(value = "fotoTituloProvisicion", required = false) MultipartFile fotoTituloProvisicion,
-            @RequestParam(value = "cv", required = false) MultipartFile cv) {
+            @RequestParam(value = "cv", required = false) MultipartFile cv) throws IOException {
         
         SolicitudAfiliacionResponseDTO response = solicitudAfiliacionService.create(
                 dto, fotoCarnetAnverso, fotoCarnetReverso, fotoTituloProvisicion, cv);
@@ -78,7 +79,7 @@ public class SolicitudAfiliacionController {
             @RequestParam(value = "fotoCarnetAnverso", required = false) MultipartFile fotoCarnetAnverso,
             @RequestParam(value = "fotoCarnetReverso", required = false) MultipartFile fotoCarnetReverso,
             @RequestParam(value = "fotoTituloProvisicion", required = false) MultipartFile fotoTituloProvisicion,
-            @RequestParam(value = "cv", required = false) MultipartFile cv) {
+            @RequestParam(value = "cv", required = false) MultipartFile cv) throws IOException {
         
         SolicitudAfiliacionResponseDTO response = solicitudAfiliacionService.createConToken(
                 token, dto, fotoCarnetAnverso, fotoCarnetReverso, fotoTituloProvisicion, cv);

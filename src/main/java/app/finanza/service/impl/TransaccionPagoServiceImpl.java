@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,25 +30,25 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TransaccionPagoServiceImpl implements TransaccionPagoService {
-    
+
     @Autowired
     private TransaccionPagoRepository repository;
-    
+
     @Autowired
     private SocioRepository socioRepository;
-    
+
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
     @Autowired
     private ArchivoService archivoService;
-    
+
     @Autowired
     private EstadoCuentaSocioRepository estadoCuentaRepository;
-    
+
     @Autowired
     private DetallePagoDeudaRepository detallePagoRepository;
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findAll() {
@@ -55,7 +56,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findBySocio(Integer socioId) {
@@ -63,7 +64,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findByEstado(String estadoPago) {
@@ -71,7 +72,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findByFechaRango(LocalDate fechaInicio, LocalDate fechaFin) {
@@ -79,7 +80,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public TransaccionPagoResponseDTO findById(Integer id) {
@@ -87,61 +88,71 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Transacción de pago no encontrada con ID: " + id));
         return toResponseDTO(entity);
     }
-    
+
     @Override
     public TransaccionPagoResponseDTO create(TransaccionPagoCreateDTO dto, MultipartFile comprobante) {
         TransaccionPagoEntity entity = new TransaccionPagoEntity();
-        
+
         SocioEntity socio = socioRepository.findById(dto.getFkSocio())
                 .orElseThrow(() -> new ResourceNotFoundException("Socio no encontrado con ID: " + dto.getFkSocio()));
         entity.setSocio(socio);
-        
+
         if (dto.getFkUsuarioAdmin() != null) {
             UsuarioEntity usuario = usuarioRepository.findById(dto.getFkUsuarioAdmin())
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + dto.getFkUsuarioAdmin()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Usuario no encontrado con ID: " + dto.getFkUsuarioAdmin()));
             entity.setUsuarioAdmin(usuario);
         }
-        
+
         entity.setMontoTotal(dto.getMontoTotal());
         entity.setMetodoPago(dto.getMetodoPago());
         entity.setReferenciaBancaria(dto.getReferenciaBancaria());
         entity.setObservaciones(dto.getObservaciones());
-        
+
         // Subir comprobante o usar URL proporcionada
         if (comprobante != null && !comprobante.isEmpty()) {
-            entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+            try {
+                entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+            } catch (IOException e) {
+                throw new RuntimeException("Error técnico al procesar el archivo: " + e.getMessage());
+            }
         } else if (dto.getComprobanteUrl() != null) {
             entity.setComprobanteUrl(dto.getComprobanteUrl());
         }
-        
+
         entity.setEstado("APROBADO"); // Estado por defecto
-        
+
         TransaccionPagoEntity saved = repository.save(entity);
         return toResponseDTO(saved);
     }
-    
+
     @Override
     public TransaccionPagoResponseDTO update(Integer id, TransaccionPagoUpdateDTO dto, MultipartFile comprobante) {
         TransaccionPagoEntity entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Transacción de pago no encontrada con ID: " + id));
-        
-        if (dto.getMontoTotal() != null) entity.setMontoTotal(dto.getMontoTotal());
-        if (dto.getMetodoPago() != null) entity.setMetodoPago(dto.getMetodoPago());
-        if (dto.getReferenciaBancaria() != null) entity.setReferenciaBancaria(dto.getReferenciaBancaria());
-        if (dto.getObservaciones() != null) entity.setObservaciones(dto.getObservaciones());
-        if (dto.getEstadoPago() != null) entity.setEstado(dto.getEstadoPago());
-        
+
+        if (dto.getMontoTotal() != null)
+            entity.setMontoTotal(dto.getMontoTotal());
+        if (dto.getMetodoPago() != null)
+            entity.setMetodoPago(dto.getMetodoPago());
+        if (dto.getReferenciaBancaria() != null)
+            entity.setReferenciaBancaria(dto.getReferenciaBancaria());
+        if (dto.getObservaciones() != null)
+            entity.setObservaciones(dto.getObservaciones());
+        if (dto.getEstadoPago() != null)
+            entity.setEstado(dto.getEstadoPago());
+
         // Actualizar comprobante si se proporciona uno nuevo
         if (comprobante != null && !comprobante.isEmpty()) {
             entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
         } else if (dto.getComprobanteUrl() != null) {
             entity.setComprobanteUrl(dto.getComprobanteUrl());
         }
-        
+
         TransaccionPagoEntity updated = repository.save(entity);
         return toResponseDTO(updated);
     }
-    
+
     @Override
     public void delete(Integer id) {
         if (!repository.existsById(id)) {
@@ -149,7 +160,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         }
         repository.deleteById(id);
     }
-    
+
     private TransaccionPagoResponseDTO toResponseDTO(TransaccionPagoEntity entity) {
         TransaccionPagoResponseDTO dto = new TransaccionPagoResponseDTO();
         dto.setId(entity.getId());
@@ -166,22 +177,23 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         dto.setObservaciones(entity.getObservaciones());
         return dto;
     }
-    
+
     // ========== NUEVOS MÉTODOS: SISTEMA DE CUENTA CORRIENTE ==========
-    
+
     /**
      * FLUJO 2: Registro de pago por el socio
      * Crea una transacción en estado EN_REVISION (pendiente de aprobación)
      */
     @Override
-    public TransaccionPagoResponseDTO registrarPagoSocio(Integer socioId, TransaccionPagoCreateDTO dto, MultipartFile comprobante) {
+    public TransaccionPagoResponseDTO registrarPagoSocio(Integer socioId, TransaccionPagoCreateDTO dto,
+            MultipartFile comprobante) {
         SocioEntity socio = socioRepository.findById(socioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Socio no encontrado con ID: " + socioId));
-        
+
         if (comprobante == null || comprobante.isEmpty()) {
             throw new IllegalArgumentException("El comprobante de pago es obligatorio");
         }
-        
+
         TransaccionPagoEntity entity = new TransaccionPagoEntity();
         entity.setSocio(socio);
         entity.setMontoTotal(dto.getMontoTotal());
@@ -190,14 +202,15 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         entity.setObservaciones(dto.getObservaciones());
         entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
         entity.setEstado("EN_REVISION"); // Estado inicial
-        
+
         TransaccionPagoEntity saved = repository.save(entity);
-        
-        System.out.println("Pago registrado por socio " + socioId + " - Monto: " + dto.getMontoTotal() + " Bs - Estado: EN_REVISION");
-        
+
+        System.out.println("Pago registrado por socio " + socioId + " - Monto: " + dto.getMontoTotal()
+                + " Bs - Estado: EN_REVISION");
+
         return toResponseDTO(saved);
     }
-    
+
     /**
      * FLUJO 3: ALGORITMO FIFO - Aprobación y Conciliación Automática
      * ESTE ES EL CORAZÓN DEL SISTEMA
@@ -322,7 +335,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         
         return response;
     }
-    
+
     /**
      * Rechazar un pago
      */
@@ -330,24 +343,24 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     public TransaccionPagoResponseDTO rechazarPago(Integer transaccionId, Integer adminId, String motivo) {
         TransaccionPagoEntity transaccion = repository.findById(transaccionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transacción no encontrada con ID: " + transaccionId));
-        
+
         if (!"EN_REVISION".equals(transaccion.getEstado())) {
             throw new IllegalStateException("Solo se pueden rechazar pagos EN_REVISION");
         }
-        
+
         if (adminId != null) {
             UsuarioEntity admin = usuarioRepository.findById(adminId)
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario admin no encontrado con ID: " + adminId));
             transaccion.setUsuarioAdmin(admin);
         }
-        
+
         transaccion.setEstado("RECHAZADO");
         transaccion.setObservaciones(motivo);
-        
+
         TransaccionPagoEntity updated = repository.save(transaccion);
         return toResponseDTO(updated);
     }
-    
+
     /**
      * Obtener pagos pendientes de revisión
      */
@@ -359,4 +372,3 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
                 .collect(Collectors.toList());
     }
 }
-

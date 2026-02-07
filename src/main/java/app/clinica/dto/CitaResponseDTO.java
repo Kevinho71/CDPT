@@ -1,16 +1,22 @@
 package app.clinica.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
+/**
+ * DTO de respuesta de Cita con soporte para modelo sistémico.
+ * Incluye lista de participantes para terapias multi-paciente (pareja, familiar, grupal).
+ */
 public class CitaResponseDTO {
     
     private Integer id;
     private Integer fkPerfilSocio;
     private String perfilSocioNombre; // Nombre del psicólogo
-    private Integer fkPaciente;
-    private String pacienteNombre; // Nombre completo del paciente
+    private Integer fkPaciente; // ID del paciente titular (responsable administrativo)
+    private String pacienteNombre; // Nombre completo del paciente titular
     private LocalDate fechaCita;
     private LocalTime horaInicio;
     private LocalTime horaFin;
@@ -19,7 +25,11 @@ public class CitaResponseDTO {
     private String estadoCita;
     private String motivoBreve;
     private String notasInternas;
+    private BigDecimal montoAcordado;
     private LocalDateTime fechaCreacion;
+    
+    // NUEVO: Para modelo sistémico (terapia de pareja, familiar, grupal)
+    private List<ParticipanteSimpleDTO> participantes;
     
     // Constructor vacío
     public CitaResponseDTO() {}
@@ -135,5 +145,21 @@ public class CitaResponseDTO {
     
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+    
+    public BigDecimal getMontoAcordado() {
+        return montoAcordado;
+    }
+    
+    public void setMontoAcordado(BigDecimal montoAcordado) {
+        this.montoAcordado = montoAcordado;
+    }
+    
+    public List<ParticipanteSimpleDTO> getParticipantes() {
+        return participantes;
+    }
+    
+    public void setParticipantes(List<ParticipanteSimpleDTO> participantes) {
+        this.participantes = participantes;
     }
 }

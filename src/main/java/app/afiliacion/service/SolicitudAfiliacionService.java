@@ -5,6 +5,7 @@ import app.afiliacion.dto.SolicitudAfiliacionResponseDTO;
 import app.afiliacion.dto.SolicitudAfiliacionUpdateDTO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface SolicitudAfiliacionService {
@@ -19,7 +20,7 @@ public interface SolicitudAfiliacionService {
                                           MultipartFile fotoCarnetAnverso,
                                           MultipartFile fotoCarnetReverso,
                                           MultipartFile fotoTituloProvisicion,
-                                          MultipartFile cv);
+                                          MultipartFile cv) throws IOException;
     
     SolicitudAfiliacionResponseDTO update(Integer id, SolicitudAfiliacionUpdateDTO dto);
     
@@ -34,7 +35,7 @@ public interface SolicitudAfiliacionService {
                                                    MultipartFile fotoCarnetAnverso,
                                                    MultipartFile fotoCarnetReverso,
                                                    MultipartFile fotoTituloProvisicion,
-                                                   MultipartFile cv);
+                                                   MultipartFile cv) throws IOException;
     
     /**
      * Aprueba la solicitud y crea automáticamente:

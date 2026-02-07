@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +63,7 @@ public class TransaccionPagoController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TransaccionPagoResponseDTO> create(
             @Valid @ModelAttribute TransaccionPagoCreateDTO dto,
-            @RequestParam(value = "comprobante", required = false) MultipartFile comprobante) {
+            @RequestParam(value = "comprobante", required = false) MultipartFile comprobante)  throws IOException{
         
         TransaccionPagoResponseDTO response = transaccionPagoService.create(dto, comprobante);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -72,7 +73,7 @@ public class TransaccionPagoController {
     public ResponseEntity<TransaccionPagoResponseDTO> update(
             @PathVariable Integer id,
             @Valid @ModelAttribute TransaccionPagoUpdateDTO dto,
-            @RequestParam(value = "comprobante", required = false) MultipartFile comprobante) {
+            @RequestParam(value = "comprobante", required = false) MultipartFile comprobante) throws IOException {
         
         return ResponseEntity.ok(transaccionPagoService.update(id, dto, comprobante));
     }
@@ -101,7 +102,7 @@ public class TransaccionPagoController {
             @RequestParam("comprobante") MultipartFile comprobante) {
         
         TransaccionPagoCreateDTO dto = new TransaccionPagoCreateDTO();
-        dto.setSocioId(socioId);
+        dto.setFkSocio(socioId);
         dto.setMontoTotal(new java.math.BigDecimal(montoTotal));
         dto.setMetodoPago(metodoPago);
         dto.setReferenciaBancaria(referenciaBancaria);
