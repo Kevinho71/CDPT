@@ -155,46 +155,4 @@ public class SocioImagenService {
             System.out.println("Foto de credencial eliminada: " + publicId);
         }
     }
-
-    /**
-     * Updates a socio's QR code image
-     * Deletes the old QR before uploading the new one
-     * 
-     * @param socioId The socio ID
-     * @param oldPublicId The current QR URL or public_id (can be null)
-     * @param newQR The new QR image file
-     * @return The full Cloudinary HTTPS URL of the uploaded image
-     * @throws IOException if upload fails
-     */
-    public String actualizarQR(Integer socioId, String oldPublicId, MultipartFile newQR) throws IOException {
-        // Delete old QR if exists
-        if (oldPublicId != null && !oldPublicId.isEmpty()) {
-            try {
-                archivoService.eliminarImagen(oldPublicId);
-                System.out.println("QR anterior eliminado: " + oldPublicId);
-            } catch (Exception e) {
-                System.err.println("Error al eliminar QR anterior: " + e.getMessage());
-            }
-        }
-
-        // Upload new QR
-        String publicId = "socio_" + socioId + "_qr_" + System.currentTimeMillis();
-        String newImageUrl = archivoService.subirImagen(CloudinaryFolders.SOCIO_QR, newQR, publicId);
-        
-        System.out.println("Nuevo QR subido. URL: " + newImageUrl);
-        return newImageUrl;
-    }
-
-    /**
-     * Deletes a socio's QR code from Cloudinary
-     * 
-     * @param publicId The QR public_id
-     * @throws IOException if deletion fails
-     */
-    public void eliminarQR(String publicId) throws IOException {
-        if (publicId != null && !publicId.isEmpty()) {
-            archivoService.eliminarImagen(publicId);
-            System.out.println("QR eliminado: " + publicId);
-        }
-    }
 }

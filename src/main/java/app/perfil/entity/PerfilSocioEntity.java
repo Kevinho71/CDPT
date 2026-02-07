@@ -39,8 +39,11 @@ public class PerfilSocioEntity implements Serializable {
     @Column(name = "resumen_profesional", columnDefinition = "TEXT")
     private String resumenProfesional;
     
-    @Column(name = "modalidad_trabajo", length = 20)
+    @Column(name = "modalidad_trabajo", length = 50)
     private String modalidadTrabajo;
+    
+    @Column(name = "institucion", length = 50)
+    private String institucion;
     
     @Column(name = "ciudad", length = 100)
     private String ciudad;
@@ -77,9 +80,6 @@ public class PerfilSocioEntity implements Serializable {
     
     @Column(name = "permite_contacto")
     private Boolean permiteContacto = true;
-    
-    @Column(name = "visualizaciones")
-    private Integer visualizaciones = 0;
     
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
@@ -179,6 +179,14 @@ public class PerfilSocioEntity implements Serializable {
         this.modalidadTrabajo = modalidadTrabajo;
     }
     
+    public String getInstitucion() {
+        return institucion;
+    }
+    
+    public void setInstitucion(String institucion) {
+        this.institucion = institucion;
+    }
+    
     public String getCiudad() {
         return ciudad;
     }
@@ -273,14 +281,6 @@ public class PerfilSocioEntity implements Serializable {
     
     public void setPermiteContacto(Boolean permiteContacto) {
         this.permiteContacto = permiteContacto;
-    }
-    
-    public Integer getVisualizaciones() {
-        return visualizaciones;
-    }
-    
-    public void setVisualizaciones(Integer visualizaciones) {
-        this.visualizaciones = visualizaciones;
     }
     
     public LocalDateTime getFechaCreacion() {

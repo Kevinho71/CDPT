@@ -14,7 +14,6 @@ public class SocioResponseDTO {
     private String nombresocio;
     private LocalDate fechaemision;
     private LocalDate fechaexpiracion;
-    private Integer lejendario;
     private Integer estado;
     
     // Datos de persona (desnormalizados para respuesta rápida)
@@ -32,7 +31,6 @@ public class SocioResponseDTO {
     
     // URLs de recursos
     private String logoUrl;
-    private String qrUrl;
 
     public SocioResponseDTO() {}
 
@@ -91,14 +89,6 @@ public class SocioResponseDTO {
 
     public void setFechaexpiracion(LocalDate fechaexpiracion) {
         this.fechaexpiracion = fechaexpiracion;
-    }
-
-    public Integer getLejendario() {
-        return lejendario;
-    }
-
-    public void setLejendario(Integer lejendario) {
-        this.lejendario = lejendario;
     }
 
     public Integer getEstado() {
@@ -187,13 +177,5 @@ public class SocioResponseDTO {
 
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
-    }
-
-    public String getQrUrl() {
-        return qrUrl;
-    }
-
-    public void setQrUrl(String qrUrl) {
-        this.qrUrl = qrUrl;
     }
 }

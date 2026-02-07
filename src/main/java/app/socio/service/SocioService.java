@@ -54,8 +54,6 @@ public interface SocioService {
   
   SocioEntity findByNrodocumento(String nrodocumento) throws Exception;
   
-  SocioEntity renovarQR(Integer id, SocioEntity socio) throws Exception;
-  
   SocioEntity updatecatalogos(Integer id, SocioEntity socio) throws Exception;
   
   // ============================================
@@ -76,11 +74,6 @@ public interface SocioService {
    * Busca un socio por número de documento (versión DTO)
    */
   SocioResponseDTO findByNrodocumentoDTO(String nrodocumento);
-  
-  /**
-   * Renueva el QR de un socio (versión DTO)
-   */
-  SocioResponseDTO renovarQRDTO(Integer id);
   
   /**
    * Actualiza los catálogos de un socio (versión DTO)

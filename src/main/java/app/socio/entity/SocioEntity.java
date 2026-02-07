@@ -1,5 +1,6 @@
  package app.socio.entity;
  
+ import app.afiliacion.entity.SolicitudAfiliacionEntity;
  import app.catalogo.entity.CatalogoEntity;
  import app.core.entity.InstitucionEntity;
  import app.core.entity.PersonaEntity;
@@ -38,10 +39,6 @@
    private String nrodocumento;
    @Column(name = "imagen")
    private String imagen;
-   @Column(name = "qr")
-   private String qr;
-   @Column(name = "linkqr")
-   private String linkqr;
    @Column(name = "matricula")
    private String matricula;
    @Column(name = "nombresocio")
@@ -54,8 +51,6 @@
    @Column(name = "fechaexpiracion")
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
    private LocalDate fechaexpiracion;
-   @Column(name = "lejendario")
-   private Integer lejendario;
    @Column(name = "estado")
    private Integer estado;
    @ManyToOne(optional = false)
@@ -67,6 +62,9 @@
    @ManyToOne(optional = false)
    @JoinColumn(name = "fk_institucion")
    private InstitucionEntity institucion;
+   @OneToOne
+   @JoinColumn(name = "fk_solicitud_afiliacion", unique = true)
+   private SolicitudAfiliacionEntity solicitudAfiliacion;
    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
    @JoinTable(name = "socio_catalogos", joinColumns = {@JoinColumn(name = "socio_id", referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "catalogo_id", referencedColumnName = "id")})
    private Collection<CatalogoEntity> catalogos;
@@ -75,22 +73,20 @@
    
    public SocioEntity() {}
    
-   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String imagen, String qr, String linkqr, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer lejendario, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
+   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String imagen, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, SolicitudAfiliacionEntity solicitudAfiliacion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
      this.id = id;
      this.codigo = codigo;
      this.nrodocumento = nrodocumento;
      this.imagen = imagen;
-     this.qr = qr;
-     this.linkqr = linkqr;
      this.matricula = matricula;
      this.nombresocio = nombresocio;
      this.fechaemision = fechaemision;
      this.fechaexpiracion = fechaexpiracion;
-     this.lejendario = lejendario;
      this.estado = estado;
      this.profesion = profesion;
      this.persona = persona;
      this.institucion = institucion;
+     this.solicitudAfiliacion = solicitudAfiliacion;
      this.catalogos = catalogos;
      this.logo = logo;
    }
@@ -127,22 +123,6 @@
      this.imagen = imagen;
    }
    
-   public String getQr() {
-     return this.qr;
-   }
-   
-   public void setQr(String qr) {
-     this.qr = qr;
-   }
-   
-   public String getLinkqr() {
-     return this.linkqr;
-   }
-   
-   public void setLinkqr(String linkqr) {
-     this.linkqr = linkqr;
-   }
-   
    public String getMatricula() {
      return this.matricula;
    }
@@ -173,14 +153,6 @@
    
    public void setFechaexpiracion(LocalDate fechaexpiracion) {
      this.fechaexpiracion = fechaexpiracion;
-   }
-   
-   public Integer getLejendario() {
-     return this.lejendario;
-   }
-   
-   public void setLejendario(Integer lejendario) {
-     this.lejendario = lejendario;
    }
    
    public Integer getEstado() {
@@ -215,6 +187,14 @@
      this.institucion = institucion;
    }
    
+   public SolicitudAfiliacionEntity getSolicitudAfiliacion() {
+     return this.solicitudAfiliacion;
+   }
+   
+   public void setSolicitudAfiliacion(SolicitudAfiliacionEntity solicitudAfiliacion) {
+     this.solicitudAfiliacion = solicitudAfiliacion;
+   }
+   
    public Collection<CatalogoEntity> getCatalogos() {
      return this.catalogos;
    }
@@ -233,12 +213,6 @@
 
 
    public String toString() {
-     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
+     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", solicitudAfiliacion=" + this.solicitudAfiliacion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
    }
  }
-
-
-/* Location:              C:\Users\Usuario\Desktop\CADET.jar!\BOOT-INF\classes\app\entity\SocioEntity.class
- * Java compiler version: 11 (55.0)
- * JD-Core Version:       1.1.3
- */

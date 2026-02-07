@@ -9,7 +9,6 @@
  import app.common.util.ArchivoService;
  import app.catalogo.service.CatalogoService;
  import app.common.util.Constantes;
- import app.common.util.QRCodeGeneratorService;
  import app.common.util.CloudinaryFolders;
  import app.common.exception.*;
  import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,8 +34,6 @@
    private ImagenCatalogoRepository ImagenCatalogoRepository;
    @Autowired
    private ArchivoService archivoService;
-   @Autowired
-   QRCodeGeneratorService qrCodeGeneratorService;
    @Value("${server.port}")
    private static String puertoservidor;
 

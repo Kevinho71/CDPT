@@ -32,6 +32,8 @@ public interface SocioRepository extends JpaRepository<SocioEntity, Integer> {
   Integer getTotAll(@Param("search") String paramString, @Param("estado") Integer paramInteger);
   
   SocioEntity findByNrodocumento(String paramString);
+
+  List<SocioEntity> findByEstado(Integer estado);
   
   @Query(value = "SELECT * FROM socio WHERE fk_persona = ?1 AND estado = 1", nativeQuery = true)
   SocioEntity findByPersonaId(Integer personaId);

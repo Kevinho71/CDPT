@@ -212,4 +212,57 @@ public class ArchivoServiceImpl implements ArchivoService {
         }
         return nombre.replaceAll("[^a-zA-Z0-9_-]", "_").toLowerCase();
     }
+    
+    /**
+     * Uploads a file (image or PDF) to Cloudinary in a specific folder
+     * Automatically detects file type and sets appropriate resource_type
+     * @param archivo The multipart file to upload
+     * @param folder The Cloudinary folder name (e.g., "SOCIO_DOCUMENTOS_PERFIL")
+     * @return The full Cloudinary HTTPS URL of the uploaded file
+     * @throws IOException if upload fails
+     */
+    @Override
+    public String uploadFile(MultipartFile archivo, String folder) throws IOException {
+        if (archivo == null || archivo.isEmpty()) {
+            throw new IOException("El archivo está vacío.");
+        }
+
+        try {
+            // Generate unique filename
+            String nombreOriginal = archivo.getOriginalFilename();
+            String extension = "";
+            if (nombreOriginal != null && nombreOriginal.contains(".")) {
+                extension = nombreOriginal.substring(nombreOriginal.lastIndexOf("."));
+            }
+            String publicId = folder + "/" + System.currentTimeMillis() + "_" + generarNombreSeguro(nombreOriginal != null ? nombreOriginal.replace(extension, "") : "file");
+            
+            // Determine resource type - auto detecta el tipo (image, raw, video)
+            String resourceType = "auto";
+            
+            // Upload parameters
+            Map<String, Object> uploadParams = ObjectUtils.asMap(
+                "public_id", publicId,
+                "folder", folder,
+                "resource_type", resourceType,
+                "overwrite", false,  // Don't overwrite, create unique names
+                "invalidate", true  // Invalidate CDN cache
+            );
+
+            // Upload to Cloudinary
+            Map uploadResult = cloudinary.uploader().upload(archivo.getBytes(), uploadParams);
+            
+            // Return the secure URL for storage in database
+            String secureUrl = (String) uploadResult.get("secure_url");
+            String resultPublicId = (String) uploadResult.get("public_id");
+            System.out.println("Archivo subido exitosamente a Cloudinary: " + resultPublicId);
+            System.out.println("URL de Cloudinary: " + secureUrl);
+            
+            return secureUrl;
+            
+        } catch (Exception e) {
+            System.err.println("Error al subir archivo a Cloudinary: " + e.getMessage());
+            e.printStackTrace();
+            throw new IOException("Error al subir archivo a Cloudinary: " + e.getMessage(), e);
+        }
+    }
 }
