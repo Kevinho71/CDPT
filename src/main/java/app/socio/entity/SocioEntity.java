@@ -37,14 +37,8 @@
    private Integer codigo;
    @Column(name = "nrodocumento")
    private String nrodocumento;
-   @Column(name = "ntodocumento")
-   private String ntodocumento;
    @Column(name = "imagen")
    private String imagen;
-   @Column(name = "qr")
-   private String qr;
-   @Column(name = "linkqr")
-   private String linkqr;
    @Column(name = "matricula")
    private String matricula;
    @Column(name = "nombresocio")
@@ -57,8 +51,6 @@
    @Column(name = "fechaexpiracion")
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
    private LocalDate fechaexpiracion;
-   @Column(name = "lejendario")
-   private Integer lejendario;
    @Column(name = "estado")
    private Integer estado;
    @ManyToOne(optional = false)
@@ -81,19 +73,15 @@
    
    public SocioEntity() {}
    
-   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String ntodocumento, String imagen, String qr, String linkqr, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer lejendario, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, SolicitudAfiliacionEntity solicitudAfiliacion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
+   public SocioEntity(Integer id, Integer codigo, String nrodocumento, String imagen, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer estado, ProfesionEntity profesion, PersonaEntity persona, InstitucionEntity institucion, SolicitudAfiliacionEntity solicitudAfiliacion, Collection<CatalogoEntity> catalogos, MultipartFile logo) {
      this.id = id;
      this.codigo = codigo;
      this.nrodocumento = nrodocumento;
-     this.ntodocumento = ntodocumento;
      this.imagen = imagen;
-     this.qr = qr;
-     this.linkqr = linkqr;
      this.matricula = matricula;
      this.nombresocio = nombresocio;
      this.fechaemision = fechaemision;
      this.fechaexpiracion = fechaexpiracion;
-     this.lejendario = lejendario;
      this.estado = estado;
      this.profesion = profesion;
      this.persona = persona;
@@ -127,36 +115,12 @@
      this.nrodocumento = nrodocumento;
    }
    
-   public String getNtodocumento() {
-     return this.ntodocumento;
-   }
-   
-   public void setNtodocumento(String ntodocumento) {
-     this.ntodocumento = ntodocumento;
-   }
-   
    public String getImagen() {
      return this.imagen;
    }
    
    public void setImagen(String imagen) {
      this.imagen = imagen;
-   }
-   
-   public String getQr() {
-     return this.qr;
-   }
-   
-   public void setQr(String qr) {
-     this.qr = qr;
-   }
-   
-   public String getLinkqr() {
-     return this.linkqr;
-   }
-   
-   public void setLinkqr(String linkqr) {
-     this.linkqr = linkqr;
    }
    
    public String getMatricula() {
@@ -189,14 +153,6 @@
    
    public void setFechaexpiracion(LocalDate fechaexpiracion) {
      this.fechaexpiracion = fechaexpiracion;
-   }
-   
-   public Integer getLejendario() {
-     return this.lejendario;
-   }
-   
-   public void setLejendario(Integer lejendario) {
-     this.lejendario = lejendario;
    }
    
    public Integer getEstado() {
@@ -257,6 +213,6 @@
 
 
    public String toString() {
-     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", ntodocumento=" + this.ntodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", solicitudAfiliacion=" + this.solicitudAfiliacion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
+     return "SocioEntity [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", estado=" + this.estado + ", profesion=" + this.profesion + ", persona=" + this.persona + ", institucion=" + this.institucion + ", solicitudAfiliacion=" + this.solicitudAfiliacion + ", catalogos=" + this.catalogos + ", logo=" + this.logo + "]";
    }
  }

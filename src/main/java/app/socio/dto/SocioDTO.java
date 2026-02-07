@@ -13,15 +13,13 @@
    private Integer codigo;
    private String nrodocumento;
    private String imagen;
-   private String qr;
-   private String linkqr;
+
    private String matricula;
    private String nombresocio;
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
    private LocalDate fechaemision;
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
    private LocalDate fechaexpiracion;
-   private Integer lejendario;
    private String ci;
    private String nombrecompleto;
    private String email;
@@ -32,18 +30,15 @@
    
    public SocioDTO() {}
    
-   public SocioDTO(Integer id, Integer codigo, String nrodocumento, String imagen, String qr, String linkqr, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, Integer lejendario, String ci, String nombrecompleto, String email, Integer celular, MultipartFile logo) {
-     this.id = id;
-     this.codigo = codigo;
-     this.nrodocumento = nrodocumento;
-     this.imagen = imagen;
-     this.qr = qr;
-     this.linkqr = linkqr;
+  public SocioDTO(Integer id, Integer codigo, String nrodocumento, String imagen, String matricula, String nombresocio, LocalDate fechaemision, LocalDate fechaexpiracion, String ci, String nombrecompleto, String email, Integer celular, MultipartFile logo) {
+    this.id = id;
+    this.codigo = codigo;
+    this.nrodocumento = nrodocumento;
+    this.imagen = imagen;
      this.matricula = matricula;
      this.nombresocio = nombresocio;
      this.fechaemision = fechaemision;
      this.fechaexpiracion = fechaexpiracion;
-     this.lejendario = lejendario;
      this.ci = ci;
      this.nombrecompleto = nombrecompleto;
      this.email = email;
@@ -74,18 +69,6 @@
    public void setImagen(String imagen) {
      this.imagen = imagen;
    }
-   public String getQr() {
-     return this.qr;
-   }
-   public void setQr(String qr) {
-     this.qr = qr;
-   }
-   public String getLinkqr() {
-     return this.linkqr;
-   }
-   public void setLinkqr(String linkqr) {
-     this.linkqr = linkqr;
-   }
    public String getMatricula() {
      return this.matricula;
    }
@@ -109,12 +92,6 @@
    }
    public void setFechaexpiracion(LocalDate fechaexpiracion) {
      this.fechaexpiracion = fechaexpiracion;
-   }
-   public Integer getLejendario() {
-     return this.lejendario;
-   }
-   public void setLejendario(Integer lejendario) {
-     this.lejendario = lejendario;
    }
    public String getCi() {
      return this.ci;
@@ -155,7 +132,7 @@
    }
    
    public String toString() {
-     return "SocioDTO [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", qr=" + this.qr + ", linkqr=" + this.linkqr + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", lejendario=" + this.lejendario + ", ci=" + this.ci + ", nombrecompleto=" + this.nombrecompleto + ", email=" + this.email + ", celular=" + this.celular + ", logo=" + this.logo + "]";
+     return "SocioDTO [id=" + this.id + ", codigo=" + this.codigo + ", nrodocumento=" + this.nrodocumento + ", imagen=" + this.imagen + ", matricula=" + this.matricula + ", nombresocio=" + this.nombresocio + ", fechaemision=" + this.fechaemision + ", fechaexpiracion=" + this.fechaexpiracion + ", ci=" + this.ci + ", nombrecompleto=" + this.nombrecompleto + ", email=" + this.email + ", celular=" + this.celular + ", logo=" + this.logo + "]";
    }
  }
 

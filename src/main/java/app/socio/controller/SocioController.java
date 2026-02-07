@@ -152,16 +152,6 @@ public class SocioController {
     }
 
     /**
-     * Renueva el código QR de un socio
-     * POST /api/partners/{id}/qr/renew
-     */
-    @PostMapping("/{id}/qr/renew")
-    public ResponseEntity<SocioResponseDTO> renewQR(@PathVariable Integer id) {
-        SocioResponseDTO result = socioService.renovarQRDTO(id);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
      * Obtiene el logo de un socio (redirige a Cloudinary)
      * GET /api/partners/logo/{filename}
      * DEPRECATED: Las imágenes ahora se acceden directamente desde Cloudinary mediante URLs en el DTO
@@ -173,17 +163,7 @@ public class SocioController {
             .body("Este endpoint está deprecated. Use la URL de Cloudinary que viene en el DTO del socio.");
     }
 
-    /**
-     * Obtiene el código QR de un socio (redirige a Cloudinary)
-     * GET /api/partners/qr/{filename}
-     * DEPRECATED: Las imágenes ahora se acceden directamente desde Cloudinary mediante URLs en el DTO
-     */
-    @GetMapping("/qr/{filename}")
-    public ResponseEntity<String> getQR(@PathVariable String filename) {
-        // Ahora las imágenes están en Cloudinary y se acceden mediante URLs directas
-        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
-            .body("Este endpoint está deprecated. Use la URL de Cloudinary que viene en el DTO del socio.");
-    }
+
 
     // Método serveFile eliminado - Las imágenes ahora se sirven directamente desde Cloudinary
 }   

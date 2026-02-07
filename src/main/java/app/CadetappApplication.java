@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 import com.cloudinary.Cloudinary;
-import com.google.zxing.client.j2se.CommandLineRunner;
 
 import app.config.CloudinaryConfig;
 

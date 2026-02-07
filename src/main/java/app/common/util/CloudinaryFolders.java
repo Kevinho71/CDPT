@@ -14,7 +14,6 @@ public class CloudinaryFolders {
     public static final String SOCIO_PERFIL = "SOCIO_PERFIL";
     public static final String SOCIO_BANNER = "SOCIO_BANNER";
     public static final String SOCIO_LOGO = "SOCIO_LOGO";
-    public static final String SOCIO_QR = "SOCIO_QR";
     
     // Image type constants
     public static final String TIPO_PERFIL = "PERFIL";
