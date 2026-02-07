@@ -38,6 +38,16 @@ public interface ArchivoService {
    * @throws IOException if retrieval fails
    */
   Map<String, Object> listarImagenesCarpeta(String folder, int maxResults) throws IOException;
+  
+  /**
+   * Uploads a file (image or PDF) to Cloudinary in a specific folder
+   * Supports images (JPG, PNG, GIF) and PDFs
+   * @param archivo The multipart file to upload
+   * @param folder The Cloudinary folder name
+   * @return The full Cloudinary HTTPS URL of the uploaded file
+   * @throws IOException if upload fails
+   */
+  String uploadFile(MultipartFile archivo, String folder) throws IOException;
 }
 
 

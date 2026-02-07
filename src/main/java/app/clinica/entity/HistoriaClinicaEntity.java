@@ -15,10 +15,20 @@ public class HistoriaClinicaEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
+    /**
+     * CAMBIO SISTÉMICO: fk_paciente ahora es NULLABLE.
+     * - Si la nota es de una sesión grupal (pareja/familia), se vincula solo a fk_cita
+     * - Si es una nota individual, se vincula a fk_paciente
+     * El sistema busca por participantes de la cita para mostrar historial compartido.
+     */
     @ManyToOne
-    @JoinColumn(name = "fk_paciente", nullable = false)
+    @JoinColumn(name = "fk_paciente")
     private PacienteEntity paciente;
     
+    /**
+     * En el modelo sistémico, fk_cita es el conector principal.
+     * Una nota vinculada a una cita es visible para TODOS sus participantes.
+     */
     @ManyToOne
     @JoinColumn(name = "fk_cita")
     private CitaEntity cita;

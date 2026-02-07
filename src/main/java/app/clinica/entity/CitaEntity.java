@@ -38,13 +38,16 @@ public class CitaEntity implements Serializable {
     private String modalidad; // PRESENCIAL, VIRTUAL, DOMICILIO
     
     @Column(name = "tipo_sesion", length = 50)
-    private String tipoSesion; // PRIMERA_CONSULTA, TERAPIA, EVALUACION
+    private String tipoSesion; // INDIVIDUAL, PAREJA, FAMILIA, GRUPO
     
     @Column(name = "estado_cita", length = 20)
     private String estadoCita = "PROGRAMADA"; // PROGRAMADA, REALIZADA, CANCELADA, NO_ASISTIO
     
     @Column(name = "motivo_breve", length = 255)
     private String motivoBreve;
+    
+    @Column(name = "monto_acordado")
+    private java.math.BigDecimal montoAcordado; // Precio negociado para esta sesión específica
     
     @Column(name = "notas_internas", columnDefinition = "TEXT")
     private String notasInternas;
@@ -58,7 +61,8 @@ public class CitaEntity implements Serializable {
     public CitaEntity(Integer id, PerfilSocioEntity perfilSocio, PacienteEntity paciente,
                      LocalDate fechaCita, LocalTime horaInicio, LocalTime horaFin,
                      String modalidad, String tipoSesion, String estadoCita,
-                     String motivoBreve, String notasInternas, LocalDateTime fechaCreacion) {
+                     String motivoBreve, String notasInternas, java.math.BigDecimal montoAcordado,
+                     LocalDateTime fechaCreacion) {
         this.id = id;
         this.perfilSocio = perfilSocio;
         this.paciente = paciente;
@@ -70,6 +74,7 @@ public class CitaEntity implements Serializable {
         this.estadoCita = estadoCita;
         this.motivoBreve = motivoBreve;
         this.notasInternas = notasInternas;
+        this.montoAcordado = montoAcordado;
         this.fechaCreacion = fechaCreacion;
     }
     
@@ -160,6 +165,14 @@ public class CitaEntity implements Serializable {
     
     public void setNotasInternas(String notasInternas) {
         this.notasInternas = notasInternas;
+    }
+    
+    public java.math.BigDecimal getMontoAcordado() {
+        return montoAcordado;
+    }
+    
+    public void setMontoAcordado(java.math.BigDecimal montoAcordado) {
+        this.montoAcordado = montoAcordado;
     }
     
     public LocalDateTime getFechaCreacion() {

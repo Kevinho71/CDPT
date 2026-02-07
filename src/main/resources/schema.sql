@@ -285,7 +285,7 @@ CREATE TABLE IF NOT EXISTS solicitud_cita (
     -- 'PENDIENTE': El psicólogo no lo ha visto
     -- 'CONTACTADO': El psicólogo ya abrió el WhatsApp
     -- 'CONVERTIDO': Se volvió una cita real
-    -- 'ARCHIVADO': No contestó o no interesó
+    -- 'AGENDADO': No contestó o no interesó
     
     nota_interna TEXT, -- "Le escribí y quedamos en hablar el lunes"
     
@@ -562,11 +562,15 @@ CREATE TABLE IF NOT EXISTS paciente (
     CONSTRAINT fk_paciente_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
 );
 
--- 1.2 CITAS (Agenda)
--- Gestiona el flujo operativo diario.
+-- ============================================================================
+-- 1.2 CITAS (La Agenda)
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS cita (
     id SERIAL PRIMARY KEY,
     fk_perfil_socio INTEGER NOT NULL,
+    
+    -- El "Titular" de la cita (quien reservó o quien paga). 
+    -- Para ver quiénes asistieron realmente, se usa 'cita_participantes'.
     fk_paciente INTEGER NOT NULL,
     
     fecha_cita DATE NOT NULL,
@@ -574,13 +578,14 @@ CREATE TABLE IF NOT EXISTS cita (
     hora_fin TIME NOT NULL,
     
     modalidad VARCHAR(20), -- 'PRESENCIAL', 'VIRTUAL', 'DOMICILIO'
-    tipo_sesion VARCHAR(50), -- 'PRIMERA_CONSULTA', 'TERAPIA', 'EVALUACION'
+    tipo_sesion VARCHAR(50), -- 'INDIVIDUAL', 'PAREJA', 'FAMILIA', 'GRUPO'
     
-    estado_cita VARCHAR(20) DEFAULT 'PROGRAMADA', -- 'PROGRAMADA', 'REALIZADA', 'CANCELADA', 'NO_ASISTIO'
+    estado_cita VARCHAR(20) DEFAULT 'PROGRAMADA',
     
-    -- Campos informativos
     motivo_breve VARCHAR(255),
     notas_internas TEXT,
+    
+    monto_acordado NUMERIC(10, 2), -- Precio negociado para esta sesión específica
     
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
@@ -588,23 +593,49 @@ CREATE TABLE IF NOT EXISTS cita (
     CONSTRAINT fk_cita_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE
 );
 
--- 1.3 HISTORIA CLÍNICA
--- Registro evolutivo de las sesiones.
+-- ============================================================================
+-- 1.2.1 PARTICIPANTES DE LA CITA (Tabla Nueva - Soporte Multicliente)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS cita_participantes (
+    id SERIAL PRIMARY KEY,
+    fk_cita INTEGER NOT NULL,
+    fk_paciente INTEGER NOT NULL,
+    
+    -- Rol en la sesión: 'TITULAR', 'PAREJA', 'HIJO', 'PADRE', 'OBSERVADOR'
+    tipo_participacion VARCHAR(50) DEFAULT 'PACIENTE',
+    
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cp_cita FOREIGN KEY (fk_cita) REFERENCES cita(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cp_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE,
+    
+    -- Evita duplicados: Un paciente no puede estar 2 veces en la misma lista de la misma cita
+    CONSTRAINT uk_cita_participante UNIQUE (fk_cita, fk_paciente)
+);
+
+-- ============================================================================
+-- 1.3 HISTORIA CLÍNICA (Modificada para Enfoque Sistémico)
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS historia_clinica (
     id SERIAL PRIMARY KEY,
-    fk_paciente INTEGER NOT NULL,
-    fk_cita INTEGER, -- Opcional: vincula la nota a una cita específica
+    
+    -- CAMBIO IMPORTANTE:fk_paciente ahora puede ser NULL.
+    -- Si la nota es de una sesión familiar, se vincula solo a fk_cita.
+    -- Si es una nota suelta (llamada telefónica, análisis individual), se usa fk_paciente.
+    fk_paciente INTEGER, 
+    
+    -- En este modelo, fk_cita es el conector principal para ver el historial
+    fk_cita INTEGER, 
     
     fecha_consulta DATE NOT NULL,
     
-    -- Estructura básica SOAP (Subjetivo, Objetivo, Análisis, Plan) o libre
     motivo_consulta TEXT,
     observaciones TEXT,
     diagnostico TEXT,
     tratamiento_plan TEXT,
-    evolucion TEXT,
+    evolucion TEXT, -- Aquí se escribe lo que pasó con la pareja/familia
     
-    archivos_adjuntos VARCHAR(1000), -- URLs separadas por coma si sube PDFs/Imágenes
+    archivos_adjuntos VARCHAR(1000),
     
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -612,7 +643,6 @@ CREATE TABLE IF NOT EXISTS historia_clinica (
     CONSTRAINT fk_hc_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE,
     CONSTRAINT fk_hc_cita FOREIGN KEY (fk_cita) REFERENCES cita(id) ON DELETE SET NULL
 );
-
 -- ============================================================================
 -- 2. MÓDULO ADMINISTRATIVO DE PAGOS (Complejo)
 -- ============================================================================
@@ -628,16 +658,26 @@ CREATE TABLE IF NOT EXISTS configuracion_cuotas (
     estado INTEGER DEFAULT 1
 );
 
--- 2.2 ESTADO DE CUENTA (Las Deudas Generadas)
--- Aquí se insertan automáticamente las filas: "Matrícula 2026", "Enero 2026", "Febrero 2026"
+-- ============================================================================
+-- 2.2 ESTADO DE CUENTA (MODIFICADA PARA SOPORTAR RESERVAS)
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS estado_cuenta_socio (
     id SERIAL PRIMARY KEY,
     fk_socio INTEGER NOT NULL,
     
-    tipo_obligacion VARCHAR(50) NOT NULL, -- 'MATRICULA', 'MENSUALIDAD', 'MULTA'
-    gestion INTEGER NOT NULL, -- 2026
-    mes INTEGER, -- 1 para Enero, NULL si es Matrícula
+    -- Tipos: 'MATRICULA', 'MENSUALIDAD', 'ALQUILER', 'MULTA', 'CERTIFICADO'
+    tipo_obligacion VARCHAR(50) NOT NULL, 
     
+    gestion INTEGER NOT NULL, -- 2026
+    mes INTEGER, -- 1 para Enero. Puede ser NULL si es un cargo anual o eventual.
+    
+    -- NUEVO: Para saber qué se está cobrando exactamente
+    -- Ej: "Cuota Enero 2026" o "Reserva Consultorio 1 - 20/Feb"
+    concepto VARCHAR(255), 
+    
+    -- NUEVO: Vinculación con la reserva (Opcional, solo si es Alquiler)
+    fk_reserva INTEGER, 
+
     monto_original NUMERIC(10, 2) NOT NULL,
     fecha_emision DATE DEFAULT CURRENT_DATE,
     fecha_vencimiento DATE NOT NULL,
@@ -645,8 +685,9 @@ CREATE TABLE IF NOT EXISTS estado_cuenta_socio (
     estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', -- 'PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO'
     monto_pagado_acumulado NUMERIC(10, 2) DEFAULT 0,
     
-    CONSTRAINT fk_estadocuenta_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE,
-    CONSTRAINT uk_obligacion_mes UNIQUE (fk_socio, tipo_obligacion, gestion, mes) -- Evita duplicar cobro del mismo mes
+    CONSTRAINT fk_estadocuenta_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
+    
+    -- NOTA: La FK a reserva se agrega al final con ALTER TABLE para evitar errores de orden
 );
 
 -- 2.3 TRANSACCIONES DE PAGO (El Dinero Real)
@@ -755,26 +796,42 @@ CREATE TABLE IF NOT EXISTS ambiente (
     precio_hora NUMERIC(10, 2) NOT NULL, -- Monto fijo por la hora
     estado INTEGER DEFAULT 1
 );
-
--- La reserva en sí
 CREATE TABLE IF NOT EXISTS reserva_ambiente (
     id SERIAL PRIMARY KEY,
     fk_ambiente INTEGER NOT NULL,
-    fk_socio INTEGER NOT NULL,
+    fk_socio INTEGER NOT NULL, -- El socio que reserva
     
     fecha_reserva DATE NOT NULL,
-    hora_inicio TIME NOT NULL, -- Tú controlas por Java que sea 1 hora exacta
+    hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
     
-    monto_total NUMERIC(10, 2) NOT NULL,
-    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', -- 'PENDIENTE', 'PAGADO'
+    monto_total NUMERIC(10, 2), -- Se guarda aquí como histórico
+    
+    -- El estado de pago real se consulta en 'estado_cuenta_socio', 
+    -- pero mantenemos este campo como 'espejo' para pintar el calendario rápido.
+    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', 
     estado_reserva VARCHAR(20) DEFAULT 'CONFIRMADA', -- 'CONFIRMADA', 'CANCELADA'
     
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_reserva_ambiente FOREIGN KEY (fk_ambiente) REFERENCES ambiente(id) ON DELETE CASCADE,
-    CONSTRAINT fk_reserva_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
-);
+    CONSTRAINT fk_res_ambiente FOREIGN KEY (fk_ambiente) REFERENCES ambiente(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_res_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
+);  
+
+-- ============================================================================
+-- VINCULACIÓN FINAL (Cerrar el círculo)
+-- ============================================================================
+-- Ahora conectamos la deuda con la reserva
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_estadocuenta_reserva') THEN
+        ALTER TABLE estado_cuenta_socio 
+        ADD CONSTRAINT fk_estadocuenta_reserva 
+        FOREIGN KEY (fk_reserva) 
+        REFERENCES reserva_ambiente(id) 
+        ON DELETE SET NULL;
+    END IF;
+END $$;
 -- ============================================================================
 -- ÍNDICES PARA OPTIMIZACIÓN DE TABLAS BASE
 -- ============================================================================
@@ -909,6 +966,9 @@ CREATE INDEX IF NOT EXISTS idx_hc_fecha ON historia_clinica(fecha_consulta DESC)
 CREATE INDEX IF NOT EXISTS idx_estadocuenta_socio ON estado_cuenta_socio(fk_socio);
 CREATE INDEX IF NOT EXISTS idx_estadocuenta_estado ON estado_cuenta_socio(estado_pago);
 CREATE INDEX IF NOT EXISTS idx_estadocuenta_gestion ON estado_cuenta_socio(gestion);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_mensualidad 
+ON estado_cuenta_socio (fk_socio, tipo_obligacion, gestion, mes) 
+WHERE tipo_obligacion IN ('MENSUALIDAD', 'MATRICULA');
 -- Para buscar morosos rápidamente
 CREATE INDEX IF NOT EXISTS idx_estadocuenta_morosos ON estado_cuenta_socio(fecha_vencimiento) WHERE estado_pago != 'PAGADO';
 
@@ -952,3 +1012,9 @@ CREATE INDEX IF NOT EXISTS idx_posts_publicado ON posts(publicado);
 CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
 CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_post_secciones_post ON post_secciones(fk_post);
+
+-- Para buscar rápido quiénes fueron a la Cita #100
+CREATE INDEX IF NOT EXISTS idx_cita_participantes_cita ON cita_participantes(fk_cita);
+
+-- Para buscar rápido el historial de 'Carlos' (en qué citas participó)
+CREATE INDEX IF NOT EXISTS idx_cita_participantes_paciente ON cita_participantes(fk_paciente);

@@ -21,13 +21,31 @@ public class EstadoCuentaSocioEntity implements Serializable {
     private SocioEntity socio;
     
     @Column(name = "tipo_obligacion", nullable = false, length = 50)
-    private String tipoObligacion; // MATRICULA, MENSUALIDAD, MULTA
+    private String tipoObligacion; // MATRICULA, MENSUALIDAD, MULTA, ALQUILER
     
     @Column(name = "gestion", nullable = false)
     private Integer gestion; // 2026
     
     @Column(name = "mes")
     private Integer mes; // 1 para Enero, NULL si es Matrícula
+    
+    /**
+     * Campo agregado para trazabilidad y mejor UX.
+     * Ejemplos:
+     * - "Cuota Ordinaria - Febrero 2026"
+     * - "Alquiler Consultorio 1 - Evento Privado (15/Feb/2026)"
+     * - "Multa por Pago Tardío"
+     */
+    @Column(name = "concepto", length = 255)
+    private String concepto;
+    
+    /**
+     * Vinculación con el módulo de Reservas.
+     * Si esta deuda fue generada por una reserva de ambiente, este campo contiene el ID.
+     * Permite anular la deuda si el socio cancela la reserva.
+     */
+    @Column(name = "fk_reserva")
+    private Integer reservaId;
     
     @Column(name = "monto_original", nullable = false, precision = 10, scale = 2)
     private BigDecimal montoOriginal;
@@ -50,7 +68,8 @@ public class EstadoCuentaSocioEntity implements Serializable {
     public EstadoCuentaSocioEntity(Integer id, SocioEntity socio, String tipoObligacion, 
                                   Integer gestion, Integer mes, BigDecimal montoOriginal,
                                   LocalDate fechaEmision, LocalDate fechaVencimiento,
-                                  String estadoPago, BigDecimal montoPagadoAcumulado) {
+                                  String estadoPago, BigDecimal montoPagadoAcumulado,
+                                  String concepto, Integer reservaId) {
         this.id = id;
         this.socio = socio;
         this.tipoObligacion = tipoObligacion;
@@ -61,6 +80,8 @@ public class EstadoCuentaSocioEntity implements Serializable {
         this.fechaVencimiento = fechaVencimiento;
         this.estadoPago = estadoPago;
         this.montoPagadoAcumulado = montoPagadoAcumulado;
+        this.concepto = concepto;
+        this.reservaId = reservaId;
     }
     
     // Getters y Setters
@@ -142,5 +163,21 @@ public class EstadoCuentaSocioEntity implements Serializable {
     
     public void setMontoPagadoAcumulado(BigDecimal montoPagadoAcumulado) {
         this.montoPagadoAcumulado = montoPagadoAcumulado;
+    }
+    
+    public String getConcepto() {
+        return concepto;
+    }
+    
+    public void setConcepto(String concepto) {
+        this.concepto = concepto;
+    }
+    
+    public Integer getReservaId() {
+        return reservaId;
+    }
+    
+    public void setReservaId(Integer reservaId) {
+        this.reservaId = reservaId;
     }
 }
