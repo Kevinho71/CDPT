@@ -44,10 +44,6 @@ public interface PerfilSocioService {
      */
     PerfilSocioResponseDTO changeStatusPerfil(Integer id);
     
-    /**
-     * Incrementa las visualizaciones de un perfil
-     */
-    void incrementarVisualizaciones(Integer id);
     
     /**
      * Busca perfiles por ciudad

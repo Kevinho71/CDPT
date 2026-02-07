@@ -4,6 +4,59 @@
 -- Fecha: 2026-01-17
 -- ============================================================================
 
+
+
+-- ============================================================================
+-- 1. FASE 1: LEADS Y CONTACTO INICIAL
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS solicitud_inicial_afiliacion (
+    id SERIAL PRIMARY KEY,
+    nombre_completo VARCHAR(255) NOT NULL,
+    celular VARCHAR(20) NOT NULL,
+    correo VARCHAR(255) NOT NULL,
+    
+    -- El token para enviarle por WhatsApp y que acceda al formulario completo
+    token_acceso VARCHAR(100) UNIQUE,
+    token_expiracion TIMESTAMP,
+    
+    estado VARCHAR(20) DEFAULT 'PENDIENTE', -- 'PENDIENTE', 'CONTACTADO', 'LINK_ENVIADO', 'FINALIZADO'
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notas_admin TEXT -- Para que el admin anote "Le escribí por WhatsApp a tal hora"
+);
+
+-- ============================================================================
+-- 2. FASE 2: DATOS DE AFILIACIÓN (FORMULARIO LARGO)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS solicitud_afiliacion (
+    id SERIAL PRIMARY KEY,
+    fk_solicitud_inicial_afiliacion INTEGER UNIQUE, -- Vincula con el Lead original
+    
+    -- DATOS PERSONALES DUROS (Base para crear tabla 'persona')
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    ci VARCHAR(20) NOT NULL,
+    ci_expedido VARCHAR(10),
+    fecha_nacimiento DATE,
+    genero VARCHAR(20),
+    direccion_domicilio TEXT,
+    
+    -- DOCUMENTOS ADMINISTRATIVOS (Privados, para validación)
+    url_foto_carnet_anverso VARCHAR(500),
+    url_foto_carnet_reverso VARCHAR(500),
+    url_foto_titulo_provisicion VARCHAR(500),
+    url_cv VARCHAR(500),
+    
+    
+    -- ESTADOS DEL PROCESO
+    estado_afiliacion VARCHAR(30) DEFAULT 'EN_REVISION', 
+    -- 'EN_REVISION': El usuario ya llenó, el admin está viendo
+    -- 'OBSERVADO': Algo está mal, se le pide corregir
+    -- 'APROBADO': Se crea el socio automáticamente
+    -- 'RECHAZADO': No cumple requisitos
+
+    fecha_revision TIMESTAMP,    
+    CONSTRAINT fk_afiliacion_contacto FOREIGN KEY (fk_solicitud_inicial_afiliacion) REFERENCES solicitud_inicial_afiliacion(id) ON DELETE SET NULL
+);
 -- ============================================================================
 -- 1. TABLAS BASE GEOGRÁFICAS Y CATÁLOGOS GLOBALES
 -- ============================================================================
@@ -119,9 +172,11 @@ CREATE TABLE IF NOT EXISTS socio (
     fk_institucion INTEGER,
     fk_persona INTEGER,
     fk_profesion INTEGER,
+    fk_solicitud_afiliacion INTEGER UNIQUE,
     CONSTRAINT fk_socio_institucion FOREIGN KEY (fk_institucion) REFERENCES institucion(id) ON DELETE SET NULL,
     CONSTRAINT fk_socio_persona FOREIGN KEY (fk_persona) REFERENCES persona(id) ON DELETE CASCADE,
-    CONSTRAINT fk_socio_profesion FOREIGN KEY (fk_profesion) REFERENCES profesion(id) ON DELETE SET NULL
+    CONSTRAINT fk_socio_profesion FOREIGN KEY (fk_profesion) REFERENCES profesion(id) ON DELETE SET NULL,
+    CONSTRAINT fk_socio_origen_afiliacion FOREIGN KEY (fk_solicitud_afiliacion) REFERENCES solicitud_afiliacion(id) ON DELETE SET NULL
 );
 
 -- ============================================================================
@@ -192,6 +247,7 @@ CREATE TABLE IF NOT EXISTS perfil_socio (
     anos_experiencia INTEGER,
     resumen_profesional TEXT,
     modalidad_trabajo VARCHAR(50),
+    institucion VARCHAR(50),
     ciudad VARCHAR(100),
     zona VARCHAR(200),
     foto_perfil VARCHAR(500),
@@ -204,13 +260,44 @@ CREATE TABLE IF NOT EXISTS perfil_socio (
     sitio_web VARCHAR(300),
     perfil_publico BOOLEAN DEFAULT true,
     permite_contacto BOOLEAN DEFAULT true,
-    visualizaciones INTEGER DEFAULT 0,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado INTEGER DEFAULT 1,
     CONSTRAINT fk_perfil_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
 );
 
+-- ============================================================================
+-- 1.4 SOLICITUDES DE CITA (Bandeja de Entrada / Leads de Pacientes)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS solicitud_cita (
+    id SERIAL PRIMARY KEY,
+    
+    -- RELACIÓN CORRECTA: Apunta al Perfil Público
+    fk_perfil_socio INTEGER NOT NULL, 
+    
+    -- Datos del Interesado (Visitante)
+    nombre_paciente VARCHAR(150) NOT NULL,
+    celular VARCHAR(50) NOT NULL, -- Fundamental para el botón de WhatsApp
+    email VARCHAR(150),
+    
+    -- Detalles de la intención
+    motivo_consulta TEXT,
+    modalidad VARCHAR(20), -- 'VIRTUAL', 'PRESENCIAL'
+    
+    -- Gestión del Lead
+    estado VARCHAR(30) DEFAULT 'PENDIENTE', 
+    -- 'PENDIENTE': El psicólogo no lo ha visto
+    -- 'CONTACTADO': El psicólogo ya abrió el WhatsApp
+    -- 'CONVERTIDO': Se volvió una cita real
+    -- 'ARCHIVADO': No contestó o no interesó
+    
+    nota_interna TEXT, -- "Le escribí y quedamos en hablar el lunes"
+    
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP,
+    
+    CONSTRAINT fk_sol_cita_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE
+);
 -- ============================================================================
 -- 6. CATÁLOGOS EXTENSIBLES (Estrategia 1: SISTEMA/USUARIO)
 -- ============================================================================
@@ -327,44 +414,6 @@ CREATE TABLE IF NOT EXISTS socio_idiomas (
     CONSTRAINT uk_socio_idioma UNIQUE (fk_perfil_socio, fk_idioma)
 );
 
--- ============================================================================
--- 8. GESTIÓN DOCUMENTAL (NUEVO)
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS documentos (
-    id SERIAL PRIMARY KEY,
-    fk_socio INTEGER NOT NULL,
-    
-    nombre VARCHAR(255) NOT NULL,
-    tipo VARCHAR(50),
-    
-    archivo_url VARCHAR(500) NOT NULL,
-    mime_type VARCHAR(100),
-    
-    estado INTEGER DEFAULT 1,
-    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_documentos_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
-);
-CREATE INDEX IF NOT EXISTS idx_documentos_socio ON documentos(fk_socio);
-
-
--- ============================================================================
--- 10. FINANZAS (NUEVO - PARA DASHBOARD)
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS pagos (
-    id SERIAL PRIMARY KEY,
-    fk_socio INTEGER NOT NULL,
-    monto NUMERIC(10, 2) NOT NULL,
-    moneda VARCHAR(10) DEFAULT 'BOB',
-    concepto VARCHAR(255),
-    metodo_pago VARCHAR(50),
-    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado VARCHAR(20) DEFAULT 'aprobado',
-    factura_url VARCHAR(500),
-    CONSTRAINT fk_pagos_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
-);
 
 -- ============================================================================
 -- 11. AUTENTICACIÓN Y LANDING
@@ -389,23 +438,7 @@ CREATE TABLE IF NOT EXISTS usuario_social (
     CONSTRAINT uk_provider_id UNIQUE (provider, provider_id)
 );
 
-CREATE TABLE IF NOT EXISTS consultas_contacto (
-    id SERIAL PRIMARY KEY,
-    fk_perfil_socio INTEGER NOT NULL,
-    nombre_completo VARCHAR(255) NOT NULL,
-    correo_electronico VARCHAR(255) NOT NULL,
-    telefono VARCHAR(50),
-    empresa VARCHAR(255),
-    modalidad_preferida VARCHAR(20),
-    horario_preferido VARCHAR(100),
-    motivo_reunion TEXT NOT NULL,
-    detalles_adicionales TEXT,
-    estado VARCHAR(20) DEFAULT 'pendiente',
-    fecha_contacto TIMESTAMP,
-    notas_internas TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_consulta_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE
-);
+
 
 CREATE TABLE IF NOT EXISTS estadisticas_publicas (
     id SERIAL PRIMARY KEY,
@@ -473,23 +506,7 @@ CREATE TABLE IF NOT EXISTS post_secciones (
     video_url VARCHAR(500)
 );
 
--- ============================================================================
--- ÍNDICES PARA OPTIMIZACIÓN DE POSTS
--- ============================================================================
 
--- Índices para posts
-CREATE INDEX IF NOT EXISTS idx_posts_tipo ON posts(tipo);
-CREATE INDEX IF NOT EXISTS idx_posts_publicado ON posts(publicado);
-CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
-CREATE INDEX IF NOT EXISTS idx_posts_usuario ON posts(fk_usuario);
-CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_posts_estado ON posts(estado);
-
--- Índices para post_secciones
-CREATE INDEX IF NOT EXISTS idx_post_secciones_post ON post_secciones(fk_post);
-CREATE INDEX IF NOT EXISTS idx_post_secciones_orden ON post_secciones(fk_post, orden);
-CREATE INDEX IF NOT EXISTS idx_post_secciones_tipo ON post_secciones(tipo_seccion);
-CREATE INDEX IF NOT EXISTS idx_post_secciones_estado ON post_secciones(estado);
 
 -- ============================================================================
 -- 13. SISTEMA DE GESTIÓN DE CONTENIDOS ESTÁTICOS (CMS SIMPLIFICADO)
@@ -519,22 +536,265 @@ CREATE TABLE IF NOT EXISTS web_static_content (
 );
 
 -- ============================================================================
--- ÍNDICES PARA OPTIMIZACIÓN DE TABLAS BASE
+-- 1. MÓDULO CLÍNICO (Agenda y Pacientes)
 -- ============================================================================
 
--- Índices para tablas geográficas
+-- 1.1 PACIENTES
+-- Registro privado de cada psicólogo. Un mismo paciente real podría estar
+-- registrado dos veces si va con dos psicólogos diferentes (privacidad de datos).
+CREATE TABLE IF NOT EXISTS paciente (
+    id SERIAL PRIMARY KEY,
+    fk_socio INTEGER NOT NULL, -- El psicólogo dueño del registro
+    
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    ci VARCHAR(20),
+    fecha_nacimiento DATE,
+    genero VARCHAR(20), -- 'M', 'F', 'Otro'
+    telefono VARCHAR(50),
+    email VARCHAR(150),
+    direccion VARCHAR(255),
+    ocupacion VARCHAR(100),
+    estado_civil VARCHAR(50),
+    
+    nombre_contacto_emergencia VARCHAR(150),
+    telefono_contacto_emergencia VARCHAR(50),
+    
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado INTEGER DEFAULT 1, -- 1: Activo, 0: Inactivo/Archivado
+    
+    CONSTRAINT fk_paciente_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
+);
+
+-- 1.2 CITAS (Agenda)
+-- Gestiona el flujo operativo diario.
+CREATE TABLE IF NOT EXISTS cita (
+    id SERIAL PRIMARY KEY,
+    fk_perfil_socio INTEGER NOT NULL,
+    fk_paciente INTEGER NOT NULL,
+    
+    fecha_cita DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    
+    modalidad VARCHAR(20), -- 'PRESENCIAL', 'VIRTUAL', 'DOMICILIO'
+    tipo_sesion VARCHAR(50), -- 'PRIMERA_CONSULTA', 'TERAPIA', 'EVALUACION'
+    
+    estado_cita VARCHAR(20) DEFAULT 'PROGRAMADA', -- 'PROGRAMADA', 'REALIZADA', 'CANCELADA', 'NO_ASISTIO'
+    
+    -- Campos informativos
+    motivo_breve VARCHAR(255),
+    notas_internas TEXT,
+    
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_cita_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cita_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE
+);
+
+-- 1.3 HISTORIA CLÍNICA
+-- Registro evolutivo de las sesiones.
+CREATE TABLE IF NOT EXISTS historia_clinica (
+    id SERIAL PRIMARY KEY,
+    fk_paciente INTEGER NOT NULL,
+    fk_cita INTEGER, -- Opcional: vincula la nota a una cita específica
+    
+    fecha_consulta DATE NOT NULL,
+    
+    -- Estructura básica SOAP (Subjetivo, Objetivo, Análisis, Plan) o libre
+    motivo_consulta TEXT,
+    observaciones TEXT,
+    diagnostico TEXT,
+    tratamiento_plan TEXT,
+    evolucion TEXT,
+    
+    archivos_adjuntos VARCHAR(1000), -- URLs separadas por coma si sube PDFs/Imágenes
+    
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_hc_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE,
+    CONSTRAINT fk_hc_cita FOREIGN KEY (fk_cita) REFERENCES cita(id) ON DELETE SET NULL
+);
+
+-- ============================================================================
+-- 2. MÓDULO ADMINISTRATIVO DE PAGOS (Complejo)
+-- ============================================================================
+
+-- 2.1 CONFIGURACIÓN DE TARIFAS ANUALES
+-- Permite que los precios cambien año tras año sin afectar registros antiguos.
+CREATE TABLE IF NOT EXISTS configuracion_cuotas (
+    id SERIAL PRIMARY KEY,
+    gestion INTEGER NOT NULL UNIQUE, -- Ej: 2025, 2026
+    monto_matricula NUMERIC(10, 2) NOT NULL, -- Ej: 500.00
+    monto_mensualidad NUMERIC(10, 2) NOT NULL, -- Ej: 100.00
+    dia_limite_pago INTEGER DEFAULT 10, -- Ej: Se debe pagar hasta el 10 de cada mes
+    estado INTEGER DEFAULT 1
+);
+
+-- 2.2 ESTADO DE CUENTA (Las Deudas Generadas)
+-- Aquí se insertan automáticamente las filas: "Matrícula 2026", "Enero 2026", "Febrero 2026"
+CREATE TABLE IF NOT EXISTS estado_cuenta_socio (
+    id SERIAL PRIMARY KEY,
+    fk_socio INTEGER NOT NULL,
+    
+    tipo_obligacion VARCHAR(50) NOT NULL, -- 'MATRICULA', 'MENSUALIDAD', 'MULTA'
+    gestion INTEGER NOT NULL, -- 2026
+    mes INTEGER, -- 1 para Enero, NULL si es Matrícula
+    
+    monto_original NUMERIC(10, 2) NOT NULL,
+    fecha_emision DATE DEFAULT CURRENT_DATE,
+    fecha_vencimiento DATE NOT NULL,
+    
+    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', -- 'PENDIENTE', 'PAGADO', 'PARCIAL', 'VENCIDO'
+    monto_pagado_acumulado NUMERIC(10, 2) DEFAULT 0,
+    
+    CONSTRAINT fk_estadocuenta_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE,
+    CONSTRAINT uk_obligacion_mes UNIQUE (fk_socio, tipo_obligacion, gestion, mes) -- Evita duplicar cobro del mismo mes
+);
+
+-- 2.3 TRANSACCIONES DE PAGO (El Dinero Real)
+-- Registro de cuando el psicólogo paga.
+CREATE TABLE IF NOT EXISTS transaccion_pago (
+    id SERIAL PRIMARY KEY,
+    fk_socio INTEGER NOT NULL,
+    fk_usuario_admin INTEGER, -- Si un admin registra el pago manualmente (opcional)
+    
+    monto_total NUMERIC(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50), -- 'QR', 'TRANSFERENCIA', 'EFECTIVO'
+    comprobante_url VARCHAR(500), -- Foto del voucher
+    referencia_bancaria VARCHAR(100),
+    
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    
+    estado VARCHAR(20) DEFAULT 'APROBADO', -- 'EN_REVISION', 'APROBADO', 'RECHAZADO' (Si requieren validación)
+    
+    CONSTRAINT fk_transaccion_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE,
+    CONSTRAINT fk_transaccion_admin FOREIGN KEY (fk_usuario_admin) REFERENCES usuario(id) ON DELETE SET NULL
+);
+
+-- 2.4 DETALLE DEL PAGO (Tabla Pivote)
+-- Relaciona UN pago con UNA O VARIAS deudas. 
+-- Ejemplo: Un pago de 200bs puede cubrir "Enero" (100bs) y "Febrero" (100bs).
+CREATE TABLE IF NOT EXISTS detalle_pago_deuda (
+    id SERIAL PRIMARY KEY,
+    fk_transaccion INTEGER NOT NULL,
+    fk_estado_cuenta INTEGER NOT NULL,
+    
+    monto_aplicado NUMERIC(10, 2) NOT NULL, -- Cuánto de este pago se fue a esta deuda
+    
+    CONSTRAINT fk_det_transaccion FOREIGN KEY (fk_transaccion) REFERENCES transaccion_pago(id) ON DELETE CASCADE,
+    CONSTRAINT fk_det_deuda FOREIGN KEY (fk_estado_cuenta) REFERENCES estado_cuenta_socio(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS publico_objetivo (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion VARCHAR(255),
+    estado INTEGER DEFAULT 1, -- 1: Activo, 0: Inactivo
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS socio_publico (
+    id SERIAL PRIMARY KEY,
+    fk_perfil_socio INTEGER NOT NULL,
+    fk_publico_objetivo INTEGER NOT NULL,
+    
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Relaciones (Foreign Keys)
+    CONSTRAINT fk_socio_pub_perfil FOREIGN KEY (fk_perfil_socio) 
+        REFERENCES perfil_socio(id) ON DELETE CASCADE,
+        
+    CONSTRAINT fk_socio_pub_objetivo FOREIGN KEY (fk_publico_objetivo) 
+        REFERENCES publico_objetivo(id) ON DELETE CASCADE,
+        
+    -- Restricción Única: Evita que asignen el mismo público dos veces al mismo socio
+    CONSTRAINT uk_socio_publico UNIQUE (fk_perfil_socio, fk_publico_objetivo)
+);
+
+-- 2.1 TABLA DE DOCUMENTOS (El archivo en sí)
+CREATE TABLE IF NOT EXISTS documento_profesional (
+    id SERIAL PRIMARY KEY,
+    
+    titulo VARCHAR(255) NOT NULL, -- Ej: "Título de Maestría en Clínica"
+    descripcion TEXT,
+    
+    archivo_url VARCHAR(500) NOT NULL, -- URL de Cloudinary o local
+    tipo_archivo VARCHAR(50), -- 'PDF', 'JPG', 'PNG'
+    
+    estado INTEGER DEFAULT 1,
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2.2 TABLA INTERMEDIA: SOCIO <-> DOCUMENTO
+-- Aquí defines qué documentos muestra cada perfil
+CREATE TABLE IF NOT EXISTS socio_documentos (
+    id SERIAL PRIMARY KEY,
+    fk_perfil_socio INTEGER NOT NULL,
+    fk_documento INTEGER NOT NULL,
+    
+    orden INTEGER DEFAULT 0, -- Para que el socio decida cuál sale primero
+    es_visible BOOLEAN DEFAULT true, -- Permite ocultarlo sin borrar la relación
+    
+    fecha_asociacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_pd_perfil FOREIGN KEY (fk_perfil_socio) REFERENCES perfil_socio(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pd_documento FOREIGN KEY (fk_documento) REFERENCES documento_profesional(id) ON DELETE CASCADE,
+    
+    CONSTRAINT uk_perfil_documento UNIQUE (fk_perfil_socio, fk_documento)
+);
+
+
+-- ============================================================================
+-- NUEVO: AMBIENTES Y RESERVAS
+-- ============================================================================
+
+-- Definición del espacio físico
+CREATE TABLE IF NOT EXISTS ambiente (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL, -- Ej: 'Consultorio 1'
+    descripcion TEXT,
+    precio_hora NUMERIC(10, 2) NOT NULL, -- Monto fijo por la hora
+    estado INTEGER DEFAULT 1
+);
+
+-- La reserva en sí
+CREATE TABLE IF NOT EXISTS reserva_ambiente (
+    id SERIAL PRIMARY KEY,
+    fk_ambiente INTEGER NOT NULL,
+    fk_socio INTEGER NOT NULL,
+    
+    fecha_reserva DATE NOT NULL,
+    hora_inicio TIME NOT NULL, -- Tú controlas por Java que sea 1 hora exacta
+    hora_fin TIME NOT NULL,
+    
+    monto_total NUMERIC(10, 2) NOT NULL,
+    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', -- 'PENDIENTE', 'PAGADO'
+    estado_reserva VARCHAR(20) DEFAULT 'CONFIRMADA', -- 'CONFIRMADA', 'CANCELADA'
+    
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_reserva_ambiente FOREIGN KEY (fk_ambiente) REFERENCES ambiente(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reserva_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
+);
+-- ============================================================================
+-- ÍNDICES PARA OPTIMIZACIÓN DE TABLAS BASE
+-- ============================================================================
+-- ============================================================================
+-- ÍNDICES DE BASE (Geografía, Instituciones, Personas) - SE MANTIENEN
+-- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_departamento_pais ON departamento(fk_pais);
 CREATE INDEX IF NOT EXISTS idx_provincia_departamento ON provincia(fk_departamento);
 CREATE INDEX IF NOT EXISTS idx_pais_estado ON pais(estado);
 CREATE INDEX IF NOT EXISTS idx_departamento_estado ON departamento(estado);
 CREATE INDEX IF NOT EXISTS idx_provincia_estado ON provincia(estado);
 
--- Índices para instituciones
 CREATE INDEX IF NOT EXISTS idx_institucion_provincia ON institucion(fk_provincia);
 CREATE INDEX IF NOT EXISTS idx_institucion_estado ON institucion(estado);
 CREATE INDEX IF NOT EXISTS idx_anio_institucion ON anio(fk_institucion);
 
--- Índices para personas y usuarios
 CREATE INDEX IF NOT EXISTS idx_persona_email ON persona(email);
 CREATE INDEX IF NOT EXISTS idx_persona_ci ON persona(ci);
 CREATE INDEX IF NOT EXISTS idx_persona_estado ON persona(estado);
@@ -544,7 +804,6 @@ CREATE INDEX IF NOT EXISTS idx_usuario_estado ON usuario(estado);
 CREATE INDEX IF NOT EXISTS idx_usuarios_roles_usuario ON usuarios_roles(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_usuarios_roles_rol ON usuarios_roles(rol_id);
 
--- Índices para socios (búsquedas frecuentes)
 CREATE INDEX IF NOT EXISTS idx_socio_persona ON socio(fk_persona);
 CREATE INDEX IF NOT EXISTS idx_socio_institucion ON socio(fk_institucion);
 CREATE INDEX IF NOT EXISTS idx_socio_profesion ON socio(fk_profesion);
@@ -552,12 +811,12 @@ CREATE INDEX IF NOT EXISTS idx_socio_matricula ON socio(matricula);
 CREATE INDEX IF NOT EXISTS idx_socio_codigo ON socio(codigo);
 CREATE INDEX IF NOT EXISTS idx_socio_estado ON socio(estado);
 CREATE INDEX IF NOT EXISTS idx_socio_nrodocumento ON socio(nrodocumento);
+-- NUEVO: Índice para buscar socios por su solicitud de origen
+CREATE INDEX IF NOT EXISTS idx_socio_solicitud ON socio(fk_solicitud_afiliacion);
 
 -- ============================================================================
--- ÍNDICES PARA OPTIMIZACIÓN DE IMÁGENES Y CATÁLOGOS
+-- ÍNDICES PARA CATÁLOGOS (Empresas) - SE MANTIENEN
 -- ============================================================================
-
--- Índices para catálogo (empresas)
 CREATE INDEX IF NOT EXISTS idx_catalogo_tipo ON catalogo(tipo);
 CREATE INDEX IF NOT EXISTS idx_catalogo_nit ON catalogo(nit);
 CREATE INDEX IF NOT EXISTS idx_catalogo_estado ON catalogo(estado);
@@ -565,100 +824,135 @@ CREATE INDEX IF NOT EXISTS idx_catalogo_departamento ON catalogo(fk_departamento
 CREATE INDEX IF NOT EXISTS idx_catalogo_provincia ON catalogo(fk_provincia);
 CREATE INDEX IF NOT EXISTS idx_catalogo_pais ON catalogo(fk_pais);
 
--- Índices CRÍTICOS para imágenes de catálogo (optimización principal)
 CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo ON imagencatalogo(fk_catalogo);
 CREATE INDEX IF NOT EXISTS idx_imagencatalogo_tipo ON imagencatalogo(tipo);
 CREATE INDEX IF NOT EXISTS idx_imagencatalogo_estado ON imagencatalogo(estado);
 CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo_tipo ON imagencatalogo(fk_catalogo, tipo);
-CREATE INDEX IF NOT EXISTS idx_imagencatalogo_catalogo_estado ON imagencatalogo(fk_catalogo, estado);
 
--- Índice para relación socio-catálogo
 CREATE INDEX IF NOT EXISTS idx_socio_catalogos_socio ON socio_catalogos(socio_id);
 CREATE INDEX IF NOT EXISTS idx_socio_catalogos_catalogo ON socio_catalogos(catalogo_id);
 
 -- ============================================================================
--- ÍNDICES PARA PERFILES PÚBLICOS Y BÚSQUEDA DE PROFESIONALES
+-- ÍNDICES PARA PERFILES PÚBLICOS (Optimización de búsqueda de psicólogos)
 -- ============================================================================
-
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_socio ON perfil_socio(fk_socio);
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_publico ON perfil_socio(perfil_publico);
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_estado ON perfil_socio(estado);
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_ciudad ON perfil_socio(ciudad);
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_titulo ON perfil_socio(titulo_profesional);
-CREATE INDEX IF NOT EXISTS idx_perfil_socio_visualizaciones ON perfil_socio(visualizaciones DESC);
+-- Índice compuesto para filtrar "Mostrar solo públicos y activos"
 CREATE INDEX IF NOT EXISTS idx_perfil_socio_publico_estado ON perfil_socio(perfil_publico, estado);
 
--- Índices para especialidades y servicios
+-- Especialidades, Servicios, Sectores
 CREATE INDEX IF NOT EXISTS idx_especialidades_estado ON especialidades(estado);
-CREATE INDEX IF NOT EXISTS idx_especialidades_origen ON especialidades(origen);
 CREATE INDEX IF NOT EXISTS idx_socio_especialidades_perfil ON socio_especialidades(fk_perfil_socio);
 CREATE INDEX IF NOT EXISTS idx_socio_especialidades_especialidad ON socio_especialidades(fk_especialidad);
 
 CREATE INDEX IF NOT EXISTS idx_servicios_estado ON servicios(estado);
-CREATE INDEX IF NOT EXISTS idx_servicios_categoria ON servicios(categoria);
-CREATE INDEX IF NOT EXISTS idx_servicios_origen ON servicios(origen);
 CREATE INDEX IF NOT EXISTS idx_socio_servicios_perfil ON socio_servicios(fk_perfil_socio);
 CREATE INDEX IF NOT EXISTS idx_socio_servicios_servicio ON socio_servicios(fk_servicio);
 CREATE INDEX IF NOT EXISTS idx_socio_servicios_destacado ON socio_servicios(destacado);
 
 CREATE INDEX IF NOT EXISTS idx_sectores_estado ON sectores(estado);
-CREATE INDEX IF NOT EXISTS idx_sectores_origen ON sectores(origen);
 CREATE INDEX IF NOT EXISTS idx_socio_sectores_perfil ON socio_sectores(fk_perfil_socio);
 CREATE INDEX IF NOT EXISTS idx_socio_sectores_sector ON socio_sectores(fk_sector);
 
--- ============================================================================
--- ÍNDICES PARA FORMACIÓN Y CERTIFICACIONES
--- ============================================================================
-
+-- Formación y Certificaciones
 CREATE INDEX IF NOT EXISTS idx_formacion_perfil ON formacion(fk_perfil_socio);
-CREATE INDEX IF NOT EXISTS idx_formacion_tipo ON formacion(tipo);
-CREATE INDEX IF NOT EXISTS idx_formacion_estado ON formacion(estado);
 CREATE INDEX IF NOT EXISTS idx_formacion_orden ON formacion(fk_perfil_socio, orden);
-
 CREATE INDEX IF NOT EXISTS idx_certificaciones_perfil ON certificaciones(fk_perfil_socio);
-CREATE INDEX IF NOT EXISTS idx_certificaciones_estado ON certificaciones(estado);
 CREATE INDEX IF NOT EXISTS idx_certificaciones_orden ON certificaciones(fk_perfil_socio, orden);
-
 CREATE INDEX IF NOT EXISTS idx_socio_idiomas_perfil ON socio_idiomas(fk_perfil_socio);
-CREATE INDEX IF NOT EXISTS idx_socio_idiomas_idioma ON socio_idiomas(fk_idioma);
 
 -- ============================================================================
--- ÍNDICES PARA GESTIÓN DOCUMENTAL
+-- ÍNDICES NUEVOS: MÓDULO DE SOLICITUDES Y AFILIACIÓN
 -- ============================================================================
 
-CREATE INDEX IF NOT EXISTS idx_documentos_tipo ON documentos(tipo);
-CREATE INDEX IF NOT EXISTS idx_documentos_estado ON documentos(estado);
-CREATE INDEX IF NOT EXISTS idx_documentos_fecha ON documentos(fecha_subida DESC);
+-- Fase 1: Leads
+CREATE INDEX IF NOT EXISTS idx_sol_contacto_token ON solicitud_inicial_afiliacion(token_acceso); -- Rápido acceso al link
+CREATE INDEX IF NOT EXISTS idx_sol_contacto_estado ON solicitud_inicial_afiliacion(estado);
+CREATE INDEX IF NOT EXISTS idx_sol_contacto_fecha ON solicitud_inicial_afiliacion(fecha_solicitud DESC);
+
+-- Fase 2: Afiliación Completa
+CREATE INDEX IF NOT EXISTS idx_sol_afiliacion_contacto ON solicitud_afiliacion(fk_solicitud_inicial_afiliacion);
+CREATE INDEX IF NOT EXISTS idx_sol_afiliacion_estado ON solicitud_afiliacion(estado_afiliacion);
+CREATE INDEX IF NOT EXISTS idx_sol_afiliacion_ci ON solicitud_afiliacion(ci); -- Para evitar duplicados manuales
 
 -- ============================================================================
--- ÍNDICES PARA PAGOS Y FINANZAS
+-- ÍNDICES NUEVOS: MÓDULO CLÍNICO (PACIENTES Y CITAS)
 -- ============================================================================
 
-CREATE INDEX IF NOT EXISTS idx_pagos_socio ON pagos(fk_socio);
-CREATE INDEX IF NOT EXISTS idx_pagos_estado ON pagos(estado);
-CREATE INDEX IF NOT EXISTS idx_pagos_fecha ON pagos(fecha_pago DESC);
-CREATE INDEX IF NOT EXISTS idx_pagos_metodo ON pagos(metodo_pago);
+-- Solicitudes de Cita (Bandeja de Entrada)
+CREATE INDEX IF NOT EXISTS idx_sol_cita_perfil ON solicitud_cita(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_sol_cita_estado ON solicitud_cita(estado); -- Filtrar "Pendientes"
+CREATE INDEX IF NOT EXISTS idx_sol_cita_fecha ON solicitud_cita(fecha_solicitud DESC);
+
+-- Pacientes
+CREATE INDEX IF NOT EXISTS idx_paciente_socio ON paciente(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_paciente_ci ON paciente(ci);
+CREATE INDEX IF NOT EXISTS idx_paciente_nombres ON paciente(nombres, apellidos); -- Búsqueda por nombre
+
+-- Citas (Agenda)
+CREATE INDEX IF NOT EXISTS idx_cita_perfil ON cita(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_cita_paciente ON cita(fk_paciente);
+CREATE INDEX IF NOT EXISTS idx_cita_fecha ON cita(fecha_cita); -- Para mostrar calendario
+CREATE INDEX IF NOT EXISTS idx_cita_estado ON cita(estado_cita);
+-- Índice compuesto para validar cruce de horarios rápidamente
+CREATE INDEX IF NOT EXISTS idx_cita_horario ON cita(fk_perfil_socio, fecha_cita, hora_inicio);
+
+-- Historia Clínica
+CREATE INDEX IF NOT EXISTS idx_hc_paciente ON historia_clinica(fk_paciente);
+CREATE INDEX IF NOT EXISTS idx_hc_cita ON historia_clinica(fk_cita);
+CREATE INDEX IF NOT EXISTS idx_hc_fecha ON historia_clinica(fecha_consulta DESC);
 
 -- ============================================================================
--- ÍNDICES PARA AUTENTICACIÓN SOCIAL Y CONSULTAS
+-- ÍNDICES NUEVOS: MÓDULO FINANCIERO Y ADMINISTRATIVO
 -- ============================================================================
 
+-- Estado de Cuenta (Deudas)
+CREATE INDEX IF NOT EXISTS idx_estadocuenta_socio ON estado_cuenta_socio(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_estadocuenta_estado ON estado_cuenta_socio(estado_pago);
+CREATE INDEX IF NOT EXISTS idx_estadocuenta_gestion ON estado_cuenta_socio(gestion);
+-- Para buscar morosos rápidamente
+CREATE INDEX IF NOT EXISTS idx_estadocuenta_morosos ON estado_cuenta_socio(fecha_vencimiento) WHERE estado_pago != 'PAGADO';
+
+-- Transacciones (Pagos Reales)
+CREATE INDEX IF NOT EXISTS idx_transaccion_socio ON transaccion_pago(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_transaccion_fecha ON transaccion_pago(fecha_pago DESC);
+CREATE INDEX IF NOT EXISTS idx_transaccion_estado ON transaccion_pago(estado); -- Filtrar "En Revisión"
+
+-- Reservas de Ambientes
+CREATE INDEX IF NOT EXISTS idx_reserva_ambiente ON reserva_ambiente(fk_ambiente);
+CREATE INDEX IF NOT EXISTS idx_reserva_socio ON reserva_ambiente(fk_socio);
+CREATE INDEX IF NOT EXISTS idx_reserva_fecha ON reserva_ambiente(fecha_reserva); -- Calendario de reservas
+CREATE INDEX IF NOT EXISTS idx_reserva_estado_pago ON reserva_ambiente(estado_pago);
+
+-- ============================================================================
+-- ÍNDICES NUEVOS: DOCUMENTOS Y PÚBLICO
+-- ============================================================================
+
+-- Público Objetivo
+CREATE INDEX IF NOT EXISTS idx_socio_publico_perfil ON socio_publico(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_publico_objetivo ON socio_publico(fk_publico_objetivo);
+
+-- Documentos Profesionales (Tabla Intermedia)
+CREATE INDEX IF NOT EXISTS idx_socio_docs_perfil ON socio_documentos(fk_perfil_socio);
+CREATE INDEX IF NOT EXISTS idx_socio_docs_doc ON socio_documentos(fk_documento);
+CREATE INDEX IF NOT EXISTS idx_socio_docs_visible ON socio_documentos(es_visible);
+
+-- ============================================================================
+-- ÍNDICES SOCIAL Y CMS - SE MANTIENEN
+-- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_usuario_social_persona ON usuario_social(fk_persona);
 CREATE INDEX IF NOT EXISTS idx_usuario_social_email ON usuario_social(email);
-CREATE INDEX IF NOT EXISTS idx_usuario_social_provider ON usuario_social(provider);
-CREATE INDEX IF NOT EXISTS idx_usuario_social_estado ON usuario_social(estado);
-
-CREATE INDEX IF NOT EXISTS idx_consultas_perfil ON consultas_contacto(fk_perfil_socio);
-CREATE INDEX IF NOT EXISTS idx_consultas_estado ON consultas_contacto(estado);
-CREATE INDEX IF NOT EXISTS idx_consultas_fecha ON consultas_contacto(fecha_creacion DESC);
 
 CREATE INDEX IF NOT EXISTS idx_estadisticas_orden ON estadisticas_publicas(orden);
-CREATE INDEX IF NOT EXISTS idx_estadisticas_visible ON estadisticas_publicas(visible);
-
--- ============================================================================
--- ÍNDICES PARA CONTENIDO WEB ESTÁTICO
--- ============================================================================
 
 CREATE INDEX IF NOT EXISTS idx_static_content_seccion ON web_static_content(seccion);
-CREATE INDEX IF NOT EXISTS idx_static_content_tipo ON web_static_content(tipo_input);
-CREATE INDEX IF NOT EXISTS idx_static_content_modificador ON web_static_content(fk_usuario_modificador);
+
+-- Posts
+CREATE INDEX IF NOT EXISTS idx_posts_tipo ON posts(tipo);
+CREATE INDEX IF NOT EXISTS idx_posts_publicado ON posts(publicado);
+CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_post_secciones_post ON post_secciones(fk_post);

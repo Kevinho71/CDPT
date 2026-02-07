@@ -256,16 +256,6 @@ public class PerfilSocioController {
     }
     
     /**
-     * Incrementa las visualizaciones de un perfil
-     * POST /api/perfiles/{id}/visualizar
-     */
-    @PostMapping("/{id}/visualizar")
-    public ResponseEntity<Void> incrementViews(@PathVariable Integer id) {
-        perfilSocioService.incrementarVisualizaciones(id);
-        return ResponseEntity.ok().build();
-    }
-    
-    /**
      * Elimina la foto de perfil
      * DELETE /api/perfiles/{id}/foto-perfil
      */

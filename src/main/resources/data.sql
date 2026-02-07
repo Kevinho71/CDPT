@@ -1,14 +1,14 @@
 -- ============================================================================
--- 1. PROFESIONES
+-- 1. PROFESIONES (Adaptado para Psicólogos)
 -- ============================================================================
-INSERT INTO profesion (estado, nombre) SELECT 1, 'Administración de Empresas' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Administración de Empresas');
-INSERT INTO profesion (estado, nombre) SELECT 1, 'Ingenieria Comercial' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Ingenieria Comercial');
-INSERT INTO profesion (estado, nombre) SELECT 1, 'Ingenieria Financiera' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Ingenieria Financiera');
-INSERT INTO profesion (estado, nombre) SELECT 1, 'Economía' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Economía');
-INSERT INTO profesion (estado, nombre) SELECT 1, 'Banca y Finanzas' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Banca y Finanzas');
+INSERT INTO profesion (estado, nombre) SELECT 1, 'Licenciatura en Psicología' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Licenciatura en Psicología');
+INSERT INTO profesion (estado, nombre) SELECT 1, 'Psicopedagogía' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Psicopedagogía');
+INSERT INTO profesion (estado, nombre) SELECT 1, 'Psicología Clínica' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Psicología Clínica');
+INSERT INTO profesion (estado, nombre) SELECT 1, 'Psicología' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Psicología');
+INSERT INTO profesion (estado, nombre) SELECT 1, 'Neuropsicología' WHERE NOT EXISTS (SELECT 1 FROM profesion WHERE nombre = 'Neuropsicología');
 
 -- ============================================================================
--- 2. PAISES
+-- 2. PAISES (Se mantiene igual)
 -- ============================================================================
 INSERT INTO pais (estado, nombre) SELECT 1, 'BOLIVIA' WHERE NOT EXISTS (SELECT 1 FROM pais WHERE nombre = 'BOLIVIA');
 INSERT INTO pais (estado, nombre) SELECT 1, 'PERÚ' WHERE NOT EXISTS (SELECT 1 FROM pais WHERE nombre = 'PERÚ');
@@ -17,7 +17,7 @@ INSERT INTO pais (estado, nombre) SELECT 1, 'ARGENTINA' WHERE NOT EXISTS (SELECT
 INSERT INTO pais (estado, nombre) SELECT 1, 'COLOMBIA' WHERE NOT EXISTS (SELECT 1 FROM pais WHERE nombre = 'COLOMBIA');
 
 -- ============================================================================
--- 3. DEPARTAMENTOS
+-- 3. DEPARTAMENTOS (Se mantiene igual)
 -- ============================================================================
 -- BOLIVIA (1)
 INSERT INTO departamento (estado, nombre, abreviacion, fk_pais) SELECT 1, 'TARIJA', 'TJA', 1 WHERE NOT EXISTS (SELECT 1 FROM departamento WHERE nombre = 'TARIJA');
@@ -59,10 +59,8 @@ INSERT INTO departamento (estado, nombre, abreviacion, fk_pais) SELECT 1, 'ATLÁ
 
 
 -- ============================================================================
--- 4. PROVINCIAS
+-- 4. PROVINCIAS (Se mantiene igual)
 -- ============================================================================
--- OJO: Aqui validamos por Nombre Y por Departamento, porque "CERCADO" se repite.
-
 -- BOLIVIA
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CERCADO', 1 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CERCADO' AND fk_departamento = 1);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'ANDRÉS IBÁÑEZ', 2 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'ANDRÉS IBÁÑEZ' AND fk_departamento = 2);
@@ -74,27 +72,21 @@ INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CERCADO', 7 W
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'NICOLÁS SUÁREZ', 8 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'NICOLÁS SUÁREZ' AND fk_departamento = 8);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'TOMÁS FRÍAS', 9 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'TOMÁS FRÍAS' AND fk_departamento = 9);
 
--- PERU
+-- PERU, CHILE, ARGENTINA, COLOMBIA (Se mantienen igual para no perder data)
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'LIMA', 10 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'LIMA' AND fk_departamento = 10);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CUSCO', 11 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CUSCO' AND fk_departamento = 11);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'AREQUIPA', 12 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'AREQUIPA' AND fk_departamento = 12);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'PIURA', 13 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'PIURA' AND fk_departamento = 13);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'TRUJILLO', 14 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'TRUJILLO' AND fk_departamento = 14);
-
--- CHILE
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'SANTIAGO', 15 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'SANTIAGO' AND fk_departamento = 15);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'VALPARAÍSO', 16 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'VALPARAÍSO' AND fk_departamento = 16);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'ANTOFAGASTA', 17 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'ANTOFAGASTA' AND fk_departamento = 17);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CONCEPCIÓN', 18 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CONCEPCIÓN' AND fk_departamento = 18);
-
--- ARGENTINA
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'LA PLATA', 19 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'LA PLATA' AND fk_departamento = 19);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CAPITAL', 20 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CAPITAL' AND fk_departamento = 20);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'ROSARIO', 21 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'ROSARIO' AND fk_departamento = 21);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CAPITAL', 22 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CAPITAL' AND fk_departamento = 22);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CAPITAL', 23 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CAPITAL' AND fk_departamento = 23);
-
--- COLOMBIA
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'MEDELLÍN', 24 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'MEDELLÍN' AND fk_departamento = 24);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'BOGOTÁ', 25 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'BOGOTÁ' AND fk_departamento = 25);
 INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'CALI', 26 WHERE NOT EXISTS (SELECT 1 FROM provincia WHERE nombre = 'CALI' AND fk_departamento = 26);
@@ -103,85 +95,73 @@ INSERT INTO provincia (estado, nombre, fk_departamento) SELECT 1, 'BARRANQUILLA'
 
 
 -- ============================================================================
--- 5. ESPECIALIDADES
+-- 5. ESPECIALIDADES (Adaptado a Psicología)
 -- ============================================================================
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Finanzas Corporativas', 'Gestión del valor y capital de la empresa', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Finanzas Corporativas');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Auditoría y Control', 'Control interno y auditoría externa', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Auditoría y Control');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Tributación y Fiscalidad', 'Gestión de impuestos y normativa fiscal', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Tributación y Fiscalidad');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Banca y Seguros', 'Gestión bancaria y análisis de riesgos', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Banca y Seguros');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Mercado de Valores', 'Inversiones y bolsa de valores', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Mercado de Valores');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gestión del Talento Humano', 'Reclutamiento, selección y retención', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gestión del Talento Humano');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Compensaciones y Beneficios', 'Estructuras salariales y beneficios', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Compensaciones y Beneficios');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Desarrollo Organizacional', 'Cultura, clima y cambio organizacional', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Desarrollo Organizacional');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Legislación Laboral', 'Normativa y derecho laboral aplicado', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Legislación Laboral');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Coaching y Liderazgo', 'Desarrollo de habilidades blandas y directivas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Coaching y Liderazgo');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Marketing Estratégico', 'Planeación de mercado a largo plazo', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Marketing Estratégico');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Marketing Digital', 'Estrategias en medios digitales y redes', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Marketing Digital');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Investigación de Mercados', 'Análisis de consumidor y competencia', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Investigación de Mercados');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gestión Comercial y Ventas', 'Dirección de fuerzas de ventas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gestión Comercial y Ventas');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Branding y Marca', 'Construcción y gestión de identidad de marca', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Branding y Marca');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Supply Chain Management', 'Gestión de la cadena de suministro', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Supply Chain Management');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Logística y Distribución', 'Almacenamiento y transporte', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Logística y Distribución');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gestión de Calidad (ISO)', 'Normas de calidad y mejora continua', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gestión de Calidad (ISO)');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Seguridad Industrial', 'Seguridad y salud ocupacional', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Seguridad Industrial');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Comercio Exterior', 'Importaciones, exportaciones y aduanas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Comercio Exterior');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gerencia General', 'Dirección integral de organizaciones', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gerencia General');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Planificación Estratégica', 'Definición de objetivos a largo plazo', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Planificación Estratégica');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gestión de Proyectos (PMO)', 'Administración de proyectos y portafolios', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gestión de Proyectos (PMO)');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Responsabilidad Social (RSE)', 'Sostenibilidad y ética empresarial', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Responsabilidad Social (RSE)');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Innovación Empresarial', 'Gestión de la innovación y creatividad', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Innovación Empresarial');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Transformación Digital', 'Digitalización de procesos de negocio', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Transformación Digital');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Business Intelligence (BI)', 'Análisis de datos para toma de decisiones', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Business Intelligence (BI)');
-INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'E-Commerce', 'Comercio electrónico y negocios digitales', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'E-Commerce');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Clínica', 'Evaluación, diagnóstico y tratamiento de trastornos mentales', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Clínica');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Educativa', 'Procesos de aprendizaje y desarrollo en el ámbito escolar', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Educativa');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Organizacional', 'Comportamiento humano en el ámbito laboral y empresas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Organizacional');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Neuropsicología', 'Relación entre el cerebro y la conducta humana', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Neuropsicología');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Forense', 'Aplicación de la psicología en el ámbito legal y jurídico', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Forense');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Social', 'Estudio de las relaciones sociales y comportamiento grupal', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Social');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología del Deporte', 'Rendimiento y bienestar mental en deportistas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología del Deporte');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Terapia Cognitivo-Conductual', 'Enfoque terapéutico basado en el pensamiento y comportamiento', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Terapia Cognitivo-Conductual');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicoanálisis', 'Estudio del inconsciente y la estructura de la personalidad', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicoanálisis');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Terapia Sistémica Familiar', 'Abordaje de problemas desde la dinámica familiar', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Terapia Sistémica Familiar');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicooncología', 'Apoyo psicológico a pacientes con cáncer y sus familias', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicooncología');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicogerontología', 'Atención psicológica para el adulto mayor', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicogerontología');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicometría', 'Medición de variables psicológicas y uso de test', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicometría');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Intervención en Crisis', 'Atención inmediata ante eventos traumáticos', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Intervención en Crisis');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Sexología Clínica', 'Tratamiento de disfunciones y educación sexual', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Sexología Clínica');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología de la Salud', 'Promoción de estilos de vida saludables y prevención', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología de la Salud');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Gestión del Talento Humano', 'Reclutamiento y selección desde perspectiva psicológica', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Gestión del Talento Humano');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Estimulación Temprana', 'Potenciación del desarrollo infantil', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Estimulación Temprana');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Psicología Comunitaria', 'Trabajo con comunidades para el cambio social', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Psicología Comunitaria');
+INSERT INTO especialidades (nombre, descripcion, origen) SELECT 'Trastornos del Espectro Autista', 'Especialización en diagnóstico e intervención en TEA', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM especialidades WHERE nombre = 'Trastornos del Espectro Autista');
 
 
 -- ============================================================================
--- 6. SERVICIOS
+-- 6. SERVICIOS (Adaptado a Psicología)
 -- ============================================================================
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Elaboración de Planes de Negocio', 'Consultoría', 'Desarrollo integral de planes para startups o expansión', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Elaboración de Planes de Negocio');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Valoración de Empresas', 'Finanzas', 'Determinación del valor económico de una organización', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Valoración de Empresas');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Reingeniería de Procesos', 'Procesos', 'Rediseño radical de procesos para mejorar productividad', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Reingeniería de Procesos');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Implementación de KPIs', 'Gestión', 'Diseño de tableros de control y métricas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Implementación de KPIs');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Auditoría Administrativa', 'Auditoría', 'Evaluación de la eficiencia de la estructura organizacional', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Auditoría Administrativa');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Headhunting y Selección', 'RRHH', 'Búsqueda de ejecutivos y personal clave', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Headhunting y Selección');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Medición de Clima Laboral', 'RRHH', 'Diagnóstico del ambiente de trabajo', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Medición de Clima Laboral');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Manuales de Funciones', 'RRHH', 'Redacción de manuales y procedimientos organizacionales', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Manuales de Funciones');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Plan de Marketing', 'Marketing', 'Estrategia de mercado y posicionamiento', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Plan de Marketing');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Estudios de Mercado', 'Marketing', 'Investigación cualitativa y cuantitativa', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Estudios de Mercado');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Gestión de Redes Sociales', 'Marketing', 'Community management corporativo', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Gestión de Redes Sociales');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Capacitación In-Company', 'Formación', 'Cursos a medida para empresas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Capacitación In-Company');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Talleres de Liderazgo', 'Formación', 'Desarrollo de habilidades directivas', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Talleres de Liderazgo');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Coaching Ejecutivo 1 a 1', 'Formación', 'Acompañamiento personalizado a gerentes', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Coaching Ejecutivo 1 a 1');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Constitución de Empresas', 'Legal', 'Trámites para fundar nuevas compañías', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Constitución de Empresas');
-INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Asesoría Tributaria', 'Legal', 'Optimización y cumplimiento fiscal', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Asesoría Tributaria');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Psicoterapia Individual', 'Consulta', 'Sesiones terapéuticas para tratamiento personal', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Psicoterapia Individual');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Terapia de Pareja', 'Consulta', 'Resolución de conflictos y mejora de la relación', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Terapia de Pareja');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Terapia Familiar', 'Consulta', 'Intervención con el núcleo familiar completo', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Terapia Familiar');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Evaluación Psicológica', 'Evaluación', 'Aplicación de test y diagnóstico clínico', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Evaluación Psicológica');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Evaluación Neuropsicológica', 'Evaluación', 'Diagnóstico de funciones cognitivas y daño cerebral', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Evaluación Neuropsicológica');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Orientación Vocacional', 'Educativo', 'Asesoramiento para elección de carrera profesional', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Orientación Vocacional');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Psicodiagnóstico Infantil', 'Evaluación', 'Evaluación del desarrollo y problemas en niños', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Psicodiagnóstico Infantil');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Selección de Personal', 'Empresarial', 'Reclutamiento y pruebas psicométricas laborales', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Selección de Personal');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Clima Laboral', 'Empresarial', 'Diagnóstico e intervención en bienestar organizacional', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Clima Laboral');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Peritaje Forense', 'Legal', 'Informes psicológicos para procesos judiciales', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Peritaje Forense');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Talleres de Manejo de Estrés', 'Talleres', 'Técnicas de relajación y afrontamiento', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Talleres de Manejo de Estrés');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Escuela de Padres', 'Educativo', 'Orientación para la crianza de los hijos', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Escuela de Padres');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Rehabilitación Cognitiva', 'Tratamiento', 'Recuperación de funciones mentales superiores', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Rehabilitación Cognitiva');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Consultoría Organizacional', 'Empresarial', 'Asesoramiento a empresas en gestión humana', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Consultoría Organizacional');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Evaluación para Licencia de Conducir', 'Certificación', 'Test psicotécnicos para conductores', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Evaluación para Licencia de Conducir');
+INSERT INTO servicios (nombre, categoria, descripcion, origen) SELECT 'Atención en Adicciones', 'Tratamiento', 'Terapia para consumo de sustancias y dependencias', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM servicios WHERE nombre = 'Atención en Adicciones');
 
 
 -- ============================================================================
--- 7. SECTORES
+-- 7. SECTORES (Donde trabajan los psicólogos)
 -- ============================================================================
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Banca y Finanzas', 'fa-university', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Banca y Finanzas');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Seguros', 'fa-shield-alt', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Seguros');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Educación y Universidades', 'fa-graduation-cap', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Educación y Universidades');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Consulta Privada', 'fa-user-md', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Consulta Privada');
 INSERT INTO sectores (nombre, icono, origen) SELECT 'Salud y Hospitales', 'fa-hospital', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Salud y Hospitales');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Construcción e Inmobiliaria', 'fa-building', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Construcción e Inmobiliaria');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Minería e Hidrocarburos', 'fa-hammer', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Minería e Hidrocarburos');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Agroindustria', 'fa-tractor', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Agroindustria');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Retail y Comercio Minorista', 'fa-shopping-cart', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Retail y Comercio Minorista');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Consumo Masivo', 'fa-box-open', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Consumo Masivo');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Tecnología y Software', 'fa-laptop-code', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Tecnología y Software');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Telecomunicaciones', 'fa-broadcast-tower', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Telecomunicaciones');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Transporte y Logística', 'fa-truck', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Transporte y Logística');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Turismo y Hotelería', 'fa-plane', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Turismo y Hotelería');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Gastronomía y Restaurantes', 'fa-utensils', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Gastronomía y Restaurantes');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Sector Público / Gobierno', 'fa-landmark', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Sector Público / Gobierno');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Educación y Colegios', 'fa-school', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Educación y Colegios');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Universidades e Investigación', 'fa-graduation-cap', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Universidades e Investigación');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Recursos Humanos (Empresas)', 'fa-building', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Recursos Humanos (Empresas)');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Ámbito Jurídico y Forense', 'fa-gavel', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Ámbito Jurídico y Forense');
 INSERT INTO sectores (nombre, icono, origen) SELECT 'ONGs y Fundaciones', 'fa-hand-holding-heart', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'ONGs y Fundaciones');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Manufactura e Industria', 'fa-industry', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Manufactura e Industria');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Automotriz', 'fa-car', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Automotriz');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Legal y Jurídico', 'fa-gavel', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Legal y Jurídico');
-INSERT INTO sectores (nombre, icono, origen) SELECT 'Energía y Medio Ambiente', 'fa-solar-panel', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Energía y Medio Ambiente');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Sector Público / Gobierno', 'fa-landmark', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Sector Público / Gobierno');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Deporte y Alto Rendimiento', 'fa-running', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Deporte y Alto Rendimiento');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Centros de Rehabilitación', 'fa-clinic-medical', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Centros de Rehabilitación');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Consultoría Externa', 'fa-briefcase', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Consultoría Externa');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Atención de Emergencias', 'fa-ambulance', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Atención de Emergencias');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Trabajo Comunitario', 'fa-users', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Trabajo Comunitario');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Gerontología y Asilos', 'fa-blind', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Gerontología y Asilos');
+INSERT INTO sectores (nombre, icono, origen) SELECT 'Seguridad Policial/Militar', 'fa-shield-alt', 'SISTEMA' WHERE NOT EXISTS (SELECT 1 FROM sectores WHERE nombre = 'Seguridad Policial/Militar');
+
 
 -- ============================================================================
--- 8. IDIOMAS
+-- 8. IDIOMAS (Se mantienen igual)
 -- ============================================================================
 INSERT INTO idiomas (nombre, estado) SELECT 'Español', 1 WHERE NOT EXISTS (SELECT 1 FROM idiomas WHERE nombre = 'Español');
 INSERT INTO idiomas (nombre, estado) SELECT 'Inglés', 1 WHERE NOT EXISTS (SELECT 1 FROM idiomas WHERE nombre = 'Inglés');
@@ -203,9 +183,23 @@ INSERT INTO rol (estado, nombre) SELECT 1, 'ROLE_ADMIN' WHERE NOT EXISTS (SELECT
 INSERT INTO rol (estado, nombre) SELECT 1, 'ROLE_SOCIO' WHERE NOT EXISTS (SELECT 1 FROM rol WHERE nombre = 'ROLE_SOCIO');
 
 -- ============================================================================
--- 10. ESTADISTICAS
+-- 10. ESTADISTICAS (Descripciones adaptadas)
 -- ============================================================================
-INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'total_socios', 'Socios Colegiados', '0', 'Total de administradores colegiados' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'total_socios');
-INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'especialidades_disponibles', 'Especialidades', '8', 'Especialidades profesionales disponibles' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'especialidades_disponibles');
-INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'anios_trayectoria', 'Años de Historia', '25', 'Años de trayectoria institucional' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'anios_trayectoria');
-INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'satisfaccion_clientes', 'Satisfacción', '98', 'Índice de satisfacción' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'satisfaccion_clientes');
+INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'total_socios', 'Psicólogos Colegiados', '0', 'Total de profesionales psicólogos colegiados' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'total_socios');
+INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'especialidades_disponibles', 'Especialidades', '8', 'Áreas de especialización psicológica disponibles' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'especialidades_disponibles');
+INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'anios_trayectoria', 'Años de Historia', '25', 'Años de trayectoria institucional en Tarija' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'anios_trayectoria');
+INSERT INTO estadisticas_publicas (clave, titulo, valor, descripcion) SELECT 'satisfaccion_clientes', 'Satisfacción', '98', 'Índice de satisfacción de pacientes' WHERE NOT EXISTS (SELECT 1 FROM estadisticas_publicas WHERE clave = 'satisfaccion_clientes');
+
+-- ============================================================================
+-- 11. PUBLICO OBJETIVO (Ya estaba correcto para Psicología)
+-- ============================================================================
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Niños', 'Atención psicológica infantil (3 a 12 años).' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Niños');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Adolescentes', 'Atención a jóvenes en etapa de pubertad y adolescencia.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Adolescentes');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Adultos', 'Psicoterapia para personas mayores de edad.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Adultos');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Adultos Mayores', 'Gerontopsicología y atención a la tercera edad.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Adultos Mayores');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Parejas', 'Resolución de conflictos y orientación matrimonial.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Parejas');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Familias', 'Terapia sistémica para el núcleo familiar.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Familias');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Grupos', 'Terapia grupal para temáticas específicas.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Grupos');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Empresas', 'Consultoría organizacional y salud laboral.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Empresas');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Deportistas', 'Psicología de alto rendimiento.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Deportistas');
+INSERT INTO publico_objetivo (nombre, descripcion) SELECT 'Comunidad LGBTIQ+', 'Atención especializada e inclusiva.' WHERE NOT EXISTS (SELECT 1 FROM publico_objetivo WHERE nombre = 'Comunidad LGBTIQ+');

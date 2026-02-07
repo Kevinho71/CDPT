@@ -150,7 +150,6 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
         
         if (isNew) {
             perfil.setFechaCreacion(LocalDateTime.now());
-            perfil.setVisualizaciones(0);
         }
         
         // Manejar foto de perfil con Cloudinary
@@ -237,15 +236,6 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
         return toResponseDTO(updatedPerfil);
     }
     
-    @Override
-    @Transactional
-    public void incrementarVisualizaciones(Integer id) {
-        PerfilSocioEntity perfil = perfilSocioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("PerfilSocio", "id", id));
-        
-        perfil.setVisualizaciones(perfil.getVisualizaciones() + 1);
-        perfilSocioRepository.save(perfil);
-    }
     
     @Override
     @Transactional(readOnly = true)
@@ -326,7 +316,6 @@ public class PerfilSocioServiceImpl implements PerfilSocioService {
         dto.setSitioWeb(perfil.getSitioWeb());
         dto.setPerfilPublico(perfil.getPerfilPublico());
         dto.setPermiteContacto(perfil.getPermiteContacto());
-        dto.setVisualizaciones(perfil.getVisualizaciones());
         dto.setFechaCreacion(perfil.getFechaCreacion());
         dto.setFechaActualizacion(perfil.getFechaActualizacion());
         dto.setEstado(perfil.getEstado());
