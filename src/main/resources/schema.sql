@@ -643,6 +643,42 @@ CREATE TABLE IF NOT EXISTS historia_clinica (
     CONSTRAINT fk_hc_paciente FOREIGN KEY (fk_paciente) REFERENCES paciente(id) ON DELETE CASCADE,
     CONSTRAINT fk_hc_cita FOREIGN KEY (fk_cita) REFERENCES cita(id) ON DELETE SET NULL
 );
+
+
+-- ============================================================================
+-- NUEVO: AMBIENTES Y RESERVAS
+-- ============================================================================
+
+-- Definición del espacio físico
+CREATE TABLE IF NOT EXISTS ambiente (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL, -- Ej: 'Consultorio 1'
+    descripcion TEXT,
+    precio_hora NUMERIC(10, 2) NOT NULL, -- Monto fijo por la hora
+    estado INTEGER DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS reserva_ambiente (
+    id SERIAL PRIMARY KEY,
+    fk_ambiente INTEGER NOT NULL,
+    fk_socio INTEGER NOT NULL, -- El socio que reserva
+    
+    fecha_reserva DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL,
+    
+    monto_total NUMERIC(10, 2), -- Se guarda aquí como histórico
+    
+    -- El estado de pago real se consulta en 'estado_cuenta_socio', 
+    -- pero mantenemos este campo como 'espejo' para pintar el calendario rápido.
+    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', 
+    estado_reserva VARCHAR(20) DEFAULT 'CONFIRMADA', -- 'CONFIRMADA', 'CANCELADA'
+    
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_res_ambiente FOREIGN KEY (fk_ambiente) REFERENCES ambiente(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_res_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
+);  
+
 -- ============================================================================
 -- 2. MÓDULO ADMINISTRATIVO DE PAGOS (Complejo)
 -- ============================================================================
@@ -784,53 +820,6 @@ CREATE TABLE IF NOT EXISTS socio_documentos (
 );
 
 
--- ============================================================================
--- NUEVO: AMBIENTES Y RESERVAS
--- ============================================================================
-
--- Definición del espacio físico
-CREATE TABLE IF NOT EXISTS ambiente (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL, -- Ej: 'Consultorio 1'
-    descripcion TEXT,
-    precio_hora NUMERIC(10, 2) NOT NULL, -- Monto fijo por la hora
-    estado INTEGER DEFAULT 1
-);
-CREATE TABLE IF NOT EXISTS reserva_ambiente (
-    id SERIAL PRIMARY KEY,
-    fk_ambiente INTEGER NOT NULL,
-    fk_socio INTEGER NOT NULL, -- El socio que reserva
-    
-    fecha_reserva DATE NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    
-    monto_total NUMERIC(10, 2), -- Se guarda aquí como histórico
-    
-    -- El estado de pago real se consulta en 'estado_cuenta_socio', 
-    -- pero mantenemos este campo como 'espejo' para pintar el calendario rápido.
-    estado_pago VARCHAR(20) DEFAULT 'PENDIENTE', 
-    estado_reserva VARCHAR(20) DEFAULT 'CONFIRMADA', -- 'CONFIRMADA', 'CANCELADA'
-    
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_res_ambiente FOREIGN KEY (fk_ambiente) REFERENCES ambiente(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_res_socio FOREIGN KEY (fk_socio) REFERENCES socio(id) ON DELETE CASCADE
-);  
-
--- ============================================================================
--- VINCULACIÓN FINAL (Cerrar el círculo)
--- ============================================================================
--- Ahora conectamos la deuda con la reserva
-DO $$ 
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_estadocuenta_reserva') THEN
-        ALTER TABLE estado_cuenta_socio 
-        ADD CONSTRAINT fk_estadocuenta_reserva 
-        FOREIGN KEY (fk_reserva) 
-        REFERENCES reserva_ambiente(id) 
-        ON DELETE SET NULL;
-    END IF;
 END $$;
 -- ============================================================================
 -- ÍNDICES PARA OPTIMIZACIÓN DE TABLAS BASE

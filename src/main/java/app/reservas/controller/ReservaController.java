@@ -1,6 +1,5 @@
 package app.reservas.controller;
 
-import app.common.ApiResponse;
 import app.reservas.dto.*;
 import app.reservas.service.ReservaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * Controlador para gestión de reservas de ambientes.
+ * Controlador REST independiente para gestión de reservas de ambientes.
  * Implementa la lógica de "Una reserva confirmada = Una deuda pendiente".
+ * No utiliza ApiResponse genérico - retorna objetos directamente.
  */
 @RestController
 @RequestMapping("/api/reservas")
@@ -32,7 +32,7 @@ public class ReservaController {
      * GET /api/reservas/disponibilidad?ambienteId=1&fecha=2026-02-15&horaInicio=08:00&horaFin=10:00
      */
     @GetMapping("/disponibilidad")
-    public ResponseEntity<ApiResponse<DisponibilidadResponseDTO>> verificarDisponibilidad(
+    public ResponseEntity<?> verificarDisponibilidad(
             @RequestParam Integer ambienteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaInicio,
@@ -42,17 +42,13 @@ public class ReservaController {
                 ambienteId, fecha, horaInicio, horaFin
             );
             
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Disponibilidad verificada", disponibilidad)
-            );
+            return ResponseEntity.ok(disponibilidad);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponseDTO("Bad Request", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al verificar disponibilidad: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al verificar disponibilidad: " + e.getMessage()));
         }
     }
     
@@ -62,21 +58,16 @@ public class ReservaController {
      * POST /api/reservas
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<ReservaResponseDTO>> crearReserva(@Valid @RequestBody ReservaCreateDTO dto) {
+    public ResponseEntity<?> crearReserva(@Valid @RequestBody ReservaCreateDTO dto) {
         try {
             ReservaResponseDTO reserva = reservaService.crearReserva(dto);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(true, "Reserva creada correctamente. Se generó una deuda en su cuenta corriente.", reserva)
-            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(reserva);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponseDTO("Bad Request", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al crear reserva: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al crear reserva: " + e.getMessage()));
         }
     }
     
@@ -86,21 +77,16 @@ public class ReservaController {
      * DELETE /api/reservas/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> cancelarReserva(@PathVariable Integer id) {
+    public ResponseEntity<?> cancelarReserva(@PathVariable Integer id) {
         try {
             reservaService.cancelarReserva(id);
-            
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Reserva cancelada correctamente", null)
-            );
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponseDTO("Bad Request", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al cancelar reserva: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al cancelar reserva: " + e.getMessage()));
         }
     }
     
@@ -110,19 +96,15 @@ public class ReservaController {
      * GET /api/reservas/calendario?ambienteId=1&fecha=2026-02-15
      */
     @GetMapping("/calendario")
-    public ResponseEntity<ApiResponse<List<ReservaResponseDTO>>> obtenerReservasDelDia(
+    public ResponseEntity<?> obtenerReservasDelDia(
             @RequestParam Integer ambienteId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         try {
             List<ReservaResponseDTO> reservas = reservaService.obtenerReservasDelDia(ambienteId, fecha);
-            
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Reservas del día obtenidas correctamente", reservas)
-            );
+            return ResponseEntity.ok(reservas);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al obtener reservas: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al obtener reservas: " + e.getMessage()));
         }
     }
     
@@ -132,17 +114,13 @@ public class ReservaController {
      * GET /api/reservas/socio/{socioId}/futuras
      */
     @GetMapping("/socio/{socioId}/futuras")
-    public ResponseEntity<ApiResponse<List<ReservaResponseDTO>>> obtenerReservasFuturas(@PathVariable Integer socioId) {
+    public ResponseEntity<?> obtenerReservasFuturas(@PathVariable Integer socioId) {
         try {
             List<ReservaResponseDTO> reservas = reservaService.obtenerReservasFuturasDeSocio(socioId);
-            
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Reservas futuras obtenidas correctamente", reservas)
-            );
+            return ResponseEntity.ok(reservas);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al obtener reservas: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al obtener reservas: " + e.getMessage()));
         }
     }
 }
