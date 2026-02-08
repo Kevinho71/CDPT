@@ -1,6 +1,12 @@
-package app.documento.service;
+package app.perfil.service;
 
-import app.documento.dto.*;
+import app.perfil.dto.*;
+import app.perfil.dto.SocioDocumentoCompleteDTO;
+import app.perfil.dto.SocioDocumentoCreateDTO;
+import app.perfil.dto.SocioDocumentoResponseDTO;
+import app.perfil.dto.SocioDocumentoUpdateDTO;
+import app.perfil.dto.SocioDocumentoUploadDTO;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -38,15 +44,6 @@ public interface SocioDocumentoService {
      * @return Lista de documentos ordenados
      */
     List<SocioDocumentoCompleteDTO> findDocumentosByPerfil(Integer perfilSocioId, boolean soloVisibles);
-    
-    /**
-     * Actualiza la información de un documento del socio
-     * @param perfilSocioId ID del perfil del socio (validación)
-     * @param socioDocumentoId ID de la relación socio_documentos
-     * @param dto DTO con los datos a actualizar
-     * @return DTO completo actualizado
-     */
-    SocioDocumentoCompleteDTO updateDocumento(Integer perfilSocioId, Integer socioDocumentoId, SocioDocumentoEditDTO dto);
     
     /**
      * Elimina un documento del socio (soft delete en la relación)
