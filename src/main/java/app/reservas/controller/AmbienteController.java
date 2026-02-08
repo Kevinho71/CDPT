@@ -1,7 +1,7 @@
 package app.reservas.controller;
 
-import app.common.ApiResponse;
 import app.reservas.dto.AmbienteDTO;
+import app.reservas.dto.ErrorResponseDTO;
 import app.reservas.entity.AmbienteEntity;
 import app.reservas.repository.AmbienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Controlador para gestión de ambientes (catálogo de espacios físicos).
+ * Controlador REST independiente para gestión de ambientes (catálogo de espacios físicos).
+ * No utiliza ApiResponse genérico - retorna objetos directamente.
  */
 @RestController
 @RequestMapping("/api/ambientes")
@@ -30,7 +31,7 @@ public class AmbienteController {
      * GET /api/ambientes
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AmbienteDTO>>> listarAmbientesActivos() {
+    public ResponseEntity<?> listarAmbientesActivos() {
         try {
             List<AmbienteEntity> ambientes = ambienteRepository.findByEstado(1);
             
@@ -38,13 +39,10 @@ public class AmbienteController {
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
             
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Ambientes obtenidos correctamente", dtos)
-            );
+            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al obtener ambientes: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al obtener ambientes: " + e.getMessage()));
         }
     }
     
@@ -54,22 +52,18 @@ public class AmbienteController {
      * GET /api/ambientes/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AmbienteDTO>> obtenerAmbiente(@PathVariable Integer id) {
+    public ResponseEntity<?> obtenerAmbiente(@PathVariable Integer id) {
         try {
             AmbienteEntity ambiente = ambienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ambiente no encontrado"));
             
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Ambiente obtenido correctamente", convertirADTO(ambiente))
-            );
+            return ResponseEntity.ok(convertirADTO(ambiente));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponseDTO("Not Found", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al obtener ambiente: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al obtener ambiente: " + e.getMessage()));
         }
     }
     
@@ -79,7 +73,7 @@ public class AmbienteController {
      * POST /api/ambientes
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<AmbienteDTO>> crearAmbiente(@Valid @RequestBody AmbienteDTO dto) {
+    public ResponseEntity<?> crearAmbiente(@Valid @RequestBody AmbienteDTO dto) {
         try {
             AmbienteEntity ambiente = new AmbienteEntity();
             ambiente.setNombre(dto.getNombre());
@@ -89,13 +83,10 @@ public class AmbienteController {
             
             ambiente = ambienteRepository.save(ambiente);
             
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(true, "Ambiente creado correctamente", convertirADTO(ambiente))
-            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(ambiente));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al crear ambiente: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al crear ambiente: " + e.getMessage()));
         }
     }
     
@@ -105,7 +96,7 @@ public class AmbienteController {
      * PUT /api/ambientes/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AmbienteDTO>> actualizarAmbiente(
+    public ResponseEntity<?> actualizarAmbiente(
             @PathVariable Integer id,
             @Valid @RequestBody AmbienteDTO dto) {
         try {
@@ -121,17 +112,13 @@ public class AmbienteController {
             
             ambiente = ambienteRepository.save(ambiente);
             
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Ambiente actualizado correctamente", convertirADTO(ambiente))
-            );
+            return ResponseEntity.ok(convertirADTO(ambiente));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponseDTO("Not Found", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al actualizar ambiente: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al actualizar ambiente: " + e.getMessage()));
         }
     }
     
@@ -141,7 +128,7 @@ public class AmbienteController {
      * DELETE /api/ambientes/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> desactivarAmbiente(@PathVariable Integer id) {
+    public ResponseEntity<?> desactivarAmbiente(@PathVariable Integer id) {
         try {
             AmbienteEntity ambiente = ambienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Ambiente no encontrado"));
@@ -149,17 +136,13 @@ public class AmbienteController {
             ambiente.setEstado(0);
             ambienteRepository.save(ambiente);
             
-            return ResponseEntity.ok(
-                new ApiResponse<>(true, "Ambiente desactivado correctamente", null)
-            );
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new ApiResponse<>(false, e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponseDTO("Not Found", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                new ApiResponse<>(false, "Error al desactivar ambiente: " + e.getMessage(), null)
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponseDTO("Internal Server Error", "Error al desactivar ambiente: " + e.getMessage()));
         }
     }
     

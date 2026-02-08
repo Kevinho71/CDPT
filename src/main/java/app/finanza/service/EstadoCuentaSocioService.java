@@ -49,4 +49,10 @@ public interface EstadoCuentaSocioService {
      * Llamado por el cron job
      */
     void generarMensualidadesAutomaticas();
+    
+    /**
+     * Marca como VENCIDO las deudas cuya fecha_vencimiento ya pasó y siguen PENDIENTE/PARCIAL.
+     * Ejecutado diariamente por el cron job.
+     */
+    void marcarDeudasVencidas();
 }

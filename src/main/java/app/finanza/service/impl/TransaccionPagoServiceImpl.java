@@ -13,6 +13,7 @@ import app.finanza.repository.DetallePagoDeudaRepository;
 import app.finanza.repository.EstadoCuentaSocioRepository;
 import app.finanza.repository.TransaccionPagoRepository;
 import app.finanza.service.TransaccionPagoService;
+import app.reservas.service.ReservaService;
 import app.socio.entity.SocioEntity;
 import app.socio.repository.SocioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +51,9 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     @Autowired
     private DetallePagoDeudaRepository detallePagoRepository;
 
+    @Autowired
+    private ReservaService reservaService;
+
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findAll() {
@@ -60,7 +65,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findBySocio(Integer socioId) {
-        return repository.findByFkSocio_Id(socioId).stream()
+        return repository.findBySocio_Id(socioId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -68,7 +73,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findByEstado(String estadoPago) {
-        return repository.findByEstadoPago(estadoPago).stream()
+        return repository.findByEstado(estadoPago).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -76,7 +81,9 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> findByFechaRango(LocalDate fechaInicio, LocalDate fechaFin) {
-        return repository.findByFechaTransaccionBetween(fechaInicio, fechaFin).stream()
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+        return repository.findByFechaPagoBetween(inicio, fin).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -139,12 +146,16 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
             entity.setReferenciaBancaria(dto.getReferenciaBancaria());
         if (dto.getObservaciones() != null)
             entity.setObservaciones(dto.getObservaciones());
-        if (dto.getEstadoPago() != null)
-            entity.setEstado(dto.getEstadoPago());
+        if (dto.getEstado() != null)
+            entity.setEstado(dto.getEstado());
 
         // Actualizar comprobante si se proporciona uno nuevo
         if (comprobante != null && !comprobante.isEmpty()) {
-            entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+            try {
+                entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+            } catch (IOException e) {
+                throw new RuntimeException("Error técnico al procesar el archivo: " + e.getMessage());
+            }
         } else if (dto.getComprobanteUrl() != null) {
             entity.setComprobanteUrl(dto.getComprobanteUrl());
         }
@@ -167,13 +178,13 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         dto.setFkSocio(entity.getSocio() != null ? entity.getSocio().getId() : null);
         dto.setSocioNombre(entity.getSocio() != null ? entity.getSocio().getNombresocio() : null);
         dto.setFkUsuarioAdmin(entity.getUsuarioAdmin() != null ? entity.getUsuarioAdmin().getId() : null);
-        dto.setUsuarioAdminNombre(entity.getUsuarioAdmin() != null ? entity.getUsuarioAdmin().getNombre() : null);
+        dto.setUsuarioAdminNombre(entity.getUsuarioAdmin() != null ? entity.getUsuarioAdmin().getUsername() : null);
         dto.setMontoTotal(entity.getMontoTotal());
         dto.setMetodoPago(entity.getMetodoPago());
         dto.setReferenciaBancaria(entity.getReferenciaBancaria());
         dto.setComprobanteUrl(entity.getComprobanteUrl());
-        dto.setFechaTransaccion(entity.getFechaPago());
-        dto.setEstadoPago(entity.getEstado());
+        dto.setFechaPago(entity.getFechaPago());
+        dto.setEstado(entity.getEstado());
         dto.setObservaciones(entity.getObservaciones());
         return dto;
     }
@@ -200,7 +211,11 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
         entity.setMetodoPago(dto.getMetodoPago());
         entity.setReferenciaBancaria(dto.getReferenciaBancaria());
         entity.setObservaciones(dto.getObservaciones());
-        entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+        try {
+            entity.setComprobanteUrl(archivoService.uploadFile(comprobante, "comprobantes"));
+        } catch (IOException e) {
+            throw new RuntimeException("Error técnico al procesar el comprobante: " + e.getMessage());
+        }
         entity.setEstado("EN_REVISION"); // Estado inicial
 
         TransaccionPagoEntity saved = repository.save(entity);
@@ -279,7 +294,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
             
             if (montoDisponible.compareTo(saldoDeuda) >= 0) {
                 // Tengo suficiente dinero para cubrir toda la deuda
-                montoAplicar = saldo Deuda;
+                montoAplicar = saldoDeuda;
                 nuevoEstado = "PAGADO";
                 System.out.println("Cubriendo TODA la deuda: " + montoAplicar + " Bs");
             } else {
@@ -304,6 +319,16 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
             
             System.out.println("Nuevo acumulado: " + nuevoAcumulado + " Bs");
             System.out.println("Nuevo estado: " + nuevoEstado);
+            
+            // 8.1 Si la deuda es de tipo ALQUILER y fue PAGADA, marcar la reserva como pagada
+            if ("PAGADO".equals(nuevoEstado) && "ALQUILER".equals(deuda.getTipoObligacion()) && deuda.getReservaId() != null) {
+                try {
+                    reservaService.marcarReservaComoPagada(deuda.getReservaId());
+                    System.out.println("Reserva " + deuda.getReservaId() + " marcada como PAGADA");
+                } catch (Exception e) {
+                    System.err.println("Error al marcar reserva como pagada: " + e.getMessage());
+                }
+            }
             
             // 9. Guardar detalle para respuesta
             DetalleConciliacionDTO detalleDTO = new DetalleConciliacionDTO(
@@ -367,7 +392,7 @@ public class TransaccionPagoServiceImpl implements TransaccionPagoService {
     @Override
     @Transactional(readOnly = true)
     public List<TransaccionPagoResponseDTO> obtenerPagosPendientesRevision() {
-        return repository.findByEstadoPago("EN_REVISION").stream()
+        return repository.findByEstado("EN_REVISION").stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

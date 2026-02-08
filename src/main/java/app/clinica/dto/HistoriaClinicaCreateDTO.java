@@ -5,7 +5,11 @@ import java.time.LocalDate;
 
 public class HistoriaClinicaCreateDTO {
     
-    @NotNull(message = "El ID del paciente es obligatorio")
+    /**
+     * ID del paciente. NULLABLE en el modelo sistémico:
+     * - Si es una nota de sesión grupal (pareja/familia), se vincula solo a fkCita
+     * - Si es una nota individual, se vincula a fkPaciente
+     */
     private Integer fkPaciente;
     
     private Integer fkCita; // Opcional: puede ser una consulta sin cita previa

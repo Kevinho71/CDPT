@@ -69,10 +69,14 @@ public class MensualidadesScheduler {
         System.out.println("║  Fecha/Hora: " + ahora + "                  ║");
         System.out.println("╚════════════════════════════════════════════════════════════╝");
         
-        // TODO: Implementar lógica para actualizar estado VENCIDO
-        // de deudas que pasaron su fecha_vencimiento
+        try {
+            estadoCuentaService.marcarDeudasVencidas();
+            System.out.println("✓ Actualización de deudas vencidas completada");
+        } catch (Exception e) {
+            System.err.println("✗ ERROR al actualizar deudas vencidas: " + e.getMessage());
+            e.printStackTrace();
+        }
         
-        System.out.println("✓ Actualización de deudas vencidas completada");
         System.out.println("════════════════════════════════════════════════════════════\n");
     }
 }
