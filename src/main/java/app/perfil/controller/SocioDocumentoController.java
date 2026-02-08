@@ -1,9 +1,9 @@
-package app.documento.controller;
+package app.perfil.controller;
 
-import app.documento.dto.SocioDocumentoCreateDTO;
-import app.documento.dto.SocioDocumentoResponseDTO;
-import app.documento.dto.SocioDocumentoUpdateDTO;
-import app.documento.service.SocioDocumentoService;
+import app.perfil.service.SocioDocumentoService;
+import app.perfil.dto.SocioDocumentoCreateDTO;
+import app.perfil.dto.SocioDocumentoResponseDTO;
+import app.perfil.dto.SocioDocumentoUpdateDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

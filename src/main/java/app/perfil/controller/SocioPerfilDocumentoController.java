@@ -1,9 +1,8 @@
-package app.documento.controller;
+package app.perfil.controller;
 
-import app.documento.dto.SocioDocumentoCompleteDTO;
-import app.documento.dto.SocioDocumentoEditDTO;
-import app.documento.dto.SocioDocumentoUploadDTO;
-import app.documento.service.SocioDocumentoService;
+import app.perfil.service.SocioDocumentoService;
+import app.perfil.dto.SocioDocumentoCompleteDTO;
+import app.perfil.dto.SocioDocumentoUploadDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -89,15 +88,7 @@ public class SocioPerfilDocumentoController {
      * @param dto DTO con los campos a actualizar
      * @return Documento actualizado
      */
-    @PutMapping("/api/socio/perfil/{perfilId}/documentos/{docId}")
-    public ResponseEntity<SocioDocumentoCompleteDTO> actualizarDocumento(
-            @PathVariable Integer perfilId,
-            @PathVariable Integer docId,
-            @Valid @RequestBody SocioDocumentoEditDTO dto) {
-        
-        SocioDocumentoCompleteDTO response = socioDocumentoService.updateDocumento(perfilId, docId, dto);
-        return ResponseEntity.ok(response);
-    }
+
     
     /**
      * Eliminar un documento del socio

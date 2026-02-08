@@ -1,8 +1,9 @@
 package app.documento.repository;
 
-import app.documento.entity.DocumentoProfesionalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import app.perfil.entity.DocumentoProfesionalEntity;
 
 import java.util.List;
 

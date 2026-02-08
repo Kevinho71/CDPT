@@ -1,4 +1,4 @@
-package app.documento.entity;
+package app.perfil.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;

@@ -1,9 +1,10 @@
-package app.documento.service;
+package app.perfil.service;
 
-import app.documento.dto.DocumentoProfesionalCreateDTO;
-import app.documento.dto.DocumentoProfesionalResponseDTO;
-import app.documento.dto.DocumentoProfesionalUpdateDTO;
 import org.springframework.web.multipart.MultipartFile;
+
+import app.perfil.dto.DocumentoProfesionalCreateDTO;
+import app.perfil.dto.DocumentoProfesionalResponseDTO;
+import app.perfil.dto.DocumentoProfesionalUpdateDTO;
 
 import java.io.IOException;
 import java.util.List;
