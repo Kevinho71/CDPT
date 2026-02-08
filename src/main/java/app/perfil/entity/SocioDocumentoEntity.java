@@ -1,6 +1,5 @@
-package app.documento.entity;
+package app.perfil.entity;
 
-import app.perfil.entity.PerfilSocioEntity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;

@@ -1,9 +1,9 @@
-package app.documento.controller;
+package app.perfil.controller;
 
-import app.documento.dto.DocumentoProfesionalCreateDTO;
-import app.documento.dto.DocumentoProfesionalResponseDTO;
-import app.documento.dto.DocumentoProfesionalUpdateDTO;
-import app.documento.service.DocumentoProfesionalService;
+import app.perfil.service.DocumentoProfesionalService;
+import app.perfil.dto.DocumentoProfesionalCreateDTO;
+import app.perfil.dto.DocumentoProfesionalResponseDTO;
+import app.perfil.dto.DocumentoProfesionalUpdateDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,13 +1,14 @@
-package app.documento.service.impl;
+package app.perfil.service;
 
 import app.common.exception.ResourceNotFoundException;
 import app.common.util.ArchivoService;
-import app.documento.dto.DocumentoProfesionalCreateDTO;
-import app.documento.dto.DocumentoProfesionalResponseDTO;
-import app.documento.dto.DocumentoProfesionalUpdateDTO;
-import app.documento.entity.DocumentoProfesionalEntity;
-import app.documento.repository.DocumentoProfesionalRepository;
-import app.documento.service.DocumentoProfesionalService;
+import app.perfil.service.DocumentoProfesionalService;
+import app.perfil.dto.DocumentoProfesionalCreateDTO;
+import app.perfil.dto.DocumentoProfesionalResponseDTO;
+import app.perfil.dto.DocumentoProfesionalUpdateDTO;
+import app.perfil.entity.DocumentoProfesionalEntity;
+import app.perfil.repository.DocumentoProfesionalRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

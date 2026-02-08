@@ -102,6 +102,9 @@ public class PerfilSocioEntity implements Serializable {
 
     @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SocioEspecialidadEntity> socioEspecialidades = new ArrayList<>();
+
+    @OneToMany(mappedBy = "perfilSocio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SocioDocumentoEntity> socioDocumentos = new ArrayList<>();
     
     // Constructores
     public PerfilSocioEntity() {}
@@ -155,6 +158,14 @@ public class PerfilSocioEntity implements Serializable {
         this.tituloProfesional = tituloProfesional;
     }
     
+    public List<SocioDocumentoEntity> getSocioDocumentos() {
+        return socioDocumentos;
+    }
+
+    public void setSocioDocumentos(List<SocioDocumentoEntity> socioDocumentos) {
+        this.socioDocumentos = socioDocumentos;
+    }
+
     public Integer getAnosExperiencia() {
         return anosExperiencia;
     }
