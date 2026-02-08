@@ -1,4 +1,4 @@
-package app.documento.dto;
+package app.perfil.dto;
 
 import jakarta.validation.constraints.NotNull;
 
