@@ -19,11 +19,11 @@ public interface EstadoCuentaSocioRepository extends JpaRepository<EstadoCuentaS
     List<EstadoCuentaSocioEntity> findByGestionAndTipoObligacion(Integer gestion, String tipoObligacion);
     
     /**
-     * Obtiene deudas pendientes o parciales de un socio ordenadas por fecha de vencimiento (FIFO)
+     * Obtiene deudas pendientes, parciales o vencidas de un socio ordenadas por fecha de vencimiento (FIFO)
      * CRÍTICO para el algoritmo de conciliación
      */
     @Query("SELECT e FROM EstadoCuentaSocioEntity e WHERE e.socio.id = :socioId " +
-           "AND e.estadoPago IN ('PENDIENTE', 'PARCIAL') " +
+           "AND e.estadoPago IN ('PENDIENTE', 'PARCIAL', 'VENCIDO') " +
            "ORDER BY e.fechaVencimiento ASC, e.id ASC")
     List<EstadoCuentaSocioEntity> findDeudasPendientesFIFO(@Param("socioId") Integer socioId);
     
@@ -36,10 +36,13 @@ public interface EstadoCuentaSocioRepository extends JpaRepository<EstadoCuentaS
     Long contarDeudasVencidas(@Param("socioId") Integer socioId, @Param("fechaActual") LocalDate fechaActual);
     
     /**
-     * Verifica si existe una obligación para un socio en un mes/gestión específicos
+     * Verifica si existe una obligación para un socio en un mes/gestión específicos.
+     * Maneja correctamente NULL para el mes (usado en MATRICULA).
      */
     @Query("SELECT COUNT(e) > 0 FROM EstadoCuentaSocioEntity e WHERE e.socio.id = :socioId " +
-           "AND e.gestion = :gestion AND e.mes = :mes AND e.tipoObligacion = :tipo")
+           "AND e.gestion = :gestion " +
+           "AND ((:mes IS NULL AND e.mes IS NULL) OR e.mes = :mes) " +
+           "AND e.tipoObligacion = :tipo")
     boolean existeObligacion(@Param("socioId") Integer socioId, 
                             @Param("gestion") Integer gestion,
                             @Param("mes") Integer mes, 
@@ -67,7 +70,7 @@ public interface EstadoCuentaSocioRepository extends JpaRepository<EstadoCuentaS
      * @return Cantidad de deudas vencidas antes de esa fecha
      */
     @Query("SELECT COUNT(e) FROM EstadoCuentaSocioEntity e WHERE e.socio.id = :socioId " +
-           "AND e.estadoPago IN ('PENDIENTE', 'PARCIAL') " +
+           "AND e.estadoPago IN ('PENDIENTE', 'PARCIAL', 'VENCIDO') " +
            "AND e.fechaVencimiento < :fechaLimite")
     Long contarDeudasVencidasAntesde(@Param("socioId") Integer socioId, 
                                      @Param("fechaLimite") LocalDate fechaLimite);

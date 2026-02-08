@@ -77,14 +77,25 @@ public class HistoriaClinicaServiceImpl implements HistoriaClinicaService {
     public HistoriaClinicaResponseDTO create(HistoriaClinicaCreateDTO dto) {
         HistoriaClinicaEntity entity = new HistoriaClinicaEntity();
         
-        PacienteEntity paciente = pacienteRepository.findById(dto.getFkPaciente())
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + dto.getFkPaciente()));
-        entity.setPaciente(paciente);
+        // MODELO SISTÉMICO: fkPaciente puede ser NULL
+        // - Si es NULL, la nota es de una sesión grupal y se vincula solo a la cita
+        // - Si tiene valor, es una nota individual vinculada al paciente
+        if (dto.getFkPaciente() != null) {
+            PacienteEntity paciente = pacienteRepository.findById(dto.getFkPaciente())
+                    .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + dto.getFkPaciente()));
+            entity.setPaciente(paciente);
+        }
         
         if (dto.getFkCita() != null) {
             CitaEntity cita = citaRepository.findById(dto.getFkCita())
                     .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + dto.getFkCita()));
             entity.setCita(cita);
+        }
+        
+        // Validación: debe tener al menos paciente o cita
+        if (dto.getFkPaciente() == null && dto.getFkCita() == null) {
+            throw new IllegalArgumentException(
+                "La historia clínica debe estar vinculada a un paciente, a una cita, o a ambos");
         }
         
         entity.setFechaConsulta(dto.getFechaConsulta());

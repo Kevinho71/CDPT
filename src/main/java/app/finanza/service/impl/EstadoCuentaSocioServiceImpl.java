@@ -41,6 +41,8 @@ public class EstadoCuentaSocioServiceImpl implements EstadoCuentaSocioService {
         entity.setTipoObligacion(dto.getTipoObligacion());
         entity.setGestion(dto.getGestion());
         entity.setMes(dto.getMes());
+        entity.setConcepto(dto.getConcepto());
+        entity.setReservaId(dto.getReservaId());
         entity.setMontoOriginal(dto.getMontoOriginal());
         entity.setFechaEmision(dto.getFechaEmision() != null ? dto.getFechaEmision() : LocalDate.now());
         entity.setFechaVencimiento(dto.getFechaVencimiento());
@@ -117,6 +119,7 @@ public class EstadoCuentaSocioServiceImpl implements EstadoCuentaSocioService {
         matricula.setMes(null); // Matrícula no tiene mes
         matricula.setMontoOriginal(config.getMontoMatricula());
         matricula.setFechaEmision(LocalDate.now());
+        matricula.setConcepto("Matrícula Gestión " + gestionActual);
         
         // Fecha de vencimiento: 30 días desde la aprobación
         matricula.setFechaVencimiento(LocalDate.now().plusDays(30));
@@ -166,11 +169,12 @@ public class EstadoCuentaSocioServiceImpl implements EstadoCuentaSocioService {
             // Crear la mensualidad
             EstadoCuentaSocioEntity mensualidad = new EstadoCuentaSocioEntity();
             mensualidad.setSocio(socio);
-            mensualidad.setTipoObligacion("MEN SUALIDAD");
+            mensualidad.setTipoObligacion("MENSUALIDAD");
             mensualidad.setGestion(gestionActual);
             mensualidad.setMes(mesActual);
             mensualidad.setMontoOriginal(config.getMontoMensualidad());
             mensualidad.setFechaEmision(fechaActual);
+            mensualidad.setConcepto("Cuota Ordinaria - " + nombreMes(mesActual) + " " + gestionActual);
             
             // Fecha de vencimiento: día límite del mes actual
             int diaLimite = config.getDiaLimitePago() != null ? config.getDiaLimitePago() : 10;
@@ -190,6 +194,37 @@ public class EstadoCuentaSocioServiceImpl implements EstadoCuentaSocioService {
     }
     
     /**
+     * Marca como VENCIDO las deudas cuya fecha_vencimiento ya pasó
+     * y siguen en estado PENDIENTE o PARCIAL.
+     * Ejecutado diariamente por el cron job a las 01:00 AM.
+     */
+    @Override
+    public void marcarDeudasVencidas() {
+        LocalDate hoy = LocalDate.now();
+        
+        // Obtener todas las deudas pendientes/parciales de todos los socios
+        List<EstadoCuentaSocioEntity> todasDeudas = estadoCuentaRepository.findAll();
+        
+        int actualizadas = 0;
+        for (EstadoCuentaSocioEntity deuda : todasDeudas) {
+            if (("PENDIENTE".equals(deuda.getEstadoPago()) || "PARCIAL".equals(deuda.getEstadoPago()))
+                && deuda.getFechaVencimiento() != null
+                && deuda.getFechaVencimiento().isBefore(hoy)) {
+                // No cambiar el estado a VENCIDO porque el query contarDeudasVencidas
+                // ya filtra por fecha. Pero sí es útil para reportes tener el estado explícito.
+                // Solo marcar si no ha sido parcialmente pagado (PARCIAL se deja como PARCIAL).
+                if ("PENDIENTE".equals(deuda.getEstadoPago())) {
+                    deuda.setEstadoPago("VENCIDO");
+                    estadoCuentaRepository.save(deuda);
+                    actualizadas++;
+                }
+            }
+        }
+        
+        System.out.println("Deudas marcadas como VENCIDO: " + actualizadas);
+    }
+
+    /**
      * Convierte una entidad a DTO
      */
     private EstadoCuentaSocioDTO toDTO(EstadoCuentaSocioEntity entity) {
@@ -205,11 +240,22 @@ public class EstadoCuentaSocioServiceImpl implements EstadoCuentaSocioService {
         dto.setFechaVencimiento(entity.getFechaVencimiento());
         dto.setEstadoPago(entity.getEstadoPago());
         dto.setMontoPagadoAcumulado(entity.getMontoPagadoAcumulado());
+        dto.setConcepto(entity.getConcepto());
+        dto.setReservaId(entity.getReservaId());
         
         // Calcular saldo pendiente
         BigDecimal saldo = entity.getMontoOriginal().subtract(entity.getMontoPagadoAcumulado());
         dto.setSaldoPendiente(saldo);
         
         return dto;
+    }
+    
+    /**
+     * Devuelve el nombre del mes en español
+     */
+    private String nombreMes(int mes) {
+        String[] meses = {"", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+        return (mes >= 1 && mes <= 12) ? meses[mes] : String.valueOf(mes);
     }
 }

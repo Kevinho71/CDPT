@@ -285,22 +285,32 @@ public class SolicitudAfiliacionServiceImpl implements SolicitudAfiliacionServic
         // 4. CREAR ESTADO DE CUENTA (Matrícula inicial)
         Integer gestionActual = LocalDate.now().getYear();
 
-        // Buscamos directamente el objeto opcional
-        configuracionCuotasRepository.findByGestion(gestionActual).ifPresent(config -> {
+        // Verificar que no exista ya una matrícula para esta gestión
+        boolean yaExisteMatricula = estadoCuentaSocioRepository.existeObligacion(
+            socio.getId(), gestionActual, null, "MATRICULA");
+
+        if (!yaExisteMatricula) {
+            ConfiguracionCuotasEntity config = configuracionCuotasRepository.findByGestion(gestionActual)
+                .orElseThrow(() -> new IllegalStateException(
+                    "No existe configuración de cuotas para la gestión " + gestionActual +
+                    ". No se puede aprobar la solicitud sin definir los montos de matrícula."));
+
             EstadoCuentaSocioEntity estadoCuenta = new EstadoCuentaSocioEntity();
             estadoCuenta.setSocio(socio);
             estadoCuenta.setTipoObligacion("MATRICULA");
             estadoCuenta.setGestion(gestionActual);
+            estadoCuenta.setMes(null); // Matrícula no tiene mes
+            estadoCuenta.setConcepto("Matrícula Gestión " + gestionActual);
             estadoCuenta.setMontoOriginal(config.getMontoMatricula());
             estadoCuenta.setFechaEmision(LocalDate.now());
 
-            // Usamos el día límite de la configuración para calcular el vencimiento
-            estadoCuenta.setFechaVencimiento(LocalDate.now().plusDays(config.getDiaLimitePago()));
+            // Fecha de vencimiento: 30 días desde la aprobación
+            estadoCuenta.setFechaVencimiento(LocalDate.now().plusDays(30));
             estadoCuenta.setEstadoPago("PENDIENTE");
             estadoCuenta.setMontoPagadoAcumulado(BigDecimal.ZERO);
 
             estadoCuentaSocioRepository.save(estadoCuenta);
-        });
+        }
 
         // 5. ACTUALIZAR LA SOLICITUD A APROBADO
         solicitud.setEstadoAfiliacion("APROBADO");

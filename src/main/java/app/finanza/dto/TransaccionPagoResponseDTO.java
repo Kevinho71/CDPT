@@ -2,6 +2,7 @@ package app.finanza.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class TransaccionPagoResponseDTO {
     
@@ -17,6 +18,9 @@ public class TransaccionPagoResponseDTO {
     private LocalDateTime fechaPago;
     private String observaciones;
     private String estado;
+    
+    // Detalles de conciliación FIFO (solo se llena al aprobar un pago)
+    private List<DetalleConciliacionDTO> detallesConciliacion;
     
     // Constructor vacío
     public TransaccionPagoResponseDTO() {}
@@ -116,5 +120,13 @@ public class TransaccionPagoResponseDTO {
     
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+    
+    public List<DetalleConciliacionDTO> getDetallesConciliacion() {
+        return detallesConciliacion;
+    }
+    
+    public void setDetallesConciliacion(List<DetalleConciliacionDTO> detallesConciliacion) {
+        this.detallesConciliacion = detallesConciliacion;
     }
 }

@@ -112,8 +112,8 @@ public class ReservaServiceImpl implements ReservaService {
         deuda.setReservaId(reserva.getId()); // Bidirectional link
         deuda.setFechaEmision(LocalDate.now());
         
-        // Fecha de vencimiento: 15 días después de la fecha de reserva
-        deuda.setFechaVencimiento(dto.getFechaReserva().plusDays(15));
+        // Fecha de vencimiento: el día del evento (no se permite usar el espacio y pagar después)
+        deuda.setFechaVencimiento(dto.getFechaReserva());
         
         deuda.setMontoOriginal(montoTotal);
         deuda.setMontoPagadoAcumulado(BigDecimal.ZERO); // Saldo = monto_original - monto_pagado
@@ -148,9 +148,15 @@ public class ReservaServiceImpl implements ReservaService {
             if ("PENDIENTE".equals(deuda.getEstadoPago())) {
                 // Si la deuda no ha sido pagada, la eliminamos
                 estadoCuentaRepository.delete(deuda);
+            } else if ("PARCIAL".equals(deuda.getEstadoPago())) {
+                // Si fue parcialmente pagada, no se puede eliminar porque ya tiene pagos asociados.
+                // Se marca como cancelada sin reembolso del monto ya pagado.
+                deuda.setConcepto(deuda.getConcepto() + " [CANCELADA - PAGO PARCIAL SIN REEMBOLSO]");
+                deuda.setEstadoPago("PAGADO");
+                deuda.setMontoOriginal(deuda.getMontoPagadoAcumulado()); // Ajustar monto al ya pagado
+                estadoCuentaRepository.save(deuda);
             } else if ("PAGADO".equals(deuda.getEstadoPago())) {
-                // Si ya fue pagada, se puede implementar lógica de reembolso o saldo a favor
-                // Por ahora: solo actualizamos el concepto para indicar que fue cancelada
+                // Si ya fue pagada completamente, marcar concepto como cancelada
                 deuda.setConcepto(deuda.getConcepto() + " [CANCELADA - SIN REEMBOLSO]");
                 estadoCuentaRepository.save(deuda);
             }
@@ -226,7 +232,7 @@ public class ReservaServiceImpl implements ReservaService {
      * Construye el DTO de respuesta con todos los datos de la reserva.
      */
     private ReservaResponseDTO construirResponse(ReservaAmbienteEntity reserva, Integer deudaId) {
-        String socioNombre = reserva.getSocio().getNombre() + " " + reserva.getSocio().getApellidoPaterno();
+        String socioNombre = reserva.getSocio().getNombresocio();
         
         return new ReservaResponseDTO(
             reserva.getId(),

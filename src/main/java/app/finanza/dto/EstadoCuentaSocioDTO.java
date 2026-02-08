@@ -8,9 +8,11 @@ public class EstadoCuentaSocioDTO {
     private Integer id;
     private Integer socioId;
     private String socioNombre;
-    private String tipoObligacion; // MATRICULA, MENSUALIDAD, MULTA
+    private String tipoObligacion; // MATRICULA, MENSUALIDAD, MULTA, ALQUILER
     private Integer gestion;
     private Integer mes;
+    private String concepto; // Texto legible: "Cuota Ordinaria - Febrero 2026"
+    private Integer reservaId; // FK a reserva si tipo es ALQUILER
     private BigDecimal montoOriginal;
     private LocalDate fechaEmision;
     private LocalDate fechaVencimiento;
@@ -79,7 +81,7 @@ public class EstadoCuentaSocioDTO {
     }
     
     public LocalDate getFechaEmision() {
-        return    fechaEmision;
+        return fechaEmision;
     }
     
     public void setFechaEmision(LocalDate fechaEmision) {
@@ -116,5 +118,21 @@ public class EstadoCuentaSocioDTO {
     
     public void setSaldoPendiente(BigDecimal saldoPendiente) {
         this.saldoPendiente = saldoPendiente;
+    }
+    
+    public String getConcepto() {
+        return concepto;
+    }
+    
+    public void setConcepto(String concepto) {
+        this.concepto = concepto;
+    }
+    
+    public Integer getReservaId() {
+        return reservaId;
+    }
+    
+    public void setReservaId(Integer reservaId) {
+        this.reservaId = reservaId;
     }
 }
