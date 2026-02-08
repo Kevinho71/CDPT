@@ -1,12 +1,11 @@
-package app.documento.service.impl;
+package app.perfil.service;
 
 import app.common.exception.ResourceNotFoundException;
 import app.common.util.ArchivoService;
-import app.documento.dto.*;
-import app.documento.service.SocioDocumentoService;
+import app.perfil.dto.*;
+import app.perfil.service.SocioDocumentoService;
 import app.perfil.dto.SocioDocumentoCompleteDTO;
 import app.perfil.dto.SocioDocumentoCreateDTO;
-import app.perfil.dto.SocioDocumentoEditDTO;
 import app.perfil.dto.SocioDocumentoResponseDTO;
 import app.perfil.dto.SocioDocumentoUpdateDTO;
 import app.perfil.dto.SocioDocumentoUploadDTO;
@@ -184,40 +183,40 @@ public class SocioDocumentoServiceImpl implements SocioDocumentoService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public SocioDocumentoCompleteDTO updateDocumento(Integer perfilSocioId, Integer socioDocumentoId, SocioDocumentoEditDTO dto) {
-        // Buscar la relación
-        SocioDocumentoEntity relacionEntity = repository.findById(socioDocumentoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con ID: " + socioDocumentoId));
+    // @Override
+    // public SocioDocumentoCompleteDTO updateDocumento(Integer perfilSocioId, Integer socioDocumentoId, SocioDocumentoEditDTO dto) {
+    //     // Buscar la relación
+    //     SocioDocumentoEntity relacionEntity = repository.findById(socioDocumentoId)
+    //             .orElseThrow(() -> new ResourceNotFoundException("Documento no encontrado con ID: " + socioDocumentoId));
 
-        // Validar que pertenece al perfil correcto
-        if (!relacionEntity.getPerfilSocio().getId().equals(perfilSocioId)) {
-            throw new IllegalArgumentException("El documento no pertenece al perfil especificado");
-        }
+    //     // Validar que pertenece al perfil correcto
+    //     if (!relacionEntity.getPerfilSocio().getId().equals(perfilSocioId)) {
+    //         throw new IllegalArgumentException("El documento no pertenece al perfil especificado");
+    //     }
 
-        // Actualizar campos de la relación
-        if (dto.getOrden() != null) {
-            relacionEntity.setOrden(dto.getOrden());
-        }
-        if (dto.getEsVisible() != null) {
-            relacionEntity.setEsVisible(dto.getEsVisible());
-        }
+    //     // Actualizar campos de la relación
+    //     if (dto.getOrden() != null) {
+    //         relacionEntity.setOrden(dto.getOrden());
+    //     }
+    //     if (dto.getEsVisible() != null) {
+    //         relacionEntity.setEsVisible(dto.getEsVisible());
+    //     }
 
-        // Actualizar campos del documento profesional si se proporcionan
-        DocumentoProfesionalEntity documentoEntity = relacionEntity.getDocumento();
-        if (dto.getTitulo() != null && !dto.getTitulo().isEmpty()) {
-            documentoEntity.setTitulo(dto.getTitulo());
-        }
-        if (dto.getDescripcion() != null) {
-            documentoEntity.setDescripcion(dto.getDescripcion());
-        }
+    //     // Actualizar campos del documento profesional si se proporcionan
+    //     DocumentoProfesionalEntity documentoEntity = relacionEntity.getDocumento();
+    //     if (dto.getTitulo() != null && !dto.getTitulo().isEmpty()) {
+    //         documentoEntity.setTitulo(dto.getTitulo());
+    //     }
+    //     if (dto.getDescripcion() != null) {
+    //         documentoEntity.setDescripcion(dto.getDescripcion());
+    //     }
 
-        // Guardar cambios
-        documentoProfesionalRepository.save(documentoEntity);
-        SocioDocumentoEntity updatedRelacion = repository.save(relacionEntity);
+    //     // Guardar cambios
+    //     documentoProfesionalRepository.save(documentoEntity);
+    //     SocioDocumentoEntity updatedRelacion = repository.save(relacionEntity);
 
-        return toCompleteDTO(updatedRelacion);
-    }
+    //     return toCompleteDTO(updatedRelacion);
+    // }
 
     @Override
     public void deleteDocumento(Integer perfilSocioId, Integer socioDocumentoId) {
